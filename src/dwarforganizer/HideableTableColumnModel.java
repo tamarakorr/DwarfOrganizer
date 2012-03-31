@@ -44,6 +44,17 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
         super();
     }
     
+    // @author Tamara Orr
+    // Method to use column identifier instead of TableColumn
+    public void setColumnVisible(Object colIdentifier, boolean visible) {
+        for (int iCount = getColumnCount(false) - 1; iCount >= 0; iCount--) {
+            Object oThisIdentifier = getColumn(iCount, false).getIdentifier();
+            if (oThisIdentifier.equals(colIdentifier)) {
+                setColumnVisible(getColumn(iCount, false), visible);
+            }
+        }                
+    }
+    
     public void setColumnVisible(TableColumn column, boolean visible) {
         if(!visible) {
             super.removeColumn(column);

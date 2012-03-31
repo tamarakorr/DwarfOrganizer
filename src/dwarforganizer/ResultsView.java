@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -45,8 +46,8 @@ import myutils.MyTCRStripedHighlight;
  */
 public class ResultsView implements ActionListener {
     
-    private static final int LABOR_COLUMN = 2;      // Labors column index in the table
-    private static final int REMINDER_COLUMN = 3;   // Reminder column index in the table
+    private static final int LABOR_COLUMN = 3;      // Labors column index in the table
+    private static final int REMINDER_COLUMN = 4;   // Reminder column index in the table
 
     private static final int MULTILINE_GAP = 2;    
     
@@ -87,6 +88,8 @@ public class ResultsView implements ActionListener {
     //private static final boolean DEFAULT_SHOW_REMOVE_JOBS = true;
     //private boolean mbShowRemoveJobs = DEFAULT_SHOW_REMOVE_JOBS;
 
+    private static final boolean DEFAULT_NICKNAME_VIS = false;
+    
     private class DisplayableChange {
         
         private String text;
@@ -170,7 +173,8 @@ public class ResultsView implements ActionListener {
 /*        for (int iCount = 0; iCount < oModel.getColumnCount(); iCount++)
             System.out.println("Column " + iCount + " is of class "
                 + oModel.getColumnClass(iCount).getName()); */
-        moTable = new JTable(oModel);   // oModel
+        moTable = new JTable(oModel, new HideableTableColumnModel());   // oModel
+        moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
         
         // Renderers
         MyTCRStripedHighlight normalRenderer = new MyTCRStripedHighlight(1);
@@ -196,6 +200,9 @@ public class ResultsView implements ActionListener {
         MyTopAlignedRenderer topAlignedRenderer = new MyTopAlignedRenderer(1);
         moTable.getColumn("Job").setCellRenderer(topAlignedRenderer);
         moTable.getColumn("Reminder").setCellRenderer(topAlignedRenderer); 
+        
+        // Hide nickname if necessary
+        setNicknameVisible(DEFAULT_NICKNAME_VIS);
         
         JScrollPane oSP = new JScrollPane(moTable);
         MyHandyTable.handyTable(moTable, oSP, oModel, true, true);
@@ -256,6 +263,12 @@ public class ResultsView implements ActionListener {
         
     }
     
+    private void setNicknameVisible(boolean visible) {
+        HideableTableColumnModel hideableModel = (HideableTableColumnModel) 
+                moTable.getColumnModel();
+        hideableModel.setColumnVisible("Nickname", visible);
+    }
+    
     private JMenuBar createMenu() {
         
         JMenuBar menuBar = new JMenuBar();
@@ -265,9 +278,14 @@ public class ResultsView implements ActionListener {
         menuBar.add(menu);
 
         // ----- Dwarf name format ---
-        JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem("Nicknames", false);
+        final JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem("Nicknames", false);
         checkMenuItem.setMnemonic(KeyEvent.VK_N);
-        checkMenuItem.setEnabled(false); // TODO
+        checkMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setNicknameVisible(checkMenuItem.isSelected());
+            }
+        });
         menu.add(checkMenuItem);
         
         // ----- Separator -----------
@@ -309,7 +327,10 @@ public class ResultsView implements ActionListener {
     
     private MySimpleTableModel createResultsModel() { // throws SolutionImpossibleException 
 
-        Vector<String> columns = new Vector<String>();
+        //Vector<String> columns = new Vector<String>();
+        Vector<String> vColumns = new Vector<String>(Arrays.asList(new String[] {
+            "Dwarf", "Nickname", "Scheduled", "Job", "Reminder", "Score"
+        }));        
         String strFeed = "Feed Patients/Prisoners";
         String strRecover = "Recovering Wounded";
         
@@ -325,24 +346,17 @@ public class ResultsView implements ActionListener {
         }
         
         // Create table columns and model.
-        columns.add("Dwarf");
-        columns.add("Scheduled");
-        columns.add("Job");
-        columns.add("Reminder");
-        columns.add("Score");
-        //for (int iCount = 1; iCount <= intMaxJobs; iCount++)
-        //    columns.add("Job " + iCount);
-        
-        MySimpleTableModel oModel = new MySimpleTableModel(columns
+        MySimpleTableModel oModel = new MySimpleTableModel(vColumns
                 , mvDwarves.size());
         
         // Fill in a row for each dwarf.
         for (int row = 0; row < mvDwarves.size(); row++) {
             oModel.setValueAt(mvDwarves.get(row).name, row, 0);
+            oModel.setValueAt(mvDwarves.get(row).nickname, row, 1);
             oModel.setValueAt( //NumberFormat.getInstance().format(
-                    JobOptimizer.MAX_TIME - mvDwarves.get(row).time, row, 1);   // getPercentInstance()
+                    JobOptimizer.MAX_TIME - mvDwarves.get(row).time, row, 2);   // getPercentInstance()
             oModel.setValueAt( //NumberFormat.getNumberInstance().format(
-                    mdblScores[row], row, 4);  // getSkillSum(row)
+                    mdblScores[row], row, 5);  // getSkillSum(row)
             
             int jobCount = 0;
             Dwarf thisDwarf = mvDwarves.get(row);

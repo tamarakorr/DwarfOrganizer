@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -441,7 +440,9 @@ public class DwarfListWindow extends JPanel {
         HideableTableColumnModel hideableModel
                 = (HideableTableColumnModel) moTable.getColumnModel();
         
-        for (int iCount = hideableModel.getColumnCount(false) - 1; iCount >= 0; iCount--) {
+        hideableModel.setColumnVisible(colName, visible);
+        
+/*        for (int iCount = hideableModel.getColumnCount(false) - 1; iCount >= 0; iCount--) {
             //System.out.println("Number of columns: " + hideableModel.getColumnCount(false));
             Object oThisIdentifier = hideableModel.getColumn(iCount, false).getIdentifier();
             //System.out.println("Checking " + oThisIdentifier + " for " + colIdentifier);
@@ -450,7 +451,7 @@ public class DwarfListWindow extends JPanel {
                 hideableModel.setColumnVisible(hideableModel.getColumn(iCount, false)
                         , visible);
             }
-        }                
+        }                */
     }
     
     // Returns the column title for potential in the given skill
