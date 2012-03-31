@@ -6,6 +6,8 @@ dist/
 nbdist/
 nbactions.xml
 nb-configuration.xml
+*-private.properties
+target/
 
 # Class Files #
 *.class
