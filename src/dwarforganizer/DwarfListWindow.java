@@ -195,8 +195,9 @@ public class DwarfListWindow extends JPanel {
         // Read trait-hints.txt
         readTraitHints();   //path
         
-        // Read dwarves.xml
-        getDwarves(nodes);
+        // Read dwarves from the node list
+        if (nodes != null)
+            getDwarves(nodes);
         
         // Create table column headers.
         Vector<String> vColumns = new Vector<String>(Arrays.asList(new String[]

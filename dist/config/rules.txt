@@ -1,2 +1,0 @@
-This file lists jobs that aren't allowed together (BLACKLIST), or aren't allowed with other jobs (WHITELIST). Put each new pair on a different line, and separate the pair by a a Tab. Comments can be added after the last column. The names must exactly match the XML 'Labour' names, which can be found in labor-list.txt.
-BLACKLIST	Mining	Wood Cutting	Mining and wood cutting do not function together.

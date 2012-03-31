@@ -134,7 +134,7 @@ public class MainWindow extends JFrame implements DirtyListener {
         try {
             readFiles();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             System.err.println("Failed to read at least one critical file.");
         }
         
@@ -763,17 +763,19 @@ public class MainWindow extends JFrame implements DirtyListener {
     }
     
     private void readDwarves() throws Exception {
+        NodeList nodes = null;
         try {
-            NodeList nodes = moIO.readDwarves(mstrDwarvesXML);
+            nodes = moIO.readDwarves(mstrDwarvesXML);
             /*myXMLReader xmlFileReader = new myXMLReader(mstrDwarvesXML);
             NodeList nodes = xmlFileReader.getDocument().getElementsByTagName("Creature"); */
-            System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");
-            // Display a grid of the dwarves
-            moDwarfListWindow = new DwarfListWindow(nodes, mvLabors, mvLaborGroups);
-            
+            System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");            
         } catch (Exception e) {
             throw e;
+        } finally {
+            // Display a grid of the dwarves
+            moDwarfListWindow = new DwarfListWindow(nodes, mvLabors, mvLaborGroups);
         }
+        
     }
     
     private Vector<Dwarf> getDwarves() {

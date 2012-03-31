@@ -35,13 +35,13 @@ public class myXMLReader {
             mDoc = docBuilder.parse(file);
             
         } catch (ParserConfigurationException e) {
-            System.out.println(e);
+            System.err.println(e);
         } catch (SAXException e) {
-            System.out.println(e);
+            System.err.println(e);
         } catch (IOException e) {
-            System.out.println(e);
+            System.err.println(e);
         } catch (NullPointerException e) {
-            System.out.println("Null pointer exception for file = " + file.getName());
+            System.err.println("Null pointer exception for file = " + file.getName());
             e.printStackTrace();
         }
     }
@@ -52,11 +52,11 @@ public class myXMLReader {
             mDoc = docBuilder.parse(is);
             
         } catch (ParserConfigurationException e) {
-            System.out.println(e);
+            System.err.println(e);
         } catch (SAXException e) {
-            System.out.println(e);
+            System.err.println(e);
         } catch (IOException e) {
-            System.out.println(e);
+            System.err.println(e);
         }        
     }
     public Document getDocument() { return mDoc; }
