@@ -273,14 +273,15 @@ public class DwarfListWindow extends JPanel {
         panInfo.add(lblSelected, BorderLayout.PAGE_END);
         
         // Create checkboxes for table column groups.
-        JPanel panColumns = new JPanel();
-        panColumns.setLayout(new BoxLayout(panColumns, BoxLayout.PAGE_AXIS));
+        //JPanel panColumns = new JPanel();
+        //panColumns.setLayout(new BoxLayout(panColumns, BoxLayout.PAGE_AXIS));
         
         JPanel panDwarfList = new JPanel();
-        panDwarfList.setLayout(new BoxLayout(panDwarfList, BoxLayout.PAGE_AXIS));
-        panDwarfList.add(tablePanel);
-        panDwarfList.add(panInfo);
-        panDwarfList.add(panColumns);
+        //panDwarfList.setLayout(new BoxLayout(panDwarfList, BoxLayout.PAGE_AXIS));
+        panDwarfList.setLayout(new BorderLayout());
+        panDwarfList.add(tablePanel, BorderLayout.CENTER);
+        panDwarfList.add(panInfo, BorderLayout.SOUTH);
+        //panDwarfList.add(panColumns, BorderLayout.SOUTH);
         //panDwarfList.add(buttonPanel);
         
         this.setLayout(new BorderLayout());
