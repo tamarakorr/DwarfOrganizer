@@ -10,15 +10,19 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Vector;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
 import javax.swing.SwingConstants;
@@ -33,12 +37,16 @@ import myutils.MyTCRStripedHighlight;
 
 /**
  *
- * @author Owner
+ * GUI for displaying optimizer results
+ * 
+ * @author Tamara Orr
+ * See MIT license in license.txt
+ * 
  */
 public class ResultsView implements ActionListener {
     
     private static final int LABOR_COLUMN = 2;      // Labors column index in the table
-    private static final int REMINDER_COLUMN = 3;      // Reminder column index in the table
+    private static final int REMINDER_COLUMN = 3;   // Reminder column index in the table
 
     private static final int MULTILINE_GAP = 2;    
     
@@ -49,10 +57,7 @@ public class ResultsView implements ActionListener {
     private static final String ACTION_CMD_ALL = "ALL";
     private static final String ACTION_CMD_NOBLE = "NOBLE";
     private static final String ACTION_CMD_REMINDER = "REMINDER";    
-    
-    private static final boolean DEFAULT_SHOW_REMOVE_JOBS = true;
-    private boolean mbShowRemoveJobs = DEFAULT_SHOW_REMOVE_JOBS;
-    
+        
     // Table and filters
     private JTable moTable;
     private RowFilter mrfNoble;
@@ -65,8 +70,23 @@ public class ResultsView implements ActionListener {
     private Vector<Job> mvJobs;
     private double[] mdblScores;
     
-    private enum ChangeType { ADD, REMOVE, REMOVE_ALWAYS_SHOW, STAY_SAME };
-    
+    // mbShowJobs index matches up with ChangeType
+    private enum ChangeType {
+        ADD(0)
+        , REMOVE(1)
+        , REMOVE_ALWAYS_SHOW(2)
+        , STAY_SAME(3);
+        
+        private final int index;
+        private ChangeType(int index) { this.index = index; }
+        public int getIndex() { return index; }
+        
+    };
+    // Default values for showing jobs. Indices match with ChangeTypes
+    private boolean[] mbShowJobs = new boolean[] { true, true, true, true } ;
+    //private static final boolean DEFAULT_SHOW_REMOVE_JOBS = true;
+    //private boolean mbShowRemoveJobs = DEFAULT_SHOW_REMOVE_JOBS;
+
     private class DisplayableChange {
         
         private String text;
@@ -79,24 +99,32 @@ public class ResultsView implements ActionListener {
         
         @Override
         public String toString() {
-            if (this.changeType == ChangeType.STAY_SAME) {
+            if (this.changeType == ChangeType.STAY_SAME
+                    && mbShowJobs[ChangeType.STAY_SAME.getIndex()]) {
                 return getAddRemoveText("", this.text, true, "=", COLOR_STAY_SAME);
             }
-            else if (this.changeType == ChangeType.ADD) {
+            else if (this.changeType == ChangeType.ADD
+                    && mbShowJobs[ChangeType.ADD.getIndex()]) {
                 return getAddRemoveText("", this.text, true, "+", COLOR_ADD);
             }
-            else if (this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
-                    || ((this.changeType == ChangeType.REMOVE) && mbShowRemoveJobs)) {
+            else if ((this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
+                    && mbShowJobs[ChangeType.REMOVE_ALWAYS_SHOW.getIndex()])
+                    || ((this.changeType == ChangeType.REMOVE)
+                    && mbShowJobs[ChangeType.REMOVE.getIndex()])) { //  mbShowRemoveJobs
              
                 boolean bolden = (this.changeType == ChangeType.REMOVE_ALWAYS_SHOW);
                 return getAddRemoveText("", this.text, bolden, "-", COLOR_REMOVE);
             }
-            else if (this.changeType == ChangeType.REMOVE) {
+            // Else if not shown
+            else if (this.changeType == ChangeType.REMOVE
+                    || this.changeType == ChangeType.ADD
+                    || this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
+                    || this.changeType == ChangeType.STAY_SAME) {
                     return "";
             }
             else
                 return "Undefined DisplayableChange";
-        }        
+        }
     }
     
     private class DisplayableChanges extends Vector<DisplayableChange> {
@@ -196,20 +224,19 @@ public class ResultsView implements ActionListener {
         optView.add(btnViewReminders);
 
         // Create "show jobs to remove" filter checkbox
-        JCheckBox chkJobsToRemove = new JCheckBox("Show jobs to remove"
-                , mbShowRemoveJobs);
+/*        JCheckBox chkJobsToRemove = new JCheckBox("Show jobs to remove"
+                , mbShowJobs[ChangeType.REMOVE.getIndex()]);  //  mbShowRemoveJobs
         chkJobsToRemove.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mbShowRemoveJobs = ! mbShowRemoveJobs;
                 updateShowRemoveJobs();
             }
-        });
-        //mbShowRemoveJobs
+        }); */
         
         JPanel panFilter = new JPanel();
         panFilter.setLayout(new FlowLayout());
-        panFilter.add(chkJobsToRemove);
+        //panFilter.add(chkJobsToRemove);
         panFilter.add(btnViewAll);
         panFilter.add(btnViewNobles);
         panFilter.add(btnViewReminders);
@@ -219,13 +246,65 @@ public class ResultsView implements ActionListener {
         panAll.setLayout(new BorderLayout());
         panAll.add(oSP);
         panAll.add(panFilter, BorderLayout.PAGE_END);
-        
+
         // Create and show a window containing the table.
         JFrame frList = MyHandyWindow.createSimpleWindow("Optimized Jobs"
                 , panAll, new BorderLayout());
+        frList.setJMenuBar(createMenu());
         frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frList.setVisible(true);
         
+    }
+    
+    private JMenuBar createMenu() {
+        
+        JMenuBar menuBar = new JMenuBar();
+        
+        JMenu menu = new JMenu("Display");
+        menu.setMnemonic(KeyEvent.VK_D);
+        menuBar.add(menu);
+
+        // ----- Dwarf name format ---
+        JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem("Nicknames", false);
+        checkMenuItem.setMnemonic(KeyEvent.VK_N);
+        checkMenuItem.setEnabled(false); // TODO
+        menu.add(checkMenuItem);
+        
+        // ----- Separator -----------
+        menu.add(new JSeparator());
+        
+        // ----- Jobs to display -----
+        menu.add(createJobMenuItem(MyHTMLUtils.toHTML("Jobs to "
+                + MyHTMLUtils.makeColored("-Remove", COLOR_REMOVE))
+                , ChangeType.REMOVE, KeyEvent.VK_R));
+        
+        menu.add(createJobMenuItem(MyHTMLUtils.toHTML("Jobs to "
+                + MyHTMLUtils.makeBold("=Keep")), ChangeType.STAY_SAME
+                , KeyEvent.VK_K));
+        
+        menu.add(createJobMenuItem(MyHTMLUtils.toHTML("Jobs to "
+                + MyHTMLUtils.makeBold(MyHTMLUtils.makeColored("+Add", COLOR_ADD)))
+                , ChangeType.ADD, KeyEvent.VK_A));
+
+        return menuBar;
+    }
+    
+    // Menu creation macro used by createMenu()
+    private JCheckBoxMenuItem createJobMenuItem(String title
+            , final ChangeType changeType, int keyEvent) {
+        
+        final JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem(
+                title, mbShowJobs[changeType.getIndex()]);
+        checkMenuItem.setMnemonic(keyEvent);
+        checkMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mbShowJobs[changeType.getIndex()] = checkMenuItem.isSelected();
+                updateShowRemoveJobs();
+            }
+        });
+        
+        return checkMenuItem;
     }
     
     private MySimpleTableModel createResultsModel() { // throws SolutionImpossibleException 
