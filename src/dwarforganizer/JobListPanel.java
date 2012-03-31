@@ -42,7 +42,32 @@ import myutils.MyTCRStripedHighlight;
  * See MIT license in license.txt
  */
 public class JobListPanel extends JPanel {
-       
+    
+    private static final int MAX_DWARF_TIME = 100;
+    
+    private static final int DEFAULT_QTY = 1;
+    private static final int DEFAULT_TIME = MAX_DWARF_TIME;      // 1.0d
+    private static final double DEFAULT_WT = 1.0d;
+    private static final int DEFAULT_SKILL_WT = 0;
+    private static final String DEFAULT_REMINDER = "";
+    
+    private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
+        
+    private Vector<Labor> mvLabors; // Set in constructor
+    private Vector<LaborGroup> mvLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
+    private Vector<Job> mvLaborSettings = new Vector<Job>();
+    //private Vector<String> mvstrGroups = new Vector<String>();
+    
+    //private JTextField txtName;
+    private SelectingTable moTable;
+    private JLabel lblHours;
+    
+    private boolean mbLoading = true;
+    
+    private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
+    
+    private JobBlacklist moBlacklist = new JobBlacklist();    
+    
     // A table cell editor that selects all text when we start to edit a cell:
     class SelectingEditor extends DefaultCellEditor {
         public SelectingEditor(JTextField textField) {  // JTextField textField
@@ -82,7 +107,7 @@ public class JobListPanel extends JPanel {
     }
     
     // A JTable that uses SelectingEditors for column edits
-    class SelectingTable extends JTable {
+    class SelectingTable extends MyJTable {
         public SelectingTable(TableModel oModel) {
             super(oModel);
             TableColumnModel model = super.getColumnModel();
@@ -114,33 +139,13 @@ public class JobListPanel extends JPanel {
         }        
     };
     
-    private static final int MAX_DWARF_TIME = 100;
-    
-    private static final int DEFAULT_QTY = 1;
-    private static final int DEFAULT_TIME = MAX_DWARF_TIME;      // 1.0d
-    private static final double DEFAULT_WT = 1.0d;
-    private static final int DEFAULT_SKILL_WT = 0;
-    private static final String DEFAULT_REMINDER = "";
-    
-    private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
-        
-    private Vector<Labor> mvLabors; // Set in constructor
-    private Vector<LaborGroup> mvLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
-    private Vector<Job> mvLaborSettings = new Vector<Job>();
-    //private Vector<String> mvstrGroups = new Vector<String>();
-    
-    //private JTextField txtName;
-    private SelectingTable moTable;
-    private JLabel lblHours;
-    
-    private boolean mbLoading = true;
-    
-    private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
-    
-    private JobBlacklist moBlacklist = new JobBlacklist();
-    
+    // keysToIgnore: A vector of keystrokes to be ignored by the JTable editor
+    //               (i.e. keystrokes bound to menu items such as control S)
+    // The problem with control S etc. activating the JTable editing session
+    // is an outstanding bug in Java documented at
+    // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4820794
     public JobListPanel(Vector<Labor> vLabors, Vector<LaborGroup> vLaborGroups
-            , JobBlacklist blacklist)
+            , JobBlacklist blacklist)   // , Vector<KeyStroke> keysToIgnore
             throws CouldntProcessFileException {
         
         mvLaborGroups = vLaborGroups;
@@ -233,6 +238,17 @@ public class JobListPanel extends JPanel {
         moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight(
                 vBackgroundColors, vGroups, 0));
         
+        // This didn't work: see solution in MyJTable
+        // JTable must ignore all menu accelerators associated with the job list
+        // Otherwise it will start an editing session when Control+S or whatever is pressed
+        //for (KeyStroke keyStroke : keysToIgnore) {
+        /*for (MainWindow.JobListMenuAccelerator accel
+                : MainWindow.JobListMenuAccelerator.values()) {
+                
+                //System.out.println(accel.getKeyStroke().toString());
+                alwaysIgnoreKeyStroke(moTable, accel.getKeyStroke());
+        } */
+        
         JScrollPane oSP = new JScrollPane(moTable);
         MyHandyTable.handyTable(moTable, oSP, oModel, false, true);
         MyHandyTable.setPrefWidthToColWidth(moTable);
@@ -255,6 +271,28 @@ public class JobListPanel extends JPanel {
 /*    protected JobBlacklist getBlacklist() { return moBlacklist; }
     protected void setBlacklist(JobBlacklist newBlacklist) {
         moBlacklist = newBlacklist;
+    } */
+    
+    // Doesn't really work. Left it here so I will remember that.
+    // Causes the JComponent to always ignore the given keystroke.
+/*    private void alwaysIgnoreKeyStroke(JComponent component, KeyStroke keyStroke) {
+        
+//        // Commented code causes the keystroke to be ignored by the entire
+//        // application...sigh
+//        // From Java SE Key Bindings tutorial
+//        Action doNothing = new AbstractAction() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                // Do nothing!
+//            }
+//        };
+//        component.getInputMap().put(keyStroke, "doNothing");
+//        component.getActionMap().put("doNothing", doNothing);
+        
+        // Just causes the component to ignore the keystroke, but doesn't seem to
+        // work completely correctly with JTable
+        component.getInputMap().put(keyStroke, "none");
+        
     } */
     
     private Vector<JobOpening> getJobOpenings() {

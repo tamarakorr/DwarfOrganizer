@@ -58,7 +58,21 @@ public class MainWindow extends JFrame implements DirtyListener {
     private JInternalFrame mitlRulesEditor;
     
     private DwarfListWindow moDwarfListWindow;
+    
     private JobListPanel moJobListPanel;
+    //private Vector<KeyStroke> mvJobListAccelerators;
+    protected static enum JobListMenuAccelerator {
+        SAVE(KeyStroke.getKeyStroke("control S"))
+            , SAVE_AS(KeyStroke.getKeyStroke("control shift S"))
+            , OPEN(KeyStroke.getKeyStroke("control O"))
+            , RESET(KeyStroke.getKeyStroke("control R"));
+        
+        private final KeyStroke keyStroke;
+        private JobListMenuAccelerator(KeyStroke keyStroke) {
+            this.keyStroke = keyStroke;
+        }
+        public KeyStroke getKeyStroke() { return keyStroke; }
+    }
     
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
     private File mfilLastFile;
@@ -341,8 +355,8 @@ public class MainWindow extends JFrame implements DirtyListener {
         menuBar.add(menu);
         
         JMenuItem menuItem = new JMenuItem("Open...", KeyEvent.VK_O);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-            KeyEvent.VK_O, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(JobListMenuAccelerator.OPEN.getKeyStroke()); //  KeyStroke.getKeyStroke(
+            //KeyEvent.VK_O, ActionEvent.CTRL_MASK)
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -354,8 +368,8 @@ public class MainWindow extends JFrame implements DirtyListener {
         menu.addSeparator();
         
         menuItem = new JMenuItem("Save", KeyEvent.VK_S);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                KeyEvent.VK_S, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(JobListMenuAccelerator.SAVE.getKeyStroke()); // KeyStroke.getKeyStroke(
+                //KeyEvent.VK_S, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -365,8 +379,8 @@ public class MainWindow extends JFrame implements DirtyListener {
         menu.add(menuItem);        
         
         menuItem = new JMenuItem("Save As...", KeyEvent.VK_A);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                KeyEvent.VK_A, ActionEvent.ALT_MASK));
+        menuItem.setAccelerator(JobListMenuAccelerator.SAVE_AS.getKeyStroke()); // KeyStroke.getKeyStroke(
+                //KeyEvent.VK_A, ActionEvent.ALT_MASK));
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -378,8 +392,8 @@ public class MainWindow extends JFrame implements DirtyListener {
         menu.addSeparator();
         
         menuItem = new JMenuItem("Reset to Default", KeyEvent.VK_R);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                KeyEvent.VK_R, ActionEvent.CTRL_MASK));
+        menuItem.setAccelerator(JobListMenuAccelerator.RESET.getKeyStroke()); // KeyStroke.getKeyStroke(
+                //KeyEvent.VK_R, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -414,6 +428,7 @@ public class MainWindow extends JFrame implements DirtyListener {
         mjfcSave.setAcceptAllFileFilterUsed(true);
         mjfcSave.setFileFilter(ffText);
         mjfcSave.setCurrentDirectory(moJobListPanel.getDirectory());
+        
         
         // File chooser for Job Settings->Open...
         mjfcOpen = new JFileChooser();
