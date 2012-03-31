@@ -1,0 +1,67 @@
+A
+Manager	1	80	0.8	0	Meager Office
+Chief Medical Dwarf	1	100	1.0	50	
+Broker	1	25	0.25	10	
+Bookkeeper	1	5	0.05	0	Meager Office
+Mining	10	80	0.8	25	
+Carpentry	3	50	1.0	50	
+Crossbow-making	2	5	0.05	50	
+Wood Cutting	3	25	0.25	0	
+Masonry	15	50	1.0	50	Workshop
+Stone Detailing	2	50	1.0	50	
+Animal Training	2	50	0.5	0	
+Hunting	0	100	1.0	0	
+Trapping	2	50	0.5	0	
+Small Animal Dissection	1	5	0.05	0	
+Diagnosis	3	25	1.0	50	Doctors' Dorm
+Surgery	4	25	1.0	50	Doctors' Dorm
+Setting Bones	4	25	1.0	50	Doctors' Dorm
+Suturing	4	25	1.0	50	Doctors' Dorm
+Dressing Wounds	4	25	1.0	50	Doctors' Dorm
+Butchery	3	50	0.5	0	
+Tanning	3	50	0.5	0	
+Farming (Fields)	1	100	1.0	25	Farmer's Cottage
+Dyeing	3	75	1.0	50	
+Soap Maker	2	5	0.05	0	
+Wood Burning	2	5	0.05	0	
+Potash Making	1	5	0.05	0	
+Lye Making	2	5	0.05	0	
+Milling	5	50	0.5	0	
+Brewing	2	50	0.5	0	
+Plant Gathering	2	25	0.25	25	
+Plant Processing	3	50	0.5	0	
+Cheese Making	1	25	0.25	0	
+Milking	1	25	0.25	0	
+Shearing	1	25	0.25	0	
+Spinning	2	25	0.25	0	
+Cooking	3	50	1.0	50	
+Pressing	0	100	1.0	0	
+Bee Keeping	0	100	1.0	0	
+Fishing	1	75	0.75	0	
+Fish Cleaning	2	5	0.05	0	
+Fish Dissection	1	5	0.05	0	
+Furnace Operating	4	75	0.75	0	
+Weaponsmithing	1	50	1.0	50	
+Armoring	1	75	1.0	50	
+Blacksmithing	1	25	1.0	50	
+Metalcrafting	1	25	1.0	50	
+Gem Cutting	2	50	0.5	0	
+Gem Setting	1	100	1.0	50	
+Leatherworking	2	25	1.0	50	
+Woodcrafting	2	25	1.0	50	
+Stonecrafting	2	25	1.0	50	
+Bone Carving	3	50	1.0	50	
+Glassmaking	3	75	1.0	50	
+Weaving	3	75	1.0	50	
+Clothesmaking	3	75	1.0	50	
+Strand Extraction	1	5	1.0	50	
+Pottery	3	75	1.0	50	
+Glazing	1	5	1.0	0	
+Wax Working	0	100	1.0	50	
+Siege Engineering	2	5	1.0	50	
+Siege Operating	2	25	0.25	50	
+Mechanics	2	50	1.0	50	Workshop
+Pump Operating	8	5	0.05	0	
+Architecture	5	25	1.0	50	
+Close Combat	0	100	1.0	0	
+Ranged Combat	0	100	1.0	0	

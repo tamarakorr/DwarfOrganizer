@@ -1,0 +1,58 @@
+Manager	Manager	1	0.25	0.25
+Chief Med	Diagnostician	1	0.5	1
+Broker	Broker	1	0.25	0.25
+Bookkeeper	Record keeper	1	0.5	0.5
+Miner	Miner	8	0.75	0.75
+Carpenter	Carpenter	2	0.5	0.5
+Bowyer	Bowyer	1	0.25	0.25
+Wood Cutter	Wood cutter	2	0.5	0.5
+Mason	Mason	2	0.75	0.75
+Engraver	Engraver	1	0.25	0.25
+Animal Trainer	Animal trainer	1	0.25	0.25
+Trapper	Trapper	1	0.1	0.1
+Animal Dissector	Animal dissector	2	0.1	0.1
+Butcher	Butcher	2	0.5	0.5
+Tanner	Tanner	2	0.5	0.5
+Farming (Fields)	Grower	2	0.9	0.9
+Dyer	Dyer	2	0.5	0.5
+Soaper	Soaper	1	0.1	0.1
+Wood Burner	Wood burner	2	0.25	0.25
+Potash maker	Potash maker	1	0.1	0.1
+Lye Maker	Lye maker	1	0.1	0.1
+Miller	Miller	2	0.75	0.75
+Brewer	Brewer	2	0.75	0.75
+Plant Gathering	Herbalist	2	0.25	0.25
+Plant Processing	Thresher	3	0.75	0.75
+Cheese Maker	Cheese maker	1	0.5	0.5
+Milker	Milker	2	0.25	0.25
+Shearer	Shearing	2	0.25	0.25
+Spinner	Spinning	2	0.5	0.5
+Cooking	Cook	3	0.75	0.75
+Pressing	Pressing	2	0.25	0.25
+Bee Keeping	Beekeeping	1	0.25	0.25
+Fishing	Fisherdwarf	2	0.25	0.25
+Fish Cleaning	Fish cleaner	2	0.5	0.5
+Fish Dissection	Fish dissector	1	0.1	0.1
+Furnace Operating	Furnace operator	3	0.75	0.75
+Weaponsmithing	Weaponsmith	2	0.1	1
+Armoring	Armorsmith	2	0.75	1
+Blacksmithing	Metalsmith	2	0.1	0.1
+Metalcrafting	Metal crafter	2	0.25	0.25
+Gem Cutting	Gem cutter	2	0.75	0.75
+Gem Setting	Gem setter	1	0.75	1
+Leatherworking	Leatherworker	2	0.5	1
+Woodcrafting	Wood crafter	1	0.1	0.1
+Stonecrafting	Stone crafter	3	0.75	1
+Bone Carving	Bone carver	2	0.5	1
+Glassmaking	Glassmaker	3	0.75	1
+Weaving	Weaver	2	0.25	1
+Clothesmaking	Clothier	2	0.75	1
+Strand extraction	Strand extractor	1	0.1	1
+Pottery	Pottery	1	0.1	0.1
+Glazing	Glazing	1	0.1	0.1
+Wax Working	Wax worker	2	0.25	1
+Siege Engineering	Siege engineer	2	0.1	0.1
+Siege Operating	Siege operator	1	0.1	0.1
+Mechanics	Mechanic	2	0.5	0.5
+Pump Operating	Pump operator	1	0.1	0.1
+Architecture	Building designer	2	0.5	1

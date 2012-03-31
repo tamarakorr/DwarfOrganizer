@@ -1,0 +1,99 @@
+old swap code
+
+/*                               
+                                // Does the other dwarf have time to just take
+                                // this job without a swap?
+                                //int remainingJobsOther = vintRemainingDwarfJobs.get(otherDwarf);
+                                double remainingTimeOther = mvdDwarfTimeNew.get(otherDwarf);
+                                double jobTime = mvdJobTime.get(job);
+                                if (remainingTimeOther >= jobTime)
+                                    // Would the resulting job set for the other dwarf
+                                    // be legal?
+                                    if (! isJobLegalForDwarf(job, otherDwarf))
+                                        System.out.println("Avoided moving job "
+                                                + mvstrJobNames.get(job) + " from "
+                                                + mvstrDwarfNames.get(dwarf) + " to "
+                                                + mvstrDwarfNames.get(otherDwarf)
+                                                + " because the resulting job set would"
+                                                + " be illegal.");
+                                
+                                    /*else if (remainingTimeOther < jobTime)
+                                        System.out.println("Avoided moving job "
+                                                + mvstrJobNames.get(job) + " from "
+                                                + mvstrDwarfNames.get(dwarf) + " to "
+                                                + mvstrDwarfNames.get(otherDwarf)
+                                                + " because " + mvstrDwarfNames.get(otherDwarf)
+                                                + " does not have enough time."); */
+/*                                    else {
+                                        // If ok, give the job to the other dwarf.
+                                        System.out.println("Changing "
+                                                + mvstrJobNames.get(job) + " from "
+                                                + mvstrDwarfNames.get(dwarf) + " to "
+                                                + mvstrDwarfNames.get(otherDwarf));
+                                        
+                                        // Update the remaining amount of work time.
+                                        //vintRemainingDwarfJobs.set(otherDwarf, remainingJobsOther - 1);
+                                        /*vdblRemainingDwarfTime.set(otherDwarf, remainingTimeOther - jobTime);
+                                        double remainingTime = vdblRemainingDwarfTime.get(dwarf);
+                                        vdblRemainingDwarfTime.set(dwarf, remainingTime + jobTime);
+                                        */
+/*                                        skillSum += removeJobFromDwarf(job
+                                                , dwarf, mvdDwarfTimeNew
+                                                , jobTime);
+                                        skillSum += addJobToDwarf(job
+                                                , otherDwarf, mvdDwarfTimeNew
+                                                , jobTime);
+                                        
+                                        bReassigned = true;
+                                    }
+                                
+                                if (! bReassigned) {
+                                    // Is this other dwarf equal or better at a job assigned to
+                                    // the current dwarf, and not already assigned to this job?
+                                    for (int otherJob = 0; otherJob < jobCount; otherJob++) {
+                                        if (otherJob != job && mbSolution[otherJob][otherDwarf]
+                                            && ! mbSolution[otherJob][dwarf]
+                                            && mvJobSkill.get(dwarf).get(otherJob)
+                                            >= mvJobSkill.get(otherDwarf).get(otherJob)) {
+
+                                            // Do both dwarves have enough time to do the new job?
+                                            double remainingTime = mvdDwarfTimeNew.get(dwarf);
+                                            double otherJobTime = mvdJobTime.get(otherJob);
+                                            if ((remainingTimeOther + mvdJobTime.get(otherJob) < jobTime)
+                                                    || remainingTime + mvdJobTime.get(job) < otherJobTime)
+                                                    System.out.println("Job swap avoided because at least"
+                                                            + " one dwarf doesn't have enough time: "
+                                                            + mvstrDwarfNames.get(dwarf) + " and "
+                                                            + mvstrDwarfNames.get(otherDwarf)
+                                                            + " would have swapped "
+                                                            + mvstrJobNames.get(job) + " and "
+                                                            + mvstrJobNames.get(otherJob) + ".)");
+                                            // Would the resulting job sets be legal?
+                                            else if (! isJobSwapLegal(dwarf, job, otherJob)
+                                                    || ! isJobSwapLegal(otherDwarf, otherJob, job))
+                                                System.out.println("(Job swap avoided because it would be illegal: "
+                                                        + mvstrDwarfNames.get(dwarf) + " and "
+                                                        + mvstrDwarfNames.get(otherDwarf)
+                                                        + " would have swapped "
+                                                        + mvstrJobNames.get(job) + " and "
+                                                        + mvstrJobNames.get(otherJob) + ".)");
+                                            else {
+
+                                                System.out.println(mvstrDwarfNames.get(dwarf)
+                                                        + " and " + mvstrDwarfNames.get(otherDwarf)
+                                                        + " are trading jobs: " + mvstrJobNames.get(job)
+                                                        + " for " + mvstrJobNames.get(otherJob));
+
+                                                // Then trade jobs
+                                                skillSum += removeJobFromDwarf(job, dwarf, mvdDwarfTimeNew, jobTime);
+                                                skillSum += addJobToDwarf(otherJob, dwarf, mvdDwarfTimeNew, jobTime);
+                                                skillSum += removeJobFromDwarf(otherJob, otherDwarf, mvdDwarfTimeNew, jobTime);
+                                                skillSum += addJobToDwarf(job, otherDwarf, mvdDwarfTimeNew, jobTime);
+                                                
+                                                bReassigned = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                */

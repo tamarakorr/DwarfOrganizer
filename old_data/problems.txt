@@ -1,0 +1,41 @@
+not telling me to remove:
+tanning
+animal training
+masonry
+carpentry
+mining
+butchery
+
+
+part 2:
+soap maker   Soap Making
+spinning	Wool Spinning
+crossbow-making	Bowmaking
+brewer?	Brewing
+cheese making	Cheese Making
+
+
+part 3:
+stone detailing
+shearing
+spinning
+cheese maker
+hunting
+trapping
+small animal dissection
+strand extraction
+dyeing
+brewing
+soap maker
+wood burning
+potash making
+lye making
+milling
+milking
+wood cutting
+blacksmithing
+crossbow-making
+
+Tasks that are impossible when the dwarf is unable to grasp:
+Clean
+Bookkeeper

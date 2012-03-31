@@ -1,0 +1,88 @@
+This file lists jobs that aren't allowed together (BLACKLIST), or aren't allowed with other jobs (WHITELIST). Put each new pair on a different line, and separate the pair by a a Tab. The names must exactly match the XML 'Labour' names, which can be found in labor-list.txt. Comments can be added after the last column.
+BLACKLIST	Mining	Wood Cutting	Mining and wood cutting do not function together.	
+BLACKLIST	Mining	Manager	Time consuming and time-sensitive labors don't go together.	
+BLACKLIST	Mining	Chief Medical Dwarf	
+BLACKLIST	Mining	Broker	
+BLACKLIST	Mining	Architecture	
+BLACKLIST	Mining	Butchery	
+BLACKLIST	Mining	Tanning	
+BLACKLIST	Chief Medical Dwarf	Diagnosis	The chief medical dwarf must not be distracted.	
+BLACKLIST	Chief Medical Dwarf	Surgery	
+BLACKLIST	Chief Medical Dwarf	Setting Bones	
+BLACKLIST	Chief Medical Dwarf	Suturing	
+BLACKLIST	Chief Medical Dwarf	Dressing Wounds	
+WHITELIST	Diagnosis	Surgery	Doctors may only do healthcare labors	
+WHITELIST	Diagnosis	Setting Bones	
+WHITELIST	Diagnosis	Suturing	
+WHITELIST	Diagnosis	Dressing Wounds	
+WHITELIST	Surgery	Diagnosis	
+WHITELIST	Surgery	Setting Bones	
+WHITELIST	Surgery	Suturing	
+WHITELIST	Surgery	Dressing Wounds	
+WHITELIST	Setting Bones	Diagnosis	
+WHITELIST	Setting Bones	Surgery	
+WHITELIST	Setting Bones	Suturing	
+WHITELIST	Setting Bones	Dressing Wounds	
+WHITELIST	Suturing	Diagnosis	
+WHITELIST	Suturing	Surgery	
+WHITELIST	Suturing	Setting Bones	
+WHITELIST	Suturing	Dressing Wounds	
+WHITELIST	Dressing Wounds	Diagnosis	
+WHITELIST	Dressing Wounds	Setting Bones	
+WHITELIST	Dressing Wounds	Suturing	
+WHITELIST	Dressing Wounds	Surgery	
+BLACKLIST	Cheese Making	Milking	Cheese making and milking do not play well together	
+BLACKLIST	Wood Cutting	Manager	Other time consuming labors should not be placed with time sensitive labors	
+BLACKLIST	Wood Cutting	Chief Medical Dwarf	
+BLACKLIST	Wood Cutting	Broker	
+BLACKLIST	Wood Cutting	Architecture	
+BLACKLIST	Wood Cutting	Butchery	
+BLACKLIST	Wood Cutting	Tanning	
+BLACKLIST	Masonry	Manager	
+BLACKLIST	Masonry	Chief Medical Dwarf	
+BLACKLIST	Masonry	Broker	
+BLACKLIST	Masonry	Architecture	
+BLACKLIST	Masonry	Butchery	
+BLACKLIST	Masonry	Tanning	
+BLACKLIST	Stone Detailing	Manager	
+BLACKLIST	Stone Detailing	Chief Medical Dwarf	
+BLACKLIST	Stone Detailing	Broker	
+BLACKLIST	Stone Detailing	Architecture	
+BLACKLIST	Stone Detailing	Butchery	
+BLACKLIST	Stone Detailing	Tanning	
+BLACKLIST	Farming (Fields)	Manager	
+BLACKLIST	Farming (Fields)	Chief Medical Dwarf	
+BLACKLIST	Farming (Fields)	Broker	
+BLACKLIST	Farming (Fields)	Architecture	
+BLACKLIST	Farming (Fields)	Butchery	
+BLACKLIST	Farming (Fields)	Tanning	
+BLACKLIST	Dyeing	Manager	
+BLACKLIST	Dyeing	Chief Medical Dwarf	
+BLACKLIST	Dyeing	Broker	
+BLACKLIST	Dyeing	Architecture	
+BLACKLIST	Dyeing	Butchery	
+BLACKLIST	Dyeing	Tanning	
+BLACKLIST	Brewing	Manager	
+BLACKLIST	Brewing	Chief Medical Dwarf	
+BLACKLIST	Brewing	Broker	
+BLACKLIST	Brewing	Architecture	
+BLACKLIST	Brewing	Butchery	
+BLACKLIST	Brewing	Tanning	
+BLACKLIST	Cooking	Manager	
+BLACKLIST	Cooking	Chief Medical Dwarf	
+BLACKLIST	Cooking	Broker	
+BLACKLIST	Cooking	Architecture	
+BLACKLIST	Cooking	Butchery	
+BLACKLIST	Cooking	Tanning	
+BLACKLIST	Fishing	Manager	
+BLACKLIST	Fishing	Chief Medical Dwarf	
+BLACKLIST	Fishing	Broker	
+BLACKLIST	Fishing	Architecture	
+BLACKLIST	Fishing	Butchery	
+BLACKLIST	Fishing	Tanning	
+BLACKLIST	Weaving	Manager	
+BLACKLIST	Weaving	Chief Medical Dwarf	
+BLACKLIST	Weaving	Broker	
+BLACKLIST	Weaving	Architecture	
+BLACKLIST	Weaving	Butchery	
+BLACKLIST	Weaving	Tanning	

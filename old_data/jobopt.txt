@@ -1,0 +1,17 @@
+	Job	Manager	Broker	Miner	Bowyer	Carpenter	Wood Cutter	Engraver	Mason	Animal Trainer	Trapper	Chief Med	Brewer	Butcher	Cheese Maker	Cook	Dyer	Grower	Herbalist	Milker	Miller	Soaper	Tanner	Thresher	Wood Burner	Gem Cutter	Bone Carver	Clothier	Leatherworker	Stone Crafter	Weaver	Wood crafter	Mechanic	Pump operator	Siege engineer	Architect	Bookkeeper
+	Time->	0.25	0.25	0.75	0.25	0.75	0.75	0.1	0.25	0.25	0.1	0.25	0.25	0.25	0.1	0.25	0.1	1	0.25	0.1	0.1	0.1	0.25	0.25	0.1	0.1	0.1	0.1	0.1	0.75	0.1	0.25	0.25	0.1	0.1	0.25	0.25
+	Importance->	0.25	0.25	0.75	0.25	0.75	0.75	0.1	0.25	0.25	0.1	0.25	0.25	0.25	0.1	0.25	0.1	1	0.25	0.1	0.1	0.1	0.25	0.25	0.1	0.1	0.1	0.1	0.1	0.75	0.1	0.25	0.25	0.1	0.1	0.25	0.25
+	Job time remaining	1	1	3	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	2	1	1	1	1
+Etur	1	1	5	3	4	4	4	4	4	3	3	6	5	4	4	4	4	4	6	4	4	3	5	4	3	3	4	4	4	4	4	4	3	4	3	3	5
+Likot	1	5	6	3	4	3	4	4	4	5	3	5	4	4	3	4	4	4	5	4	4	3	5	4	3	4	4	4	4	4	4	4	3	4	3	3	6
+Meng	1	1	3	4	4	4	5	4	5	4	4	4	6	6	4	4	6	6	6	6	6	4	6	6	4	4	4	4	5	4	4	4	4	4	4	2	4
+Nish	1	5	6	4	3	3	4	3	4	5	3	7	4	4	5	4	4	4	4	4	4	4	3	4	4	3	3	3	4	3	3	3	4	5	4	3	7
+Onoli	1	1	3	3	5	4	4	5	4	5	5	4	5	5	5	6	5	5	6	5	5	3	6	5	3	5	5	5	4	5	5	5	4	3	4	3	3
+Inod	1	1	3	4	3	3	3	3	3	3	4	5	2	2	3	2	2	2	3	2	2	3	2	2	3	3	3	3	3	3	3	3	3	3	3	5	5
+Onol	1	1	4	5	3	3	4	3	4	3	3	4	3	3	3	2	3	3	4	3	3	4	2	3	4	3	3	3	4	3	3	3	3	5	3	3	6
+Thikut	1	5	4	4	5	5	4	5	4	6	4	2	4	5	5	6	5	5	5	5	5	6	6	5	6	3	5	5	4	5	5	5	4	5	4	4	3
+Unib	1	1	4	5	4	5	5	4	5	5	5	5	5	5	4	4	5	5	5	5	5	5	4	5	5	5	4	4	5	4	4	4	5	5	5	4	4
+Ustuth	1	2	3	4	3	4	4	3	4	3	3	3	3	3	3	2	3	3	4	3	3	3	3	3	3	3	3	3	4	3	3	3	3	4	3	3	4
+Cog	1	4	5	4	6	6	4	6	4	5	5	4	6	5	4	5	5	5	7	5	5	4	7	5	4	5	6	6	4	6	6	6	4	4	4	3	3
+Edzul	1	1	5	6	6	6	7	6	7	6	5	4	7	7	6	6	7	7	7	7	7	6	8	7	6	6	6	6	7	6	6	6	5	6	5	4	4
+Iton	1	6	6	5	7	7	6	7	6	4	6	6	7	6	6	6	6	6	7	6	6	5	7	6	5	7	7	7	6	7	7	7	6	5	6	6	7

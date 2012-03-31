@@ -1,0 +1,685 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="CONTENT-TYPE" content="text/html;
+      charset=windows-1252">
+    <title>Dwarf Organizer Readme/Tutorial</title>
+    <meta name="GENERATOR" content="LibreOffice 3.3 (Win32)">
+    <meta name="CREATED" content="20120319;16495453">
+    <meta name="CHANGED" content="20120319;17553263">
+    <meta content="Tamara Orr" name="author">
+    <meta content="A fairly detailed tutorial for using the Dwarf
+      Organizer program" name="description">
+  </head>
+  <body dir="LTR" lang="en-US">
+    <a name="Top"></a>Table of Contents : Dwarf Organizer - v1.1 - March
+    28, 2012<br>
+    <ol id="mozToc">
+      <!--mozToc h1 1 h2 2 h3 3 h4 4 h5 5 h6 6-->
+      <li><a href="#mozTocId6767">Readme/Tutorial for Dwarf Organizer</a></li>
+      <li><a href="#mozTocId822299">Prerequisites</a></li>
+      <li><a href="#mozTocId843865">The Dwarf List</a></li>
+      <li><a href="#mozTocId431076">Setting Up a Labor Profile</a>
+        <ol>
+          <li><a href="#mozTocId517770">The Time Column</a></li>
+          <li><a href="#mozTocId293016">The Job Priority Column</a></li>
+          <li><a href="#mozTocId645393">The Current Skill Weight Column</a></li>
+          <li><a href="#mozTocId130115">The Reminder Column</a></li>
+          <li><a href="#mozTocId66090">Number of Job Hours / Dwarves</a></li>
+          <li><a href="#mozTocId555617">Always Save!</a></li>
+        </ol>
+      </li>
+      <li><a href="#mozTocId32895"> The Optimizer</a></li>
+      <li><a href="#mozTocId936388"> The Log</a></li>
+      <li><a href="#mozTocId40712">Optimized Jobs (The Results!) </a>
+        <ol>
+          <li><a href="#mozTocId240204">A Note About Altruism</a></li>
+          <li><a href="#mozTocId293799">If you like the solution</a></li>
+          <li><a href="#mozTocId526651">Keep in mind</a></li>
+        </ol>
+      </li>
+      <li><a href="#mozTocId452543">Things That Can Go Wrong</a>
+        <ol>
+          <li><a href="#mozTocId981913">Dwarves with no hands (or the
+              equivalent)</a></li>
+          <li><a href="#mozTocId436705">Ghosts and the dead</a></li>
+          <li><a href="#mozTocId275574">The caravan</a></li>
+          <li><a href="#mozTocId529232">Juveniles</a></li>
+        </ol>
+      </li>
+      <li><a href="#mozTocId593648">Advanced Concepts</a>
+        <ol>
+          <li><a href="#mozTocId529560">Blacklisting Jobs with the Rules
+              Editor </a></li>
+          <li><a href="#mozTocId737476">Whitelisting Jobs with the Rules
+              Editor </a></li>
+          <li><a href="#mozTocId593216">Non-Dwarves</a></li>
+          <li><a href="#mozTocId77396">Custom Jobs</a></li>
+        </ol>
+      </li>
+    </ol>
+    <h1><a class="mozTocH1" name="mozTocId6767"></a>Readme/Tutorial for
+      Dwarf Organizer</h1>
+    <a href="#Top">[Return to Top]</a><br>
+    Dwarf Organizer is a tool that can be useful to help distribute
+    labor among your citizens in Dwarf Fortress.<br>
+    <p>Disclaimer: Dwarf Organizer was originally written for personal
+      use, on my own time. It was worked-on in the very noisy
+      environment of my home. While working on it, I was often tired,
+      sometimes intoxicated, and frequently interrupted by household
+      members, burglars, policemen, repairmen, power and internet
+      outages, the general public, and a cat. As such, the programming,
+      interface, and overall finish do not reach the high standards that
+      my paid projects achieve! Dwarf Organizer is not fully-featured,
+      it is probably not totally foolproof, and it might not do all the
+      things you wish. That said, I use it a lot, and it works so...<br>
+    </p>
+    <p>If you want to try it, this tutorial should get you started!<br>
+    </p>
+    <h1 style="font-weight: bold;"><a class="mozTocH1"
+        name="mozTocId822299"></a>Prerequisites</h1>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      1. You need <a href="http://www.java.com">Java</a>. If your
+      computer has a web browser, then you probably already have it. If
+      you don't, you'll need to get it from <a
+        href="http://www.java.com/">http://www.java.com</a>.</p>
+    <p>2<a href="ReadmeSlashTutorial.html#Star">*</a>. Make an <b>XML
+        export of your dwarves</b>. You can use <a
+        href="http://www.bay12forums.com/smf/index.php?topic=59056.0">Runesmith
+
+
+
+
+
+      </a>to create this export if you're using a pre-2012 version of
+      DF. Otherwise, install <a
+        href="http://www.bay12forums.com/smf/index.php?topic=91166.0">DFHack</a>,
+      run your fortress, and type the following into the DFHack console
+      without the quote marks: "<span style="font-family: Courier
+        New,Courier,monospace;">dwarfexport k:\dwarves.xml</span>".
+      (Replace the drive letter, folder, and file name with your
+      preference.) Call the file anything you like, as long as you can
+      find it later.<br>
+    </p>
+    <p>3<a href="#Star">*</a>. Run Dwarf Organizer, find the window
+      called "Dwarf List", and choose <b>File-&gt;Set Location of
+        Dwarves.xml</b> from the menu. Navigate to dwarves.xml (or
+      whatever you called it in Step 2) and click Open.<br>
+    </p>
+    <p><a name="Star"></a>*If you would just like to try out Dwarf
+      Organizer without using Runesmith or DFHack, there is a
+      sample-dwarves.xml file included with the program in the
+      Samples\Dwarves\ directory. (It should open by default.) </p>
+    <p>If you followed these steps without problems, then you are ready
+      to use Dwarf Organizer!<br>
+    </p>
+    <h1 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH1" name="mozTocId843865"></a>The Dwarf List<img
+        style=" width: 761px; height: 354px;" alt="Dwarf List Picture"
+        src="dwarflist.jpg" align="right"></h1>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      If your XML file loaded successfully, then you will see that the
+      window titled "<b>Dwarf List</b>" has some entries in it. You
+      might recognize the names of your dwarves there. (Your list will
+      be different from mine, pictured right.)<br>
+    </p>
+    <p>Use the "Columns" menu to view more (or less) information about
+      your dwarves.<br>
+    </p>
+    <p>"Include" is the only column you can edit. This tells Dwarf
+      Organizer which dwarves you want to assign labor. Use the
+      right-click context menu to include or exclude all selected
+      dwarves.<br clear="all">
+    </p>
+    <h1 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH1" name="mozTocId431076"></a>Setting Up a Labor
+      Profile</h1>
+    <p><img style=" width: 518px; height: 336px;" alt="Open
+        Starting-Seven-Aquifer.txt Picture"
+        src="Open-Starting-Seven-Aquifer.jpg" align="left"><a
+        href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Next you need to set up a labor profile that works for the number
+      of dwarves you have. For example's sake, let's look at the
+      Sample-Starting-Seven-Aquifer profile. To do that, go to the "Job
+      Settings" screen (Window-&gt;Job Settings) and choose <b>File-&gt;Open</b>.
+      Open <span style="font-weight: bold;">Sample-Starting-Seven-Aquifer.txt</span>
+      (in the Samples\Jobs\ directory) using the dialog that follows.<br>
+    </p>
+    <p><br clear="all">
+      <img style=" width: 658px; height: 448px;" alt="Job Settings
+        Picture" src="jobsettings.jpg" align="left"><br>
+      Now the Job Settings window should be populated with some real
+      data. It is a colorful window that is probably behind the Dwarf
+      List window. <b>Bring it to the front by clicking on it</b> or
+      choosing Window-&gt;Job Settings, if you haven't already. I will
+      explain the contents of this window now:</p>
+    <p>The Job Settings window contains a table with some columns. Jobs
+      are color-coded by group, similar to the way DF organizes labor.
+      Some of the cells in this table can be edited.</p>
+    <p>In the Job Settings table, "Labor" corresponds with the labor
+      names you are familiar with in DF. "Qty" is the number of
+      different dwarves you would like to assign that labor. You can
+      see, for example, in Sample-Starting-Seven-Aquifer profile that we
+      are not choosing a Chief Medical Dwarf, and that we are choosing
+      four Miners.<br clear="all">
+    </p>
+    <h2 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH2" name="mozTocId517770"></a>The Time Column</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      "Time" might require some thought depending how you like to run
+      your fortress. This column should only contain whole number values
+      between 1 and 100. The "Time" value represents the percentage of a
+      dwarf's time you imagine a job will consume. A value of 100 in
+      this column indicates that you would like this job to be the only
+      job a dwarf is assigned from this program. A value of 50 means you
+      think this job will take up 50% of the dwarf's time. If a job has
+      a value below 100 here, then a dwarf could be assigned multiple
+      labors, as long as those labors do not add up to more than 100
+      Time units. You can see, for example, that we have Time=5 on the
+      Bookkeeper position. This means the Bookkeeper may do other jobs
+      as long as they do not total more than 95 time units.</p>
+    <p>Remember to <b>use common sense</b> when you are filling out the
+      “Time” column. Some jobs, like mining, can take up a huge amount
+      of a dwarf's time (depending on how you manage your fort, of
+      course). A miner will often not go and do other things if there is
+      some mining to do nearby. You can control this problem from the
+      Dwarf Organizer side, somewhat, by keeping the Time value high for
+      jobs that you know are very time consuming. Also keep "Time" high
+      for jobs you want to take high priority in your fortress.</p>
+    <p>If you have no idea what to do with the Time column, just leave
+      the values at 100 until you have a better idea of what you want.</p>
+    <h2 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH2" name="mozTocId293016"></a>The Job Priority
+      Column</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      "Job Priority" is a decimal value that should contain the "Time"
+      value divided by 100 in most cases (unless you are very sure about
+      what you are doing). So, if "Time" contains 50, then "Job
+      Priority" usually contains 0.5. When you edit the Time column, the
+      Job Priority currently does not adjust. You'll have to do that by
+      hand.</p>
+    <p>In the optimizer, "Job Priority" is used to adjust the priority
+      for filling a job. Jobs taking up 100 time units in the Time
+      column will normally have a Job Priority of 1.0, and the
+      best-suited dwarves will be chosen for those jobs first. But if
+      you set Job Priority lower, the job you changed will be less
+      important to the optimizer.</p>
+    <p>Let's say you have a position that does not take up a lot of a
+      dwarf's time, but you still want a really well-suited dwarf in
+      that position. That is what Job Priority is for. Increase this to
+      1.0 (or higher if you like) to improve the match-up of a good
+      dwarf for this job.</p>
+    <p>In the Sample-Ishlumas-200-Plus file (Job
+      Settings-&gt;File-&gt;Open-&gt;choose
+      Sample-Ishlumas-200-Plus.txt) you can see that Carpentry is only a
+      50 Time job, but the Job Priority is set to 1.0 so that the
+      Carpentry dwarves are chosen as if it is a more important job.
+      Masonry and Stone Detailing are also set to high importance in
+      this way.</p>
+    <p>Remember, if you want to set priorities, then setting the Job
+      Priority high for too many jobs is not helpful. If everything is a
+      high priority, then nothing is a high priority!</p>
+    <p>Finally, if you are not sure, just set Job Priority to Time /
+      100.</p>
+    <h2 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH2" name="mozTocId645393"></a>The Current Skill
+      Weight Column</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Current Skill Weight should contain whole numbers between 0 and
+      100 only. This value tells the optimizer how to balance a dwarf
+      with a high skill level in a particular labor but very poor stats
+      for it, against a dwarf who just has good stats for that labor
+      (but no skill level in it). You will want to decide how you want
+      to set this up for your own fort. An example:</p>
+    <p>In my Ishlumas job profile, many jobs are set to a Current Skill
+      Weight of 50. This means that a dwarf who has skilled 80% to the
+      maximum skill level in a labor, and has very poor stats for it,
+      will receive roughly equal priority to a dwarf who has nothing but
+      a skill potential a little over 80% in that labor. A Current Skill
+      Weight of 100 means that dwarves are considered for that job based
+      only on their current skill level, ignoring stats entirely. And, a
+      Current Skill Weight of zero means that skill levels are ignored,
+      and only stats are considered for the position.</p>
+    <p>So, as the Current Skill Weight value approaches 100, current
+      skill levels become increasingly important, and good stats become
+      less important. So, this column is how you decide if you want to
+      use, for example, the recent Talented migrant weaponsmith who has
+      terrible smithing stats, or to train up a new Dabbling Weaponsmith
+      who has great smithing stats. It's up to you!<br>
+    </p>
+    <p>Note that setting Current Skill Weight to values below 100 causes
+      jobs to be exchanged between low-skilled dwarves more often when
+      optimizing, especially in younger forts. This is because many
+      dwarves will have very low skill levels and stats. As Current
+      Skill Weight falls below 100, the optimizer sees next to no
+      difference between Urist McDabbling and Urist McNovice.<br>
+    </p>
+    <p>Here is a chart to help with editing this column:<br>
+    </p>
+    <table style=" text-align: left; width: 50%;" border="1"
+      cellpadding="2" cellspacing="2">
+      <tbody>
+        <tr>
+          <td style="vertical-align: top;"><span style="font-weight:
+              bold;">Current Skill Weight</span><br>
+          </td>
+          <td style="vertical-align: top; font-weight: bold;">Meaning<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">100<br>
+          </td>
+          <td style="vertical-align: top;">Only skill level matters<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">51 to 99<br>
+          </td>
+          <td style="vertical-align: top;">Skill level matters more than
+            stats<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">50<br>
+          </td>
+          <td style="vertical-align: top;">Skill level and stats matter
+            "equally"<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">1 to 49<br>
+          </td>
+          <td style=" vertical-align: top;">Stats matter more than skill
+            level<br>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align: top;">0<br>
+          </td>
+          <td style="vertical-align: top;">Only stats matter<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH2" name="mozTocId130115"></a>The Reminder Column</h2>
+    <p><img style=" width: 672px; height: 183px;" alt="Reminder Picture"
+        title="Setting a reminder to add a workshop profile for new
+        masons" src="reminder.jpg" align="right"><a
+        href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Anything you enter in the "Reminder" column will appear on the
+      optimizer results screen when a dwarf is assigned (or unassigned)
+      that labor. For example, I use workshop profiles for my masons.
+      When I take a new mason, I need to remember to add him to a
+      profile. So in Dwarf Organizer I write "Workshop" under Reminder,
+      on the Masonry line. <br clear="all">
+      Another example is that in my Ishlumas fort, I have a farmer's
+      cottage which I assign to the current farmer. When the farmer
+      changes, I want to remember to update the assignment of the bed in
+      the cottage, so I write "Farmer's Cottage". I also write “Burrow”
+      for any jobs associated with burrow assignments, such as my miller
+      or cooks. (Just leave this column blank if you don't want to be
+      reminded about anything.)<br>
+    </p>
+    <h2 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH2" name="mozTocId66090"></a>Number of Job Hours /
+      Dwarves</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Below the Job Settings table, there is some text that says
+      something like: "Number of job hours: 9999 (~99 dwarves)". This
+      constantly updates as you edit the table, and it summarizes your
+      entries. You might want to keep an eye on it. If the estimated
+      number of dwarves is higher than the number of dwarves you have
+      selected on the Dwarf List screen, then the optimizer probably
+      won't be able to run. If this happens, adjust your "Qty" and
+      "Time" columns, and/or the number of dwarves selected in the Dwarf
+      List, until the optimizer is able to run.</p>
+    <h2><a class="mozTocH2" name="mozTocId555617"></a>Always Save!</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Remember to save your job profile, using the Job Settings menu.
+      These profiles can take effort to set up exactly how you want
+      them, and you don't want to lose that! I usually name mine with
+      the fort and number of dwarves, such as "Nutscaves-119", or I give
+      it a name like "Starting Seven" if it's a very general profile.
+      There should also be an existing job profile called "MY DEFAULT
+      SETTINGS" which you can save over if you like. (You can always
+      revert to the original defaults by loading the read-only "DEFAULT
+      SETTINGS".)</p>
+    <h1 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH1" name="mozTocId32895"></a> The Optimizer</h1>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Choose <b>Process-&gt;Optimize Now!</b> from the main menu.
+      Depending how powerful your computer is and how much work you gave
+      the optimizer to do, a log window should appear immediately and
+      the results window will appear soon.</p>
+    <p><span style="font-style: italic;">How it works, basically</span>:
+      The optimizer starts with a random distribution of labor. This
+      distribution receives a score based on how well-suited each worker
+      is to their randomly assigned job(s), and how important those jobs
+      are. The optimizer then improves the labor distribution repeatedly
+      by swapping jobs around, until it cannot find another solution
+      with a higher score. At that point, it will stop and report the
+      best results it found. You can improve the optimizer's chances of
+      finding the best solution possible by following <b>my</b> <b>two
+        tips</b>:</p>
+    <p>Tip #1: Don't use lots of small Time values (in Job Settings)
+      with 100% full-time employment across a large fortress.<br>
+    </p>
+    <p>Tip #2: Don't employ 100% of your fortress population in a large
+      fortress.</p>
+    <p>The more "loosely packed" the labor distribution "puzzle" is, the
+      more likely the program will find a great solution.</p>
+    <p>You will still get a <i>good</i> solution (considering what the
+      optimizer had to work with) even if you completely ignore the tips
+      I just gave you, so feel free to experiment. (When I say "good", I
+      mean it's probably better than I can do in a reasonable amount of
+      time by hand. Our brains are different so your results may vary!)<br>
+    </p>
+    <h1 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH1" name="mozTocId936388"></a> The Log</h1>
+    <p><img style=" width: 371px; height: 249px;" alt="Log Picture"
+        title="The log lets you know the optimizer is working"
+        src="log.jpg" align="left"><a
+        href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      One of the windows opened by the optimizer is called "Log". It
+      should frequently update to let you know that the optimizer is
+      still alive. If there is an error or some kind of crash, this
+      window will probably let you know about it. (That is the idea,
+      anyway.) Otherwise, its contents are probably not incredibly
+      important to you.<br clear="all">
+    </p>
+    <h1 style=" margin-top: 0.17in; page-break-after: avoid"><a
+        class="mozTocH1" name="mozTocId40712"></a>Optimized Jobs (The
+      Results!)<br>
+    </h1>
+    <p><img style=" width: 605px; height: 241px;" alt="Optimized Jobs
+        Picture" title="A sample result for a new fort"
+        src="optimized-jobs-example.jpg" align="left"><a
+        href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      The most important window from the optimizer is called "Optimized
+      Jobs". This contains the results of the optimization:</p>
+    <p>The "Dwarf" column contains the names of your dwarves. You will
+      see everybody that had a check mark under "Include" on the Dwarf
+      List here, even if the optimizer found no work for them.
+      "Scheduled" contains the total time units that the optimizer has
+      assigned to that dwarf. The "Job" column contains the optimizer's
+      suggestions for changing the labors assigned to each dwarf.</p>
+    <p>(The strange first-name duplication seen in this picture is
+      caused by a problem in DFHack.)<br>
+    </p>
+    <p>For example, for the dwarves I just "optimized", let's examine
+      the results for Catten Regidrath (seen as "Catten Catten
+      Regidrath" above):</p>
+    <table style=" page-break-inside: avoid; width: 25%;"
+      cellpadding="4" cellspacing="0">
+      <colgroup><col width="256*"> </colgroup><tbody>
+        <tr>
+          <td style=" vertical-align: top;"><span style="font-weight:
+              bold; color: rgb(0, 102, 0);">+Bookkeeper (12)</span><br>
+          </td>
+        </tr>
+        <tr style="color: rgb(0, 102, 0); font-weight: bold;">
+          <td style="; border: none; padding: 0in" valign="TOP"
+            width="100%">
+            <p>+Mining (23)</p>
+          </td>
+        </tr>
+        <tr style="color: rgb(153, 0, 0);">
+          <td style="border: medium none; padding: 0in;" valign="TOP"
+            width="100%">
+            <p>-Masonry(13)</p>
+          </td>
+        </tr>
+        <tr style="color: rgb(153, 0, 0);">
+          <td style="border: medium none; padding: 0in;" valign="TOP"
+            width="100%">
+            <p>-Stone Detailing(14)</p>
+          </td>
+        </tr>
+        <tr style="color: rgb(153, 0, 0);">
+          <td style="border: medium none; padding: 0in;" valign="TOP"
+            width="100%">
+            <p>-Mechanics(8)</p>
+          </td>
+        </tr>
+        <tr style="color: rgb(153, 0, 0);">
+          <td style="border: medium none; padding: 0in;" valign="TOP"
+            width="100%">
+            <p>-Architecture(5)</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The plus sign means add a labor, and the minus sign means disable
+      a labor. You also might find an equals (=) sign, like for Eshtan's
+      Mining. This means the labor is already enabled, and the optimizer
+      suggests leaving it this way.</p>
+    <p>So the above results are telling me that the optimizer thinks I
+      should make Catten a miner, and disable some of these other
+      labors, because other dwarves looking for work can do them better.<br>
+    </p>
+    The numbers in parentheses next to labors correspond with the
+    "Potentials" in the Dwarf List window, but they are weighted by Job
+    Settings. For example, Mining(23) means that Catten has been judged
+    by the optimizer to have a Mining value of 23. This value does not
+    mean anything except when we compare it with other dwarves' Mining
+    Potentials. These numeric values might help you to understand the
+    reasons for the optimizer's decisions.
+    <p>If you see any results that require further investigation, the
+      Dwarf List and Job Settings windows can display all the values
+      that were used to calculate the numbers here. And, the file
+      "list-explanations.txt" in the "config" folder contains the source
+      and calculation method for every column that can appear in the
+      Dwarf List.</p>
+    <p>The "Reminder" column will contain anything you wrote under
+      "Reminder" in the Job Settings. And finally, "Score" is a weighted
+      value. It was summed and used to rank this solution. Dwarves with
+      higher Scores are probably your better workers and will have
+      received priority for the most important jobs. "Score" is probably
+      only important to you if you are really interested in what jobs
+      and dwarves the program decided were the most important.</p>
+    <p>There are also some options at the bottom of the screen. You can
+      choose whether to display labors that the program thinks you
+      should disable. And you can filter the list to show either all
+      dwarves, only appointed dwarves, or only dwarves with reminder
+      notes.<br>
+    </p>
+    <h2><a class="mozTocH2" name="mozTocId240204"></a>A Note About
+      Altruism</h2>
+    <p>Dwarves with low Altruism get an unhappy thought when they rescue
+      people, or give food or water to others. The Optimized Jobs screen
+      currently reminds you to disable these two labors when it notices
+      a low-altruism dwarf.<br>
+    </p>
+    <p></p>
+    <h2><a class="mozTocH2" name="mozTocId293799"></a>If you like the
+      solution</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      If you like the solution, you can now use it to set labors
+      manually in Dwarf Fortress, or use a memory writer like Dwarf
+      Therapist. Dwarf Organizer does not write its results into Dwarf
+      Fortress. Only you have the power :)</p>
+    <h2><a class="mozTocH2" name="mozTocId526651"></a>Keep in mind</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
+      Most jobs in Dwarf Fortress use a small number of similar or
+      identical stats. For example, Masonry, Engraving, and Tanning
+      (just to name a couple) each share their stats with many other
+      jobs in many fields. Dwarves with the best averages in these stat
+      groups will often be assigned as much work as the optimizer can
+      cram into them, leaving many other dwarves idle. If you are
+      finding your best workers overworked, you can try changing the
+      Time settings for jobs, or adding jobs to the blacklist or
+      whitelist (see below).<br>
+    </p>
+    <p>Another thing you can do is, just not allow the optimizer to
+      assign jobs that don't really matter in your fort, and manually
+      give those jobs to dwarves with nothing to do. For example, many
+      labors such as Lye Making and Brewing can only be done faster at
+      higher skill levels. (The information isn't centralized in one
+      article anywhere that I know of, but you can find out about
+      labors, the skills involved, and product quality using the <a
+        href="http://dwarffortresswiki.org/index.php/Main_Page">Dwarf
+        Fortress wiki</a>.) There is no product quality to worry about
+      for these labors. So in my forts I often assign all the
+      "non-quality" labors to workers with low stats. The optimizer is
+      only involved, in these cases, to help identify which dwarves
+      these are.<br>
+    </p>
+    <h1><a class="mozTocH1" name="mozTocId452543"></a>Things That Can Go
+      Wrong</h1>
+    <h2><a class="mozTocH2" name="mozTocId981913"></a>Dwarves with no
+      hands (or the equivalent)</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> There
+      are only a couple of labors that dwarves who are missing
+      hands/arms (or have no feeling in them) can do. Dwarf Organizer
+      currently cannot detect that a dwarf has no hands/arms. So, in my
+      Dwarf List I have to uncheck the "Include" box for these guys
+      before I optimize. Otherwise the optimizer will try to give them a
+      job that will make them spam annoying red error messages in DF. We
+      wouldn't want that.</p>
+    <h2><a class="mozTocH2" name="mozTocId436705"></a>Ghosts and the
+      dead</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> Ghosts
+      in your fort (and dead citizens, in DF2012) may appear in
+      dwarves.xml. Both the Runesmith and the DFHack exports have this
+      problem. Dwarf Organizer cannot tell the difference between a
+      ghost, a dead citizen, and a real live citizen. You will have to
+      manually exclude ghosts and your dead in the Dwarf List.</p>
+    <h2><a class="mozTocH2" name="mozTocId275574"></a>The caravan</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> If you
+      export your dwarves with Runesmith while the trade caravan is
+      around, then the caravan members will be included alongside your
+      citizens. DFHack might do this as well; I haven't tested. This can
+      make things very confusing. One option is, you can manually
+      exclude all these caravan people, unchecking them one by one. Or,
+      what I recommend is, just <span style="font-weight: bold;">avoid
+        exporting your dwarves to XML until after the caravan is gone</span>.</p>
+    <h2><a class="mozTocH2" name="mozTocId529232"></a>Juveniles</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> Dwarf
+      Organizer will attempt to exclude juveniles (because they can't be
+      assigned normal labor unless you are cheating), but for now there
+      are nasty bugs in DF with calculating the ages of dwarves. It is
+      likely that some citizens will be categorized incorrectly. You may
+      have to use the Include checkbox in these cases.</p>
+    <h1><a class="mozTocH1" name="mozTocId593648"></a>Advanced Concepts</h1>
+    <h2><a class="mozTocH2" name="mozTocId529560"></a>Blacklisting Jobs
+      with the Rules Editor<br>
+    </h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a>
+      Sometimes you might want to set the Time value for a job to be a
+      low value, but you don't want certain other jobs to be given to
+      the same dwarf who does that job. For this we have the blacklist.</p>
+    <p>To view the blacklist (and whitelist, covered next), go to <span
+        style="font-weight: bold;">Window-&gt;Rules Editor</span> in the
+      main menu. (Alternately, you can very carefully edit <span
+        style="font-weight: bold;">rules.txt</span> in the "config"
+      folder in your DwarfOrganizer directory.)<br>
+      <img style=" width: 648px; height: 470px;" alt="Edit Rules
+        picture" src="editrules.jpg" align="left"><span
+        style="font-weight: bold;"></span></p>
+    <p><span style="font-weight: bold;"></span>The Edit Rules screen
+      displays all the entries in your Rules file. To edit<span
+        style="font-weight: bold;"> </span>your rules, use the controls
+      near the bottom of the screen. (This screen is currently suffering
+      some problems with resizing and alignment. You might have to make
+      the window larger to see everything.)</p>
+    <p>To add a new blacklist entry, type an optional comment in the
+      Comment box. Choose "BLACKLIST" from the Rule Type dropdown box,
+      and select the two labors from the&nbsp; Labor dropdown boxes. A
+      sentence will appear at the bottom of the screen, describing the
+      entry you are making. To confirm your new entry, click "Add New".<br>
+    </p>
+    <p>You can delete entries by highlighting them and pressing the
+      Delete key, or by choosing "Delete" from the right-click menu. (Be
+      careful: there is not an Undo function at this time.) You can also
+      copy (Ctrl+C) or edit (Ctrl+Enter or double-click) entries, using
+      the right-click menu or shortcut keys.<br>
+    </p>
+    <p>Choose File-&gt;Save from the menu when you are done making
+      changes. (Alternately, just close the Edit Rules window and choose
+      Yes when the program asks if you want to save.)<br>
+      <span style="font-weight: bold;"></span></p>
+    <p><span style="font-weight: bold;"></span><b>Remember</b>:
+      Blacklisting jobs is great, but it might increase the number of
+      dwarves needed to fill your job profile.</p>
+    <h2><a class="mozTocH2" name="mozTocId737476"></a>Whitelisting Jobs
+      with the Rules Editor<br>
+    </h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> Let's
+      say you have a job so important that you want the dwarf doing it
+      to only have certain other possible labors. You *could* blacklist
+      most of the jobs in the world from that important labor. This
+      would mean adding a lot of rules. Alternatively, you could make a
+      whitelist entry, to show which other jobs are allowed with the
+      important job. (See <a
+        href="ReadmeSlashTutorial.html#mozTocId529560">Blacklisting Jobs</a>
+      for general information about using the Rules Editor.)</p>
+    <p>For example, my Rules file contains the following entries,
+      because I have trouble keeping my diagnosticians on track.<br>
+      <img style=" width: 634px; height: 87px;" alt="Whitelist Example
+        Picture" src="whitelistexample.jpg"><br>
+    </p>
+    This means my doctors with Diagnosis are only allowed to do the
+    other four labors listed (Surgery, Setting Bones, Suturing, and
+    Dressing Wounds).
+    <p>Unlike blacklist entries, which can list labors in any order,
+      whitelist entries have to list the labor you are limiting first.
+      In the example above, Diagnosticians are allowed to do Surgery,
+      but <u>Surgeons are allowed to do anything they want</u> (unless
+      they are also doing Diagnosis). The text description at the bottom
+      of the screen may help, if you get confused.<br>
+    </p>
+    Currently everything you do in Dwarf Organizer shares the same Rules
+    file. If you are running multiple forts, be careful what you limit.
+    <h2><a class="mozTocH2" name="mozTocId593216"></a>Non-Dwarves</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> Lots
+      of people like to run forts/castles/treehouses/etc. with some
+      other race that is not dwarves, and I have called everything
+      "dwarves" here. This is mostly only a convenience. There is <span
+        style="text-decoration: underline;">one</span> problem using
+      Dwarf Organizer for non-dwarves that I know of. The "Potentials"
+      might look weird, since they are based on average starting *dwarf*
+      stats, and the current skill vs. potential weight will be thrown
+      off by this. I recommend that if you are running a fort of
+      non-dwarves, that you use either 100 (only use current skill) or 0
+      (only use potential) for each of your Current Skill Weight values
+      on the Job Settings screen.<br>
+    </p>
+    <h2><a class="mozTocH2" name="mozTocId77396"></a>Custom Jobs</h2>
+    <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> I have
+      been looking at ways to support custom jobs very elegantly, such
+      as reading in custom jobs from Dwarf Therapist and letting those
+      be used. Until/unless I manage that, for now, the solution is
+      creativity. Here are examples.</p>
+    <p>I use a custom Dwarf Therapist job for dwarves whose stats are
+      too low to do serious work in my fort. Anybody who comes out with
+      a "Scheduled = 0" in the Optimized Jobs list during a routine
+      migrant optimization, gets assigned to the custom job.<br>
+    </p>
+    <p>In one fort I also used a group of low-end masons, that also did
+      some other jobs when I didn't need them doing backup Masonry. To
+      do this, in my Dwarf Organizer Job Settings, first I find a job I
+      don't otherwise use in that fort which uses the same stats as
+      Masonry, such as Pottery (its stats are unknown but the optimizer
+      is estimating it to work like Masonry until it is known. I know
+      this because I am the programmer...and it is in
+      list-explanations.txt). So then I set Pottery to 100 Time units,
+      0.1 Job Priority (low priority), and quantity is set to the
+      appropriate value for the portion of the population I want.
+      Anybody who comes out assigned to "+Pottery" gets the special job
+      in Dwarf Therapist. This has the effect that the best masons are
+      chosen out of my otherwise-weaker dwarves.</p>
+    <p>But, let's assume I am actually running some potters in this
+      fort, and I am using all the jobs that share stats with Masonry.
+      And let's assume I want to train up some actual professional
+      masons to make masterwork statues. In this case, I can run the
+      optimizer once to just find my important masons (don't forget to
+      turn up the Job Priority). Then exclude them in the Dwarf List,
+      readjust the Job Priority, and optimize again to sort out the rest
+      of the citizens.<br>
+    </p>
+    <p>This should become less brain-taxing if/when I finish the real
+      interface to Job Settings, but for now that's what we have.</p>
+    <p>Have Fun!!</p>
+  </body>
+</html>

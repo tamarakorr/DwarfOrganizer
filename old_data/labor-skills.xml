@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+<Skills>
+<Skill>
+    <Name>Wool Spinning</Name>
+    <!-- The associated stats are not known. Copied stats from engraver etc. -->
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Leatherworkering</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Animal Training</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Intuition</Stat>
+        <Stat>Patience</Stat>
+        <Stat>Empathy</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Animal Dissection</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Armorsmithing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Bone Carving</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Cheese Making</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Fish Cleaning</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Trapping</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Suturing</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Focus</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Engraving</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Lye Making</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Building Design</Name>
+    <Stats>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Fishing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Focus</Stat>
+        <Stat>Patience</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Press Operation</Name>
+    <!-- The associated stats are not known. Copied stats from butcher etc. -->
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Wax Working</Name>
+    <!-- The associated stats are not known. Copied stats from engraver etc. -->
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Clothes Making</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Gem Cutting</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Bowmaking</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Weaving</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Potash Making</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Ambush</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Focus</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Wood Burning</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Bee Keeping</Name>
+    <!-- The associated stats are not known. Copied stats from trainer etc. -->
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Intuition</Stat>
+        <Stat>Patience</Stat>
+        <Stat>Empathy</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Milking</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Mining</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Willpower</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Surgery</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Focus</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Pump Operation</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Willpower</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Milling</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Soap Making</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Brewing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Glazing</Name>
+    <!-- The associated stats are not known. Copied stats from furnace etc. -->
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Wood Crafting</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Siege Engineering</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Record Keeping</Name>
+    <Stats>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Memory</Stat>
+        <Stat>Focus</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Metalsmithing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Bone Setting</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Focus</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Cooking</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Metal Crafting</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Tanning</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Glassmaking</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Threshing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Wound Dressing</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+        <Stat>Empathy</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Growing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Machinery</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Butchery</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Dyeing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Fish Dissection</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Furnace Operation</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Weaponsmithing</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Gem Setting</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Herbalism</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Memory</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Wood Cutting</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Willpower</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Siege Operation</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Toughness</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Focus</Stat>
+        <Stat>Spatial Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Stone Crafting</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Pottery</Name>
+    <!-- The associated stats are not known. Copied stats from mason etc. -->
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Carpentry</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Strand Extraction</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Shearing</Name>
+    <!-- The associated stats are not known. Copied stats from tanner etc. -->
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Diagnostics</Name>
+    <Stats>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Memory</Stat>
+        <Stat>Intuition</Stat>
+    </Stats>
+</Skill>
+<Skill>
+    <Name>Masonry</Name>
+    <Stats>
+        <Stat>Strength</Stat>
+        <Stat>Agility</Stat>
+        <Stat>Endurance</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Spatial Sense</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+    </Stats>
+</Skill>
+<Skill>
+	<Name>Close Combat</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Toughness</Stat>
+		<Stat>Willpower</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</Skill>
+<Skill>
+	<Name>Ranged Combat</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Focus</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</Skill>
+</Skills>
+<SecondarySkills>
+<SecondarySkill>
+    <Name>Appraisal</Name>
+    <Stats>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Memory</Stat>
+        <Stat>Intuition</Stat>
+    </Stats>
+</SecondarySkill>
+<SecondarySkill>
+    <Name>Organization</Name>
+    <Stats>
+        <Stat>Analytical Ability</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+</SecondarySkill>
+<SecondarySkill>
+    <Name>Judging Intent</Name>
+    <Stats>
+        <Stat>Intuition</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+</SecondarySkill>
+<SecondarySkill>
+    <Name>Negotiation</Name>
+    <Stats>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+</SecondarySkill>
+</SecondarySkills>
+<SocialSkills>
+<SocialSkill>
+    <Name>Intimidation</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+        <Stat>Linguistic Ability</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Cooperation</Trait>
+        <Min>61</Min>
+        <Max>100</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Lying</Name>
+    <Stats>
+        <Stat>Creativity</Stat>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Straightforwardness</Trait>
+        <Min>40</Min>
+        <Max>100</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Pacification</Name>
+    <Stats>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Cooperation</Trait>
+        <Min>0</Min>
+        <Max>39</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Persuasion</Name>
+    <Stats>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Assertiveness</Trait>
+        <Min>0</Min>
+        <Max>39</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Comedy</Name>
+    <Stats>
+        <Stat>Agility</Stat>
+        <Stat>Creativity</Stat>
+        <Stat>Kinesthetic Sense</Stat>
+        <Stat>Linguistic Ability</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Self_consciousness</Trait>
+        <Min>76</Min>
+        <Max>100</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Flattery</Name>
+    <Stats>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Straightforwardness</Trait>
+        <Min>61</Min>
+        <Max>100</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Consoling</Name>
+    <Stats>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Straightforwardness</Trait>
+        <Min>0</Min>
+        <Max>39</Max>
+    </PreventedBy>
+</SocialSkill>
+<SocialSkill>
+    <Name>Conversation</Name>
+    <Stats>
+        <Stat>Linguistic Ability</Stat>
+        <Stat>Empathy</Stat>
+        <Stat>Social Awareness</Stat>
+    </Stats>
+    <PreventedBy>
+        <Trait>Friendliness</Trait>
+        <Min>0</Min>
+        <Max>39</Max>
+    </PreventedBy>
+</SocialSkill>
+</SocialSkills>
+</root>

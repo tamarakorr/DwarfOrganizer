@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+
+<!-- StatGroups define "macros" for commonly used groups of stats-->
+<StatGroups>
+<StatGroup>
+	<Name>Butcher Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Agility" />
+		<Stat Name="Endurance" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Lye Maker Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Toughness" />
+		<Stat Name="Endurance" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Tanner Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Mason Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Agility" />
+		<Stat Name="Endurance" />
+		<Stat Name="Creativity" />
+		<Stat Name="Spatial Sense" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Engraver Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Creativity" />
+		<Stat Name="Spatial Sense" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Mechanic Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Agility" />
+		<Stat Name="Endurance" />
+		<Stat Name="Analytical Ability" />
+		<Stat Name="Creativity" />
+		<Stat Name="Spatial Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Conversation Etc.</Name>
+	<Stats>
+		<Stat Name="Linguistic Ability" />
+		<Stat Name="Empathy" />
+		<Stat Name="Social Awareness" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Trainer Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Toughness" />
+		<Stat Name="Endurance" />
+		<Stat Name="Intuition" />
+		<Stat Name="Patience" />
+		<Stat Name="Empathy" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Furnace Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Toughness" />
+		<Stat Name="Endurance" />
+		<Stat Name="Analytical Ability" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Hunter Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Focus" />
+		<Stat Name="Spatial Sense" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+</StatGroups>
+
+<LaborSkills>
+<LaborSkill>
+	<Name>Mining</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Toughness</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Willpower</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Bowmaking</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+</LaborSkills>
+</root>

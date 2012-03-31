@@ -1,0 +1,130 @@
+Descriptions of all the columns, their sources, and their purpose
+
+This file is tab-delimited.
+
+Dwarf Organizer is abbreviated "DO" throughout this file.
+
+The values of the many columns titled "Potential" in the Dwarf List are calculated as follows:
+
+1. The dwarf's stats are converted to percentages relative to the maximum starting stats of new dwarves. For example, if a dwarf has Strength that is 80% of the maximum Strength value for new dwarves, then the value used here is 80. The stat ranges for new dwarves were obtained from one of the early releases of Dwarf Guidance Counselor.
+
+2. The percent values for all the stats involved in the skill are (multiplied by 100 and) averaged. (The stats involved in the skill come from the DF wiki, except where I have noted in all capital letters that they are not available there.) For example, for Surgery Potential the Agility, Focus, Spatial Sense, and Kinesthetic Sense values obtained in #1 would be averaged.  This average is then rounded, and displayed under Potential as a whole number.
+
+3. (Note) You are likely to see some "Potential" values over 100 for dwarves in an older fort, because as dwarves increase their skill levels, their stats rise. Some stats will become higher than the highest value a migrant could be expected to achieve.
+
+4. (Note) If a dwarf has a specific trait value that prevents learning a skill (such as a dwarf that is too straightforward to lie), then the potential for that skill will always display zero.
+
+The many columns titled "Level" in the Dwarf List come directly from dwarves.xml (exported by Runesmith or DFHack).
+
+Dwarf List Columns
+Column Name	Source	Purpose
+Include	DO	Check this to include the dwarf in the job optimization process. Uncheck it to exclude the dwarf from the optimization process.
+Name	Dwarves.xml	The dwarf's name
+Nickname	Dwarves.xml	The dwarf's nickname
+Gender	Dwarves.xml	The dwarf's gender
+Juvenile	Dwarves.xml (age) and DO (logic)	Displays "Baby", "Child", or blank for adults
+Squad	No source yet	Will display the dwarf's military squad
+Squad Leader	No source yet	Will display Yes if the dwarf is the squad leader
+Intuition	Dwarves.xml	A basic dwarf stat
+Straightforwardness	Dwarves.xml	A basic dwarf stat
+Self_consciousness	Dwarves.xml	A basic dwarf stat
+Endurance	Dwarves.xml	A basic dwarf stat
+Disease Resistance	Dwarves.xml	A basic dwarf stat
+Social Awareness	Dwarves.xml	A basic dwarf stat
+Linguistic Ability	Dwarves.xml	A basic dwarf stat
+Assertiveness	Dwarves.xml	A basic dwarf stat
+Altruism	Dwarves.xml	A basic dwarf stat
+Willpower	Dwarves.xml	A basic dwarf stat
+Memory	Dwarves.xml	A basic dwarf stat
+Analytical Ability	Dwarves.xml	A basic dwarf stat
+Toughness	Dwarves.xml	A basic dwarf stat
+Friendliness	Dwarves.xml	A basic dwarf stat
+Creatvity (spelling error intentional)	Dwarves.xml	A basic dwarf stat
+Cooperation	Dwarves.xml	A basic dwarf stat
+Patience	Dwarves.xml	A basic dwarf stat
+Agility	Dwarves.xml	A basic dwarf stat
+Spatial Sense	Dwarves.xml	A basic dwarf stat
+Kinesthetic Sense	Dwarves.xml	A basic dwarf stat
+Focus	Dwarves.xml	A basic dwarf stat
+Strength	Dwarves.xml	A basic dwarf stat
+Empathy	Dwarves.xml	A basic dwarf stat
+Musicality	Dwarves.xml	A basic dwarf stat
+Recuperation	Dwarves.xml	A basic dwarf stat
+Appraisal Potential	DO	Calculated from analytical ability, memory, and intuition
+Organization Potential	DO	Calculated from analytical ability, creativity, and social awareness
+Judging Intent Potential	Dwarf Organizer	Calculated from intuition, empathy, and social awareness
+Negotiation Potential	DO	Calculated from linguistic ability, empathy, and social awareness
+Intimidation Potential	DO	Calculated from agility, kinesthetic sense, and social awareness
+Lying Potential	DO	Calculated from creativity, linguistic ability, and social awareness. Prevented by straightforwardness 40+
+Pacification Potential	DO	Calculated from linguistic ability, empathy, and social awareness, but prevented by 39- Cooperation
+Persuasion Potential	DO	Calculated from linguistic ability, empathy, and social awareness, but prevented by Assertiveness 39-
+Comedy Potential	DO	Calculated from agility, creativity, kinesthetic sense, and linguistic ability, but prevented by Self-consciousness 76+
+Flattery Potential	DO	Calculated from linguistic ability, empathy, and social awareness, but prevented by Straightforwardness 61+
+Consoling Potential	DO	Calculated from linguistic ability, empathy, and social awareness, but prevented by Straightforwardness 39-
+Conversation Potential	DO	Calculated from linguistic ability, empathy, and social awareness, but prevented by Friendliness 39-
+Record Keeping Potential	DO	Calculated from analytical ability, memory, and intuition
+Diagnostics Potential	DO	Calculated from analytical ability, memory, and intuition
+Manager Potential	DO	(Meta-skill) Calculated from organization, consoling, and pacification potential
+Broker Potential	DO	(Meta-skill) Calculated from appraisal, judging intent, conversation, comedy, flattery, lying, intimidation, persuasion, negotiation, consoling, and pacification potential
+Mining Potential	DO	Calculated from strength, toughness, endurance, willpower, spatial sense, and kinesthetic sense
+Bowmaking Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Wood Cutting Potential	DO	Calculated from strength, agility, endurance, willpower, spatial sense, and kinesthetic sense
+Carpentry Potential	DO	Calculated from strength, agility, creativity, spatial sense, and kinesthetic sense
+Engraving Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Masonry Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Animal Training Potential	DO	Calculated from agility, toughness, endurance, intuition, patience, and empathy
+Animal Dissection Potential	DO	Calculated from agility and kinesthetic sense
+Trapping Potential	DO	Calculated from agility, analytical ability, creativity, and spatial sense
+Ambush Potential	DO	Calculated from agility, focus, spatial sense, and kinesthetic sense
+Suturing Potential	DO	Calculated from agility, focus, spatial sense, and kinesthetic sense
+Surgery Potential	DO	Calculated from agility, focus, spatial sense, and kinesthetic sense
+Bone Setting Potential	DO	Calculated from strength, agility, focus, spatial sense, and kinesthetic sense
+Wound Dressing Potential	DO	Calculated from agility, spatial sense, kinesthetic sense, and empathy
+Wool Spinning Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from agility, creativity, spatial sense, and kinesthetic sense. 
+Cheese Making Potential	DO	Calculated from strength, agility, endurance, analytical ability, creativity, and kinesthetic sense
+Lye Making Potential	DO	Calculated from strength, toughness, endurance, and kinesthetic sense
+Press Operation Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from strength, agility, endurance, and kinesthetic sense
+Potash Making Potential	DO	Calculated from strength, toughness, endurance, and kinesthetic sense
+Wood Burning Potential	DO	Calculated from strength, toughness, endurance, and kinesthetic sense
+Bee Keeping Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from agility, toughness, endurance, intuition, patience, and empathy
+Milking Potential	DO	Calculated from strength, agility, endurance, and kinesthetic sense
+Milling Potential	DO	Calculated from strength, agility, endurance, and kinesthetic sense
+Soap Making Potential	DO	Calculated from strength, toughness, endurance, and kinesthetic sense
+Brewing Potential	DO	Calculated from strength, agility, and kinesthetic sense
+Cooking Potential	DO	Calculated from agility, analytical ability, creativity, and kinesthetic sense
+Tanning Potential	DO	Calculated from agility and kinesthetic sense
+Threshing Potential	DO	Calculated from strength, agility, endurance, and kinesthetic sense
+Growing Potential	DO	Calculated from strength, agility, endurance, and kinesthetic sense
+Butchery Potential	DO	Calculated from strength, agility, endurance, and kinesthetic sense
+Dyeing Potential	DO	Calculated from strength, agility, endurance, and kinesthetic sense
+Herbalism Potential	DO	Calculated from agility, memory, and kinesthetic sense
+Shearing Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from agility and kinesthetic sense
+Fish Cleaning Potential	DO	Calculated from agility, endurance, and kinesthetic sense
+Fishing Potential	DO	Calculated from strength, agility, focus, patience, and kinesthetic sense
+Fish Dissection Potential	DO	Calculated from agility and kinesthetic sense
+Armorsmithing Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Metalsmithing Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Metal Crafting Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Furnace Operation Potential	DO	Calculated from strength, toughness, endurance, analytical ability, and kinesthetic sense
+Weaponsmithing Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Gem Cutting Potential	DO	Calculated from agility, analytical ability, spatial sense, and kinesthetic sense
+Gem Setting Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Leatherworking Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Bone Carving Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Wax Working Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Clothes Making Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Weaving Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Glazing Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from strength, toughness, endurance, analytical ability, and kinesthetic sense
+Wood Crafting Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Glassmaking Potential	DO	Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Stone Crafting Potential	DO	Calculated from agility, creativity, spatial sense, and kinesthetic sense
+Pottery Potential	DO	THE STATS ASSOCIATED WITH THIS SKILL ARE NOT DOCUMENTED AT DWARFFORTRESSWIKI.ORG. Currently DO is making a guess: Calculated from strength, agility, endurance, creativity, spatial sense, and kinesthetic sense
+Strand Extraction Potential	DO	Calculated from strength, agility, endurance, analytical ability, and kinesthetic sense
+Pump Operation Potential	DO	Calculated from strength, toughness, endurance, analysis, focus, and spatial sense
+Siege Engineering Potential	DO	Calculated from strength, agility, endurance, analytical ability, creativity, and spatial sense
+Machinery Potential	DO	Calculated from strength, agility, endurance, analytical ability, creativity, and spatial sense
+Siege Operation Potential	DO	Calculated from strength, toughness, endurance, analytical ability, focus, and spatial sense
+Building Design Potential	DO	Calculated from analytical ability, creativity, and spatial sense
+Close Combat Potential	DO and Dwarven Guidance Counselor source code	Calculated from strength, agility, toughness, willpower, spatial sense, and kinesthetic sense. I wasn't able to find where Dwarven Guidance Counselor got this information.
+Ranged Combat Potential	DO and Dwarven Guidance Counselor source code	Calculated from agility, focus, spatial sense, and kinesthetic sense. I wasn't able to find where Dwarven Guidance Counselor got this information.
+Jobs	Dwarves.xml	Lists this dwarf's currently enabled labors

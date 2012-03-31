@@ -1,0 +1,67 @@
+Labor Name(XML 'Labour' name)	Skill name(XML 'Skill' name)	Group Name
+Manager	Manager	Appointed
+Chief Medical Dwarf	Diagnostics	Appointed
+Broker	Broker	Appointed
+Bookkeeper	Record Keeping	Appointed
+Mining	Mining	Miners
+Carpentry	Carpentry	Woodworkers
+Crossbow-making	Bowmaking	Woodworkers
+Wood Cutting	Wood Cutting	Woodworkers
+Masonry	Masonry	Masons
+Stone Detailing	Engraving	Masons
+Animal Training	Animal Training	Hunters
+Hunting	Ambush	Hunters
+Trapping	Trapping	Hunters
+Small Animal Dissection	Animal Dissection	Hunters
+Diagnosis	Diagnostics	Doctors
+Surgery	Surgery	Doctors
+Setting Bones	Bone Setting	Doctors
+Suturing	Suturing	Doctors
+Dressing Wounds	Wound Dressing	Doctors
+Butchery	Butchery	Farmers
+Tanning	Tanning	Farmers
+Farming (Fields)	Growing	Farmers
+Dyeing	Dyeing	Farmers
+Soap Maker	Soap Making	Farmers
+Wood Burning	Wood Burning	Farmers
+Potash Making	Potash Making	Farmers
+Lye Making	Lye Making	Farmers
+Milling	Milling	Farmers
+Brewing	Brewing	Farmers
+Plant Gathering	Herbalism	Farmers
+Plant Processing	Threshing	Farmers
+Cheese Making	Cheese Making	Farmers
+Milking	Milking	Farmers
+Shearing	Shearing	Farmers
+Spinning	Wool Spinning	Farmers
+Cooking	Cooking	Farmers
+Pressing	Press Operation	Farmers
+Bee Keeping	Bee Keeping	Farmers
+Fishing	Fishing	Fishers
+Fish Cleaning	Fish Cleaning	Fishers
+Fish Dissection	Fish Dissection	Fishers
+Furnace Operating	Furnace Operation	Smiths
+Weaponsmithing	Weaponsmithing	Smiths
+Armoring	Armorsmithing	Smiths
+Blacksmithing	Metalsmithing	Smiths
+Metalcrafting	Metal Crafting	Smiths
+Gem Cutting	Gem Cutting	Jewelers
+Gem Setting	Gem Setting	Jewelers
+Leatherworking	Leatherworkering	Crafters
+Woodcrafting	Wood Crafting	Crafters
+Stonecrafting	Stone Crafting	Crafters
+Bone Carving	Bone Carving	Crafters
+Glassmaking	Glassmaking	Crafters
+Weaving	Weaving	Crafters
+Clothesmaking	Clothes Making	Crafters
+Strand Extraction	Strand Extraction	Crafters
+Pottery	Pottery	Crafters
+Glazing	Glazing	Crafters
+Wax Working	Wax Working	Crafters
+Siege Engineering	Siege Engineering	Engineers
+Siege Operating	Siege Operation	Engineers
+Mechanics	Machinery	Engineers
+Pump Operating	Pump Operation	Engineers
+Architecture	Building Design	Other
+Close Combat	Close Combat	Military
+Ranged Combat	Ranged Combat	Military

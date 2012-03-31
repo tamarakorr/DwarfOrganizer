@@ -1,0 +1,163 @@
+Old createSkills from DwarfListWindow
+
+        /* Removed hard-coding; these are read from XML now.
+        Stat str = mhtStats.get("Strength");
+        Stat tough = mhtStats.get("Toughness");
+        Stat end = mhtStats.get("Endurance");
+        Stat will = mhtStats.get("Willpower");
+        Stat spatial = mhtStats.get("Spatial Sense");
+        Stat kinsense = mhtStats.get("Kinesthetic Sense");
+        Stat agi = mhtStats.get("Agility");
+        Stat creative = mhtStats.get("Creativity");
+        Stat intuition = mhtStats.get("Intuition");
+        Stat patience = mhtStats.get("Patience");
+        Stat empathy = mhtStats.get("Empathy");
+        Stat analysis = mhtStats.get("Analytical Ability");
+        Stat focus = mhtStats.get("Focus");
+        Stat memory = mhtStats.get("Memory");
+        Stat social = mhtStats.get("Social Awareness");
+        Stat ling = mhtStats.get("Linguistic Ability");
+        
+        // Common stat groups
+        Vector<Stat> butcherEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, end, kinsense }));
+        Vector<Stat> lyeEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, tough, end, kinsense }));
+        Vector<Stat> tannerEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, kinsense }));
+        Vector<Stat> masonEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, end, creative, spatial, kinsense }));
+        Vector<Stat> engraverEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, creative, spatial, kinsense }));
+        Vector<Stat> mechEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, end, analysis, creative, spatial }));
+        Vector<Stat> conversationEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { ling, empathy, social }));
+        Vector<Stat> trainerEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, tough, end, intuition, patience, empathy }));
+        Vector<Stat> furnaceEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, tough, end, analysis, kinsense }));
+        Vector<Stat> hunterEtc = new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, focus, spatial, kinsense }));
+        
+        mhtSkills.put("Mining", new Skill("Mining", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, tough, end, will, spatial, kinsense }))));
+        mhtSkills.put("Bowmaking", new Skill("Bowmaking", engraverEtc));
+        mhtSkills.put("Carpentry", new Skill("Carpentry", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, creative, spatial, kinsense }))));
+        mhtSkills.put("Wood Cutting", new Skill("Wood Cutting", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, end, will, spatial, kinsense }))));
+        mhtSkills.put("Engraving", new Skill("Engraving", engraverEtc));
+        mhtSkills.put("Masonry", new Skill("Masonry", masonEtc));
+        mhtSkills.put("Animal Dissection", new Skill("Animal Dissection", tannerEtc));
+        mhtSkills.put("Animal Training", new Skill("Animal Training", trainerEtc));
+        mhtSkills.put("Ambush", new Skill("Ambush", hunterEtc));
+        mhtSkills.put("Trapping", new Skill("Trapping", new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, analysis, creative, spatial }))));
+        mhtSkills.put("Bone Setting", new Skill("Bone Setting", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, focus, spatial, kinsense }))));
+        mhtSkills.put("Diagnostics", new Skill("Diagnostics", new Vector<Stat>(Arrays.asList(
+                new Stat[] { analysis, memory, intuition }))));
+        mhtSkills.put("Surgery", new Skill("Surgery", hunterEtc));
+        mhtSkills.put("Suturing", new Skill("Suturing", hunterEtc));
+        mhtSkills.put("Wound Dressing", new Skill("Wound Dressing", new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, spatial, kinsense, empathy }))));
+        mhtSkills.put("Brewing", new Skill("Brewing", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, kinsense }))));
+        mhtSkills.put("Butchery", new Skill("Butchery", butcherEtc));
+        mhtSkills.put("Cheese Making", new Skill("Cheese Making", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, end, analysis, creative, kinsense }))));
+        mhtSkills.put("Cooking", new Skill("Cooking", new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, analysis, creative, kinsense }))));
+        mhtSkills.put("Dyeing", new Skill("Dyeing", butcherEtc));
+        mhtSkills.put("Growing", new Skill("Growing", butcherEtc));
+        mhtSkills.put("Herbalism", new Skill("Herbalism", new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, memory, kinsense }))));
+        mhtSkills.put("Lye Making", new Skill("Lye Making", lyeEtc));
+        mhtSkills.put("Milking", new Skill("Milking", butcherEtc));
+        mhtSkills.put("Milling", new Skill("Milling", butcherEtc));
+        mhtSkills.put("Potash Making", new Skill("Potash Making", lyeEtc));
+        mhtSkills.put("Soap Making", new Skill("Soap Making", lyeEtc));
+        mhtSkills.put("Tanning", new Skill("Tanning", tannerEtc));
+        mhtSkills.put("Threshing", new Skill("Threshing", butcherEtc));
+        mhtSkills.put("Wood Burning", new Skill("Wood Burning", lyeEtc));
+        mhtSkills.put("Fish Cleaning", new Skill("Fish Cleaning", new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, end, kinsense }))));
+        mhtSkills.put("Fish Dissection", new Skill("Fish Dissection", tannerEtc));
+        mhtSkills.put("Fishing", new Skill("Fishing", new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, focus, patience, kinsense }))));
+        mhtSkills.put("Armorsmithing", new Skill("Armorsmithing", masonEtc));
+        mhtSkills.put("Furnace Operation", new Skill("Furnace Operation", furnaceEtc));
+        mhtSkills.put("Metal Crafting", new Skill("Metal Crafting", masonEtc));
+        mhtSkills.put("Metalsmithing", new Skill("Metalsmithing", masonEtc));
+        mhtSkills.put("Weaponsmithing", new Skill("Weaponsmithing", masonEtc));
+        mhtSkills.put("Gem Cutting", new Skill("Gem Cutting",  new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, analysis, spatial, kinsense }))));
+        mhtSkills.put("Gem Setting", new Skill("Gem Setting", engraverEtc));
+        mhtSkills.put("Bone Carving", new Skill("Bone Carving", engraverEtc));
+        mhtSkills.put("Clothes Making", new Skill("Clothes Making", engraverEtc));
+        mhtSkills.put("Glassmaking", new Skill("Glassmaking", masonEtc));
+        mhtSkills.put("Leatherworkering", new Skill("Leatherworkering", masonEtc));
+        mhtSkills.put("Stone Crafting", new Skill("Stone Crafting", engraverEtc));
+        mhtSkills.put("Weaving", new Skill("Weaving", engraverEtc));
+        mhtSkills.put("Wood Crafting", new Skill("Wood Crafting", engraverEtc));
+        mhtSkills.put("Strand Extraction", new Skill("Strand Extraction",  new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, agi, end, analysis, kinsense }))));
+        mhtSkills.put("Machinery", new Skill("Machinery", mechEtc));
+        mhtSkills.put("Pump Operation", new Skill("Pump Operation",  new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, tough, end, will, kinsense }))));
+        mhtSkills.put("Siege Engineering", new Skill("Siege Engineering", mechEtc));
+        mhtSkills.put("Siege Operation", new Skill("Siege Operation",  new Vector<Stat>(Arrays.asList(
+                new Stat[] { str, tough, end, analysis, focus, spatial }))));
+        mhtSkills.put("Building Design", new Skill("Building Design",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { analysis, creative, spatial }))));
+        mhtSkills.put("Record Keeping", new Skill("Record Keeping",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { analysis, memory, focus }))));
+        mhtSkills.put("Appraisal", new SecondarySkill("Appraisal",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { analysis, memory, intuition }))));
+        mhtSkills.put("Conversation", new SocialSkill("Conversation",
+                conversationEtc, "Friendliness", 0, 39));           // Prevented by friendliness 39-
+        mhtSkills.put("Comedy", new SocialSkill("Comedy",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, creative, kinsense, ling })), "Self_consciousness"
+                , 76, 100));   // Prevented by self_consciousness 76+
+        mhtSkills.put("Flattery", new SocialSkill("Flattery", conversationEtc
+                , "Straightforwardness", 61, 100));    // Prevented by straightforwardness 61+
+        mhtSkills.put("Judging Intent", new SecondarySkill("Judging Intent",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { intuition, empathy, social }))));
+        mhtSkills.put("Lying", new SocialSkill("Lying",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { creative, ling, social })), "Straightforwardness"
+                , 40, 100));  // Prevented by straightforwardness 40+
+        mhtSkills.put("Intimidation", new SocialSkill("Intimidation",
+                new Vector<Stat>(Arrays.asList(
+                new Stat[] { agi, kinsense, ling })), "Cooperation"
+                , 61, 100)); // Prevented by cooperation 61+
+        mhtSkills.put("Persuasion", new SocialSkill("Persuasion", conversationEtc
+                , "Assertiveness", 0, 39));    // Prevented by assertiveness 39-
+        mhtSkills.put("Negotiation", new SecondarySkill("Negotiation", conversationEtc));
+        mhtSkills.put("Consoling", new SocialSkill("Consoling", conversationEtc
+                , "Straightforwardness", 0, 39));  // Prevented by straightforwardness 39-
+        mhtSkills.put("Pacification", new SocialSkill("Pacification", conversationEtc
+                , "Cooperation", 0, 39));  // Prevented by 39- cooperation
+        mhtSkills.put("Organization", new SecondarySkill("Organization"
+                , new Vector<Stat>(Arrays.asList(new Stat[]
+                { analysis, creative, social }))));
+        
+        // ------------------------------------------------------------------------------
+        // TODO: !!Science!! and remove the guesswork
+        // The following skill-attribute associations are completely and totally guesses:
+        mhtSkills.put("Shearing", new Skill("Shearing", tannerEtc));
+        mhtSkills.put("Wool Spinning", new Skill("Wool Spinning", engraverEtc));
+        mhtSkills.put("Press Operation", new Skill("Press Operation", butcherEtc));
+        mhtSkills.put("Bee Keeping", new Skill("Bee Keeping", trainerEtc));
+        mhtSkills.put("Pottery", new Skill("Pottery", masonEtc));
+        mhtSkills.put("Glazing", new Skill("Glazing", furnaceEtc));
+        mhtSkills.put("Wax Working", new Skill("Wax Working", engraverEtc));
+        // End of guesswork--------------------------------------------------------------
+        
+         */

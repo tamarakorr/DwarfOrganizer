@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+
+<!-- StatGroups define "macros" for commonly used groups of stats-->
+<StatGroups>
+<StatGroup>
+	<Name>Butcher Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Agility" />
+		<Stat Name="Endurance" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Lye Maker Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Toughness" />
+		<Stat Name="Endurance" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Tanner Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Mason Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Agility" />
+		<Stat Name="Endurance" />
+		<Stat Name="Creativity" />
+		<Stat Name="Spatial Sense" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Engraver Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Creativity" />
+		<Stat Name="Spatial Sense" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Mechanic Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Agility" />
+		<Stat Name="Endurance" />
+		<Stat Name="Analytical Ability" />
+		<Stat Name="Creativity" />
+		<Stat Name="Spatial Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Conversation Etc.</Name>
+	<Stats>
+		<Stat Name="Linguistic Ability" />
+		<Stat Name="Empathy" />
+		<Stat Name="Social Awareness" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Trainer Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Toughness" />
+		<Stat Name="Endurance" />
+		<Stat Name="Intuition" />
+		<Stat Name="Patience" />
+		<Stat Name="Empathy" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Furnace Etc.</Name>
+	<Stats>
+		<Stat Name="Strength" />
+		<Stat Name="Toughness" />
+		<Stat Name="Endurance" />
+		<Stat Name="Analytical Ability" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+<StatGroup>
+	<Name>Hunter Etc.</Name>
+	<Stats>
+		<Stat Name="Agility" />
+		<Stat Name="Focus" />
+		<Stat Name="Spatial Sense" />
+		<Stat Name="Kinesthetic Sense" />
+	</Stats>
+</StatGroup>
+</StatGroups>
+
+<LaborSkills>
+<LaborSkill>
+	<Name>Mining</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Toughness</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Willpower</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Bowmaking</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Carpentry</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Creativity</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Wood Cutting</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Willpower</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Engraving</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Masonry</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Animal Dissection</Name>
+	<StatGroupRef>Tanner Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Animal Training</Name>
+	<StatGroupRef>Trainer Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Ambush</Name>
+	<StatGroupRef>Hunter Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Trapping</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Creativity</Stat>
+		<Stat>Spatial Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Bone Setting</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Focus</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Diagnostics</Name>
+	<Stats>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Memory</Stat>
+		<Stat>Intuition</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Surgery</Name>
+	<StatGroupRef>Hunter Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Suturing</Name>
+	<StatGroupRef>Hunter Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Wound Dressing</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+		<Stat>Empathy</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Brewing</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Butchery</Name>
+	<StatGroupRef>Butcher Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Cheese Making</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Creativity</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Cooking</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Creativity</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Dyeing</Name>
+	<StatGroupRef>Butcher Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Growing</Name>
+	<StatGroupRef>Butcher Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Herbalism</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Memory</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Lye Making</Name>
+	<StatGroupRef>Lye Maker Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Milking</Name>
+	<StatGroupRef>Butcher Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Milling</Name>
+	<StatGroupRef>Butcher Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Potash Making</Name>
+	<StatGroupRef>Lye Maker Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Soap Making</Name>
+	<StatGroupRef>Lye Maker Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Tanning</Name>
+	<StatGroupRef>Tanner Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Threshing</Name>
+	<StatGroupRef>Butcher Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Wood Burning</Name>
+	<StatGroupRef>Lye Maker Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Fish Cleaning</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Fish Dissection</Name>
+	<StatGroupRef>Tanner Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Fishing</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Focus</Stat>
+		<Stat>Patience</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Armorsmithing</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Furnace Operation</Name>
+	<StatGroupRef>Furnace Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Metal Crafting</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Metalsmithing</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Weaponsmithing</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Gem Cutting</Name>
+	<Stats>
+		<Stat>Agility</Stat>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Spatial Sense</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Gem Setting</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Bone Carving</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Clothes Making</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Glassmaking</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Leatherworking</Name>
+	<StatGroupRef>Mason Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Stone Crafting</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Weaving</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Wood Crafting</Name>
+	<StatGroupRef>Engraver Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Strand Extraction</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Agility</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Machinery</Name>
+	<StatGroupRef>Mechanic Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Pump Operation</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Toughness</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Willpower</Stat>
+		<Stat>Kinesthetic Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Siege Engineering</Name>
+	<StatGroupRef>Mechanic Etc.</StatGroupRef>
+</LaborSkill>
+<LaborSkill>
+	<Name>Siege Operation</Name>
+	<Stats>
+		<Stat>Strength</Stat>
+		<Stat>Toughness</Stat>
+		<Stat>Endurance</Stat>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Focus</Stat>
+		<Stat>Spatial Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Building Design</Name>
+	<Stats>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Creativity</Stat>
+		<Stat>Spatial Sense</Stat>
+	</Stats>
+</LaborSkill>
+<LaborSkill>
+	<Name>Record Keeping</Name>
+	<Stats>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Memory</Stat>
+		<Stat>Focus</Stat>
+	</Stats>
+</LaborSkill>
+</LaborSkills>
+
+<SecondarySkills>
+<SecondarySkill>
+	<Name>Appraisal</Name>
+	<Stats>
+		<Stat>Analytical Ability</Stat>
+		<Stat>Memory</Stat>
+		<Stat>Intuition</Stat>
+	</Stats>
+</SecondarySkill>
+</SecondarySkills>
+
+<SocialSkills>
+<SocialSkill>
+	<Name>Conversation</Name>
+	<StatGroupRef>Conversation Etc.</StatGroupRef>
+	<PreventedBy>
+		<Trait>Friendliness</Trait>
+		<Min>0</Min>
+		<Max>39</Max>
+	</PreventedBy>
+</SocialSkill>
+</SocialSkills>
+
+
+</root>
