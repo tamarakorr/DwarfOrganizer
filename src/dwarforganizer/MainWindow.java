@@ -20,7 +20,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JDesktopPane;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
@@ -76,9 +75,9 @@ public class MainWindow extends JFrame implements DirtyListener {
     
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
     private File mfilLastFile;
-    private JFileChooser mjfcSave; //= new JFileChooser();
-    private JFileChooser mjfcOpen; //= new JFileChooser();
-    private JFileChooser mjfcDwarves;
+    private MyFileChooser mjfcSave; //= new JFileChooser(); JFileChooser
+    private MyFileChooser mjfcOpen; //= new JFileChooser();
+    private MyFileChooser mjfcDwarves;
     
     private Vector<Labor> mvLabors = new Vector<Labor>();
     private Vector<LaborGroup> mvLaborGroups = new Vector<LaborGroup>();
@@ -411,9 +410,9 @@ public class MainWindow extends JFrame implements DirtyListener {
     // operation and only needs to be done once.
     private void createChoosers() {
         // File chooser for Job Settings->Save
-        mjfcSave = new JFileChooser();
+        mjfcSave = new MyFileChooser(this); //JFileChooser();
         mjfcSave.setDialogTitle("Save Job Settings");
-        mjfcSave.setDialogType(JFileChooser.SAVE_DIALOG);
+        mjfcSave.setDialogType(MyFileChooser.SAVE_DIALOG);
         FileFilter ffText = new FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -429,16 +428,21 @@ public class MainWindow extends JFrame implements DirtyListener {
         mjfcSave.setFileFilter(ffText);
         mjfcSave.setCurrentDirectory(moJobListPanel.getDirectory());
         
+        //System.out.println(mjfcSave.getFocusTraversalPolicy().getFirstComponent(mjfcSave.getFocusCycleRootAncestor()).getName());
+//        System.out.println(mjfcSave.getFocusTraversalPolicy().getInitialComponent(this));
+        //new MyFileChooser(this, mjfcSave);
+        //MyFileChooser fc = new MyFileChooser();
+        //fc.focusFileNameWhenShown(this, mjfcSave);
         
         // File chooser for Job Settings->Open...
-        mjfcOpen = new JFileChooser();
+        mjfcOpen = new MyFileChooser(this);
         mjfcOpen.setDialogTitle("Load Job Settings");
-        mjfcOpen.setDialogType(JFileChooser.OPEN_DIALOG);
+        mjfcOpen.setDialogType(MyFileChooser.OPEN_DIALOG);
         mjfcOpen.setCurrentDirectory(moJobListPanel.getDirectory());
         
         // File chooser for Dwarves.xml
         File file = new File(mstrDwarvesXML);
-        mjfcDwarves = new JFileChooser();
+        mjfcDwarves = new MyFileChooser(this);
         mjfcDwarves.setDialogTitle("Select location of Dwarves.xml");
         mjfcDwarves.setCurrentDirectory(file);
         mjfcDwarves.setSelectedFile(file);
@@ -604,7 +608,7 @@ public class MainWindow extends JFrame implements DirtyListener {
     // Set dwarves.xml location & read it
     private void setDwarves() {
         int response = setDwarvesLocation();
-        if (response == JFileChooser.APPROVE_OPTION) {
+        if (response == MyFileChooser.APPROVE_OPTION) {
             
             // Hide the internal frame and remove the old panel, if any
             if (mitlDwarfList != null) {
@@ -642,7 +646,7 @@ public class MainWindow extends JFrame implements DirtyListener {
     private void loadJobSettings(JobListPanel jobListPanel) {
         int input = mjfcOpen.showOpenDialog(this);
         
-        if (input == JFileChooser.APPROVE_OPTION) {
+        if (input == MyFileChooser.APPROVE_OPTION) {
             File file = mjfcOpen.getSelectedFile();
             jobListPanel.load(file);
             updateCurrentJobSettings(file);
@@ -683,7 +687,7 @@ public class MainWindow extends JFrame implements DirtyListener {
             
             int input = mjfcSave.showSaveDialog(this);
 
-            if (input == JFileChooser.APPROVE_OPTION) {
+            if (input == MyFileChooser.APPROVE_OPTION) {
                 file = mjfcSave.getSelectedFile();
                 // If the user enters no extension, append ".txt"
                 if (! fileHasExtension(file))
@@ -756,7 +760,7 @@ public class MainWindow extends JFrame implements DirtyListener {
     // Returns the user's input to the file dialog
     private int setDwarvesLocation() {
         int input = mjfcDwarves.showOpenDialog(this);
-        if (input == JFileChooser.APPROVE_OPTION) {
+        if (input == MyFileChooser.APPROVE_OPTION) {
             String strSelectedLoc = mjfcDwarves.getCurrentDirectory() + "\\"
                 + mjfcDwarves.getSelectedFile().getName();
             strSelectedLoc = strSelectedLoc.replace("\\", "//");
