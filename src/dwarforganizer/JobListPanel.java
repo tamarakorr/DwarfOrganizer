@@ -9,18 +9,17 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.Hashtable;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -31,7 +30,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
-import myutils.MyFileUtils;
 import myutils.MyHandyTable;
 import myutils.MySimpleTableModel;
 import myutils.MyTCRStripedHighlight;
@@ -45,14 +43,19 @@ public class JobListPanel extends JPanel {
     
     private static final int MAX_DWARF_TIME = 100;
     
-    private static final int DEFAULT_QTY = 1;
+    private static final int DEFAULT_QTY = 0;
     private static final int DEFAULT_TIME = MAX_DWARF_TIME;      // 1.0d
     private static final double DEFAULT_WT = 1.0d;
-    private static final int DEFAULT_SKILL_WT = 0;
+    private static final int DEFAULT_SKILL_WT = 50;
     private static final String DEFAULT_REMINDER = "";
     
     private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
-        
+    
+    // DEFAULT SETTINGS shouldn't be used - it just exists as a read-only file
+    // with the stock defaults
+    private static final String DEFAULT_SETTINGS_FILE = "samples/jobs/DEFAULT SETTINGS";
+    private static final String MY_DEFAULT_SETTINGS_FILE = "samples/jobs/MY DEFAULT SETTINGS";
+    
     private Vector<Labor> mvLabors; // Set in constructor
     private Vector<LaborGroup> mvLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
     private Vector<Job> mvLaborSettings = new Vector<Job>();
@@ -67,6 +70,8 @@ public class JobListPanel extends JPanel {
     private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
     
     private JobBlacklist moBlacklist = new JobBlacklist();    
+    
+    private MyIO moIO;
     
     // A table cell editor that selects all text when we start to edit a cell:
     class SelectingEditor extends DefaultCellEditor {
@@ -119,7 +124,7 @@ public class JobListPanel extends JPanel {
             }
         }
     }
-        
+    
     private class CouldntProcessFileException extends Exception { 
         public CouldntProcessFileException() { super(); }
     };
@@ -145,12 +150,13 @@ public class JobListPanel extends JPanel {
     // is an outstanding bug in Java documented at
     // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4820794
     public JobListPanel(Vector<Labor> vLabors, Vector<LaborGroup> vLaborGroups
-            , JobBlacklist blacklist)   // , Vector<KeyStroke> keysToIgnore
+            , JobBlacklist blacklist, MyIO io)   // , Vector<KeyStroke> keysToIgnore
             throws CouldntProcessFileException {
         
         mvLaborGroups = vLaborGroups;
         mvLabors = vLabors;
         moBlacklist = blacklist;
+        moIO = io;
         
 /*        // Read rule file
         try {
@@ -200,10 +206,22 @@ public class JobListPanel extends JPanel {
             }
 
             private void updateLaborSetting(int firstRow) {
+                //TODO: In catch blocks, also set the table value to reflect the default value
+                // (Will this be circular?)
                 
                 //double dblNewTime = Double.parseDouble(oModel.getValueAt(firstRow, 3).toString());
-                int intNewTime = Integer.parseInt(oModel.getValueAt(firstRow, 3).toString());
-                int intNewQty = Integer.parseInt(oModel.getValueAt(firstRow, 2).toString());
+                int intNewTime;
+                int intNewQty;
+                try {
+                    intNewTime = Integer.parseInt(oModel.getValueAt(firstRow, 3).toString());
+                } catch (NumberFormatException e) {
+                    intNewTime = DEFAULT_TIME;
+                }
+                try {
+                    intNewQty = Integer.parseInt(oModel.getValueAt(firstRow, 2).toString());
+                } catch (NumberFormatException e) {
+                    intNewQty = DEFAULT_QTY;
+                }
                 
                 Job job = mvLaborSettings.get(firstRow);
                 boolean bTimeChanged = (job.qtyDesired != intNewQty
@@ -211,8 +229,16 @@ public class JobListPanel extends JPanel {
                 
                 job.qtyDesired = intNewQty;
                 job.time = intNewTime;
-                job.candidateWeight = Double.parseDouble(oModel.getValueAt(firstRow, 4).toString());
-                job.currentSkillWeight = Integer.parseInt(oModel.getValueAt(firstRow, 5).toString());
+                try {
+                    job.candidateWeight = Double.parseDouble(oModel.getValueAt(firstRow, 4).toString());
+                } catch (NumberFormatException e) {
+                    job.candidateWeight = DEFAULT_WT;
+                }
+                try {
+                    job.currentSkillWeight = Integer.parseInt(oModel.getValueAt(firstRow, 5).toString());
+                } catch (NumberFormatException e) {
+                    job.currentSkillWeight = DEFAULT_SKILL_WT;
+                }
                 job.reminder = oModel.getValueAt(firstRow, 6).toString();
                 
                 if (bTimeChanged) {
@@ -230,7 +256,9 @@ public class JobListPanel extends JPanel {
         oModel.addEditableException(5);
         oModel.addEditableException(6);
         
-        moTable = new SelectingTable(oModel);       // SelectingTable
+        moTable = new SelectingTable(oModel);
+        moTable.setTransferHandler(new MyTableTransferHandler());   // Allows single-cell cut copy paste
+        moTable.setComponentPopupMenu(createEditMenuPopup());
         moTable.setRowSelectionAllowed(false);
         
         loadLaborSettings();
@@ -260,12 +288,28 @@ public class JobListPanel extends JPanel {
         this.add(panHours, BorderLayout.PAGE_END);
         
         // Load any saved settings
-        load(DEFAULT_FILE_TEXT);    //txtName.getText()
+        //load(DEFAULT_FILE_TEXT);    //txtName.getText()
+        load(new File(MY_DEFAULT_SETTINGS_FILE));
         mbLoading = false;
         
         //this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         //this.pack();
         //this.setVisible(true);
+    }
+    
+    private JPopupMenu createEditMenuPopup() {
+        
+        JPopupMenu popUp = new JPopupMenu();
+        //JMenu menu = new JMenu("Edit");
+        
+        moTable.createEditMenuItems(popUp);
+        //popUp.add(menu);
+        
+        return popUp;
+    }
+    protected JComponent createEditMenu(JComponent menu) {
+        moTable.createEditMenuItems(menu);
+        return menu;
     }
     
 /*    protected JobBlacklist getBlacklist() { return moBlacklist; }
@@ -405,10 +449,9 @@ public class JobListPanel extends JPanel {
     
     // Loads job settings from file
     public void load(File file) {
-        // Show file name in window title
-        //this.setTitle(file.getName().replace(".txt", "") + " Job Settings");
+        moIO.readJobSettings(file, mvLaborSettings, DEFAULT_REMINDER);
         
-        try {
+/*        try {
             FileInputStream fstream = new FileInputStream(file.getAbsolutePath());
             DataInputStream in = new DataInputStream(fstream);            
 
@@ -433,7 +476,7 @@ public class JobListPanel extends JPanel {
         } catch (Exception e) {
             System.err.println("Failed to load job file.");
             e.printStackTrace();
-        }
+        } */
         
         // Display the values in the table.
         loadLaborSettings();
@@ -446,7 +489,6 @@ public class JobListPanel extends JPanel {
         
         // Defaults
         if (fileName.equals(DEFAULT_FILE_TEXT)) {
-            //this.setTitle("Default Job Settings");
             
             // Update the current labor settings with the defaults.
             for (Job job : mvLaborSettings) {
@@ -525,31 +567,5 @@ public class JobListPanel extends JPanel {
                 return labor.groupName;
         
         return "";
-    }
-    
-    // Loads the job data into a hash table
-    private Hashtable<String, Job> hashJobs(Vector<String[]> vJobs) {
-        Hashtable<String, Job> htReturn = new Hashtable<String, Job>();
-        
-        String strReminder;
-        
-        for (String[] jobData : vJobs) {
-            if (jobData.length == 1) {
-                // Version data
-            }
-            else {
-                if (jobData.length < 6)
-                    strReminder = DEFAULT_REMINDER;
-                else
-                    strReminder = jobData[5];
-
-                htReturn.put(jobData[0], new Job(jobData[0], "Unknown"
-                    , Integer.parseInt(jobData[1])
-                    , Integer.parseInt(jobData[2]), Double.parseDouble(jobData[3])
-                    , Integer.parseInt(jobData[4]), strReminder));
-            }
-        }
-        return htReturn;
-        
-    }
+    }    
 }

@@ -7,11 +7,14 @@ package dwarforganizer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Hashtable;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -271,5 +274,64 @@ public class MyIO {
             strReturn += "Error: Failed to read license.";
         }
         return strReturn;
+    }
+    
+    // Loads job settings from file
+    public void readJobSettings(File file, Vector<Job> vLaborSettings
+            , String defaultReminder) {
+        
+        try {
+            FileInputStream fstream = new FileInputStream(file.getAbsolutePath());
+            DataInputStream in = new DataInputStream(fstream);            
+
+            Hashtable<String, Job> htJobs = hashJobs(MyFileUtils.readDelimitedLineByLine(
+                    in, "\t", 0), defaultReminder);
+
+            // Update the current labor settings with the file data.
+            for (Job job : vLaborSettings) {
+                Job jobFromFile = htJobs.get(job.name);
+                if (jobFromFile != null) {
+                    job.qtyDesired = jobFromFile.qtyDesired;
+                    job.candidateWeight = jobFromFile.candidateWeight;
+                    job.currentSkillWeight = jobFromFile.currentSkillWeight;
+                    job.time = jobFromFile.time;
+                    job.reminder = jobFromFile.reminder;
+                }
+
+                else
+                    System.err.println("WARNING: Job '" + job.name + "' was not found"
+                            + " in the file. Its settings will be the defaults.");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load job file.");
+            e.printStackTrace();
+        }
+    }
+    
+    // Loads the job data into a hash table
+    private Hashtable<String, Job> hashJobs(Vector<String[]> vJobs
+            , String defaultReminder) {
+        
+        Hashtable<String, Job> htReturn = new Hashtable<String, Job>();
+        
+        String strReminder;
+        
+        for (String[] jobData : vJobs) {
+            if (jobData.length == 1) {
+                // Version data
+            }
+            else {
+                if (jobData.length < 6)
+                    strReminder = defaultReminder;
+                else
+                    strReminder = jobData[5];
+
+                htReturn.put(jobData[0], new Job(jobData[0], "Unknown"
+                    , Integer.parseInt(jobData[1])
+                    , Integer.parseInt(jobData[2]), Double.parseDouble(jobData[3])
+                    , Integer.parseInt(jobData[4]), strReminder));
+            }
+        }
+        return htReturn;
     }
 }

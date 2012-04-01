@@ -175,7 +175,7 @@ public class MainWindow extends JFrame implements DirtyListener {
             
             // Display a grid of the jobs to assign
             moJobListPanel = new JobListPanel(mvLabors
-                    , mvLaborGroups, moJobBlacklist);   // final JobListPanel jobListPanel
+                    , mvLaborGroups, moJobBlacklist, moIO);   // final JobListPanel jobListPanel
             createChoosers();   // (Must be done after initializing JobListPanel)
             //MyHandyWindow.createSimpleWindow("Job Settings"
             //            , jobListPanel, new BorderLayout());
@@ -402,6 +402,13 @@ public class MainWindow extends JFrame implements DirtyListener {
         menuItem.setEnabled(false);     // TODO: Make this do something
         menu.add(menuItem);
 
+        // -------------------------------------
+        menu = new JMenu("Edit");
+        menu.setMnemonic(KeyEvent.VK_E);
+        menuBar.add(menu);
+        
+        jobListPanel.createEditMenu(menu);
+        
         return menuBar;
         
     }
