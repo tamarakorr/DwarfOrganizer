@@ -107,7 +107,8 @@ public class JobListPanel extends JPanel {
         }
         private boolean isClassNumeric(Class c) {
             return (c == Integer.class || c == Long.class || c == Float.class
-                    || c == Double.class);
+                    || c == Double.class || c == int.class || c == long.class
+                    || c == float.class || c == double.class);
         }
     }
     
@@ -193,13 +194,15 @@ public class JobListPanel extends JPanel {
         // Build UI
         String[] columns = { "Group", "Labor", "Qty", "Time", "Job Priority"    // "Time Weight"
                 , "Current Skill Weight", "Reminder" };
+        Class[] columnClass = { String.class, String.class, int.class, int.class
+                , double.class, int.class, String.class };
         final MySimpleTableModel oModel = new MySimpleTableModel(columns
-                , mvLaborSettings.size());
-                
+                , mvLaborSettings.size(), columnClass);
+        
         // Add the edit listener
         oModel.addTableModelListener(new TableModelListener() {
 
-            @Override       // asked me to add @Override when I compiled Java 6 binary...
+            @Override
             public void tableChanged(TableModelEvent e) {
                 //System.out.println("Table changed.");
                 if (! mbLoading) updateLaborSetting(e.getFirstRow());
@@ -260,6 +263,7 @@ public class JobListPanel extends JPanel {
         moTable.setTransferHandler(new MyTableTransferHandler());   // Allows single-cell cut copy paste
         moTable.setComponentPopupMenu(createEditMenuPopup());
         moTable.setRowSelectionAllowed(false);
+        
         
         loadLaborSettings();
         
@@ -450,33 +454,6 @@ public class JobListPanel extends JPanel {
     // Loads job settings from file
     public void load(File file) {
         moIO.readJobSettings(file, mvLaborSettings, DEFAULT_REMINDER);
-        
-/*        try {
-            FileInputStream fstream = new FileInputStream(file.getAbsolutePath());
-            DataInputStream in = new DataInputStream(fstream);            
-
-            Hashtable<String, Job> htJobs = hashJobs(MyFileUtils.readDelimitedLineByLine(
-                    in, "\t", 0));
-
-            // Update the current labor settings with the file data.
-            for (Job job : mvLaborSettings) {
-                Job jobFromFile = htJobs.get(job.name);
-                if (jobFromFile != null) {
-                    job.qtyDesired = jobFromFile.qtyDesired;
-                    job.candidateWeight = jobFromFile.candidateWeight;
-                    job.currentSkillWeight = jobFromFile.currentSkillWeight;
-                    job.time = jobFromFile.time;
-                    job.reminder = jobFromFile.reminder;
-                }
-
-                else
-                    System.err.println("WARNING: Job '" + job.name + "' was not found"
-                            + " in the file. Its settings will be the defaults.");
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to load job file.");
-            e.printStackTrace();
-        } */
         
         // Display the values in the table.
         loadLaborSettings();
