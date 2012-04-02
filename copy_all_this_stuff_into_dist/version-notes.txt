@@ -1,4 +1,0 @@
-v1.1	March 28, 2012	Bug squashing
-	Fixed an issue that was breaking the job whitelist
-	Fixed a problem that was sometimes breaking the Columns menu	
-v1.0	March 25, 2012	Initial release

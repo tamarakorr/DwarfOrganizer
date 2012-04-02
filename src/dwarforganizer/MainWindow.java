@@ -14,7 +14,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.IOException;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -585,8 +584,10 @@ public class MainWindow extends JFrame implements DirtyListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    // TODO: Look into workaround at http://www.centerkey.com/java/browser/
+                    // for Java 6 Desktop bug on Windows and Linux
                     java.awt.Desktop.getDesktop().open(new File(TUTORIAL_FILE));
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                     ex.printStackTrace();
                     System.err.println("Failed to open " + TUTORIAL_FILE
