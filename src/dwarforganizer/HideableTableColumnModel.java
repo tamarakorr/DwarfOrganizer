@@ -11,16 +11,13 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 
 /**
- *
- * Credit for this class to Stephen Kelvin (http://www.stephenkelvin.de/XTableColumnModel/)
- * (used with permission).
  * See MIT license in license.txt
  * 
  * NOTE: Remember to call table.createDefaultColumnsFromModel() after setting
  * this as the column model. Otherwise all table columns will be invisible.
  * 
  * /**
- * <code>XTableColumnModel</code> extends the DefaultTableColumnModel .
+ * <code>HideableTableColumnModel</code> extends the DefaultTableColumnModel .
  * It provides a comfortable way to hide/show columns.
  * Columns keep their positions when hidden and shown again.
  *
@@ -29,11 +26,10 @@ import javax.swing.table.TableColumn;
  * again will notify listeners of a <code>columnAdded</code>, and possibly a <code>columnMoved</code> event.
  * For the same reason the following methods still deal with visible columns only:
  * getColumnCount(), getColumns(), getColumnIndex(), getColumn()
- * There are overloaded versions of these methods that take a parameter <code>onlyVisible</code> which let's
+ * There are overloaded versions of these methods that take a parameter <code>onlyVisible</code> which lets
  * you specify whether you want invisible columns taken into account.
  *
- * @version 0.9 04/03/01
- * @author Stephen Kelvin, mail@StephenKelvin.de
+ * @author Tamara Orr
  * @see DefaultTableColumnModel
  */
 public class HideableTableColumnModel extends DefaultTableColumnModel {
@@ -44,7 +40,6 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
         super();
     }
     
-    // @author Tamara Orr
     // Method to use column identifier instead of TableColumn
     public void setColumnVisible(Object colIdentifier, boolean visible) {
         for (int iCount = getColumnCount(false) - 1; iCount >= 0; iCount--) {
@@ -149,47 +144,17 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
         super.moveColumn(oldIndex, newIndex);
     }
 
-    /**
-     * Returns the total number of columns in this model.
-     *
-     * @param   onlyVisible   if set only visible columns will be counted
-     * @return	the number of columns in the <code>tableColumns</code> array
-     * @see	#getColumns
-     */
     public int getColumnCount(boolean onlyVisible) {
         Vector columns = (onlyVisible ? tableColumns : mvAllTableColumns);
 	return columns.size();
     }
 
-    /**
-     * Returns an <code>Enumeration</code> of all the columns in the model.
-     *
-     * @param   onlyVisible   if set all invisible columns will be missing from the enumeration.
-     * @return an <code>Enumeration</code> of the columns in the model
-     */
     public Enumeration getColumns(boolean onlyVisible) {
         Vector columns = (onlyVisible ? tableColumns : mvAllTableColumns);
         
 	return columns.elements();
     }
 
-    /**
-     * Returns the position of the first column whose identifier equals <code>identifier</code>.
-     * Position is the the index in all visible columns if <code>onlyVisible</code> is true or
-     * else the index in all columns.
-     *
-     * @param	identifier   the identifier object to search for
-     * @param	onlyVisible  if set searches only visible columns
-     *
-     * @return		the index of the first column whose identifier
-     *			equals <code>identifier</code>
-     *
-     * @exception       IllegalArgumentException  if <code>identifier</code>
-     *				is <code>null</code>, or if no
-     *				<code>TableColumn</code> has this
-     *				<code>identifier</code>
-     * @see		#getColumn
-     */
     public int getColumnIndex(Object identifier, boolean onlyVisible) {
 	if (identifier == null) {
 	    throw new IllegalArgumentException("Identifier is null");
@@ -209,17 +174,6 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
 	throw new IllegalArgumentException("Identifier not found");
     }
 
-    /**
-     * Returns the <code>TableColumn</code> object for the column
-     * at <code>columnIndex</code>.
-     *
-     * @param	columnIndex	the index of the column desired
-     * @param	onlyVisible	if set columnIndex is meant to be relative to all visible columns only
-     *                          else it is the index in all columns
-     *
-     * @return	the <code>TableColumn</code> object for the column
-     *				at <code>columnIndex</code>
-     */
     public TableColumn getColumn(int columnIndex, boolean onlyVisible) {
 	return (TableColumn) mvAllTableColumns.elementAt(columnIndex);
     }    

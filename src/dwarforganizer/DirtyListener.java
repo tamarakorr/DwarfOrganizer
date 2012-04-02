@@ -7,7 +7,7 @@ package dwarforganizer;
 
 /**
  *
- * @author Owner
+ * @author Tamara Orr
  */
 public interface DirtyListener {
     public void dirtyChanged(boolean newDirtyState);
