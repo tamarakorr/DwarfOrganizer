@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Exclusions>
+    <FileVersion Version="A"/>
+    <ExclusionRules>
+        <ExclusionRule Comparator="Less than" Field="Age" Name="Juveniles" Value="13"/>
+    </ExclusionRules>
+</Exclusions>
