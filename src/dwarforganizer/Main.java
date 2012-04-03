@@ -23,8 +23,6 @@ public class Main {
                 
         new MainWindow();
         
-        // Military organizer
-        //new MilitaryOrganizer();
     }
 
 }

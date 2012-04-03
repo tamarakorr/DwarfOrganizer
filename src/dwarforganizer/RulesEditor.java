@@ -26,10 +26,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import myutils.MyHandyTable;
-import myutils.MyHandyTextField;
 import myutils.MySimpleTableModel;
 
 /**
@@ -70,7 +68,7 @@ public class RulesEditor extends JPanel {
         DEFAULT_TYPE, "BLACKLIST", "WHITELIST" }) ;
     private JComboBox mcboFirstLabor;
     private JComboBox mcboSecondLabor;
-    private JTextField mtxtComment;
+    private PlaceholderTextField mtxtComment;
     private JLabel mlblMeaning;
     
     private Vector<DirtyListener> mvDirtyListener = new Vector<DirtyListener>();
@@ -245,8 +243,8 @@ public class RulesEditor extends JPanel {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(new JLabel("Comment"), BorderLayout.NORTH);
-        mtxtComment = new JTextField(DEFAULT_COMMENT);
-        MyHandyTextField.autoHighlight(mtxtComment);
+        mtxtComment = new PlaceholderTextField(40, "Add a comment (optional)", true);
+        //MyHandyTextField.autoHighlight(mtxtComment);
         panel.add(mtxtComment, BorderLayout.SOUTH);
         
         panCommentOnTop.add(panel, BorderLayout.NORTH);
@@ -541,12 +539,12 @@ public class RulesEditor extends JPanel {
             strMeaning = "Adding a rule relating " + strFirst
                     + " and " + strSecond + "...";
         else if (strType.toLowerCase().equals("whitelist"))
-            strMeaning = "Dwarves assigned to " + strFirst + " may ONLY do "
+            strMeaning = "Citizens assigned to " + strFirst + " may ONLY do "
                     + strSecond + " and any other " + strFirst
                     + " WHITELIST labors.";
         else    // blacklist
             strMeaning = strFirst + " and " + strSecond
-                    + " may never be done by the same dwarf.";
+                    + " may never be done by the same citizen.";
         
         mlblMeaning.setText(strMeaning);
     }

@@ -54,6 +54,7 @@ public class MainWindow extends JFrame implements DirtyListener {
     private JInternalFrame mitlJobList;
     private JInternalFrame mitlDwarfList;
     private JInternalFrame mitlRulesEditor;
+    private JInternalFrame mitlExclusions;
     
     private DwarfListWindow moDwarfListWindow;
     
@@ -89,6 +90,8 @@ public class MainWindow extends JFrame implements DirtyListener {
     private MyIO moIO = new MyIO();
     
     private JFrame moAboutScreen = new AboutScreen(this);
+    
+    private static final String EXCLUSIONS_TITLE = "Manage Exclusions";
     
     private class AboutScreen extends JFrame {
         public AboutScreen(MainWindow main) {
@@ -152,7 +155,10 @@ public class MainWindow extends JFrame implements DirtyListener {
         
         // Create rules editor (hidden until shown)
         createRulesEditorScreen(desktop);
-        
+
+        // Create exclusions manager (hidden until shown)
+        createExclusionScreen(desktop);
+                
         try {
             // Display a grid of the dwarves
             /*JFrame frList = MyHandyWindow.createSimpleWindow("Dwarf List"
@@ -220,6 +226,27 @@ public class MainWindow extends JFrame implements DirtyListener {
         for (int iCount = 0; iCount < menuBar2.getMenuCount(); iCount++)
             jmbReturn.add(menuBar2.getMenu(iCount));
         return jmbReturn;
+    }
+    
+    private void createExclusionScreen(JDesktopPane desktop) {
+        
+        // TODO: Remove testing here
+        //Exclusion excl = new Exclusion("Juveniles", "age", "Less than", new Integer(13));
+        Vector<Exclusion> vExcl = new Vector<Exclusion>();
+        //vExcl.add(excl);
+        //moIO.writeExclusions(vExcl);
+        vExcl = moIO.readExclusions();
+        for (Exclusion excl : vExcl)
+            System.out.println(excl.toString());
+        //--------        
+        
+        mitlExclusions = new JInternalFrame(EXCLUSIONS_TITLE, true, true, true, true);
+        mitlExclusions.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        mitlExclusions.setLayout(new BorderLayout());
+        mitlExclusions.add(new ExclusionPanel(vExcl
+                , moDwarfListWindow.getDwarves()));
+        mitlExclusions.pack();
+        desktop.add(mitlExclusions);
     }
     
     private void createRulesEditorScreen(JDesktopPane desktop) {
@@ -571,6 +598,21 @@ public class MainWindow extends JFrame implements DirtyListener {
                 }
             }
         });
+        menu.add(menuItem);
+        
+        menuItem = new JMenuItem("Exclusion Manager", KeyEvent.VK_E);
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mitlExclusions.setVisible(true);
+                try {
+                    mitlExclusions.setSelected(true);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        menuItem.setEnabled(false); // TODO: enable when this is complete
         menu.add(menuItem);
         
         // -------------------------------

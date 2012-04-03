@@ -463,6 +463,10 @@ public class DwarfListWindow extends JPanel {
          return skillName + " Lvl";
     }
     
+    public Vector<Dwarf> getDwarves() {
+        return mvDwarves;
+    }
+    
     // Translates XML data to dwarf objects
     private void getDwarves(NodeList nodes) {
         for (int iCount = 0; iCount < nodes.getLength(); iCount++) {
@@ -596,8 +600,15 @@ public class DwarfListWindow extends JPanel {
                             , Math.round(dblSum / meta.vSkills.size()));
                 }
                 mvDwarves.add(oDwarf);
+                
+                /* testing
+                Exclusion excl = new Exclusion("Juveniles", "age", "Less than", new Integer(13));
+                if (excl.appliesTo(oDwarf))
+                    System.out.println("'Juveniles' exclusion applies to " + oDwarf.name);
+                 */
+                
             //} // End if non-juvenile
-        }         
+        }
     }
     
     // Converts a Runesmith skill level description to long integer value

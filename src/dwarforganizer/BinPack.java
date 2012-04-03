@@ -40,7 +40,7 @@ public class BinPack<T extends Binnable> {
         // Find a bin for each item.
         for (T item : vOrderedItems) {
 
-            int intItemSize = (Integer) item.getProperty("size");
+            int intItemSize = (Integer) item.getProperty("size", false);
             //System.out.println("Finding bin for item of size " + intItemSize); 
             
             // Find the item a bin            

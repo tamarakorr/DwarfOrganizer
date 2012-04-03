@@ -11,6 +11,8 @@ package dwarforganizer;
  * See MIT license in license.txt
  */
 public interface MyPropertyGetter {
-    public Object getProperty(String propName);
+    public Comparable getProperty(String propName, boolean humanReadable);  // Object
+    //public String[] getSupportedProperties();
+    //public Class getPropertyClass(String propName, boolean humanReadable);
     //public String[] getProperties();
 }

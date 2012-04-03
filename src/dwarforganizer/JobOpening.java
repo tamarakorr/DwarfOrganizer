@@ -12,6 +12,8 @@ package dwarforganizer;
  */
 public class JobOpening extends Binnable {
 
+    private static String[] SUPPORTED_PROPERTIES = new String[] { "size" };
+    
     protected String name;
     protected String skillName;
     protected int time;
@@ -29,6 +31,7 @@ public class JobOpening extends Binnable {
         this.reminder = reminder;
     }
     
+    @Override
     public int compareTo(Object o) {
         Job j = (Job) o;
         if (this.time < j.time)
@@ -39,7 +42,8 @@ public class JobOpening extends Binnable {
             return 1;
     }
 
-    public Object getProperty(String propName) {
+    @Override
+    public Comparable getProperty(String propName, boolean humanReadable) {
         if (propName.equals("size"))
             return this.time;
         else {
@@ -52,5 +56,15 @@ public class JobOpening extends Binnable {
     public String toString() {
         return this.name;
     }
+
+    //@Override
+    public static String[] getSupportedProperties() {
+        return SUPPORTED_PROPERTIES;
+    }
+
+/*    @Override
+    public Class getPropertyClass(String propName, boolean humanReadable) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    } */
     
 }

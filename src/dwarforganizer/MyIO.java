@@ -15,11 +15,26 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import myutils.MyFileUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -30,6 +45,7 @@ public class MyIO {
     private static final String GROUP_LIST_FILE_NAME = "config/group-list.txt";
     private static final String LABOR_LIST_FILE_NAME = "config/labor-list.txt";
     private static final String RULE_FILE_NAME = "config/rules.txt";
+    private static final String EXCLUSION_FILE_NAME = "config/exclusion-list.xml";
     
     private static final String RULES_NOTE = "This file lists jobs that aren't allowed"
             + " together (BLACKLIST), or aren't allowed with other jobs"
@@ -333,5 +349,117 @@ public class MyIO {
             }
         }
         return htReturn;
+    }
+    
+    // Writes exclusions to XML
+    public boolean writeExclusions(List<Exclusion> lstExclusion) {
+        
+        // Create XML document
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            Document doc = docBuilder.newDocument();
+            
+            // Root element
+            Element eleRoot = doc.createElement("Exclusions");
+            doc.appendChild(eleRoot);
+            
+            // File version
+            Element eleVer = doc.createElement("FileVersion");
+            eleVer.setAttribute("Version", "A");
+            eleRoot.appendChild(eleVer);
+            
+            // Start Exclusion rules
+            Element eleRules = doc.createElement("ExclusionRules");
+            eleRoot.appendChild(eleRules);
+            
+            // Exclusion rules body
+            for (Exclusion exclusion : lstExclusion) {
+                Element eleRule = doc.createElement("ExclusionRule");
+                eleRules.appendChild(eleRule);
+                eleRule.setAttribute("Name", exclusion.getName());
+                eleRule.setAttribute("Field", exclusion.getPropertyName());
+                eleRule.setAttribute("Comparator", exclusion.getComparator());
+                eleRule.setAttribute("Value", exclusion.getValue().toString());
+            }
+            
+            //-----------------------
+            // Write the document to XML file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            //transformerFactory.setAttribute("indent-number", new Integer(4));
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            // Hooray for completely undocumented solutions:
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File(EXCLUSION_FILE_NAME));
+            //StreamResult result = new StreamResult(System.out);  Uncomment for testing
+
+            transformer.transform(source, result);
+            
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(MyIO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (TransformerConfigurationException ex) {
+            Logger.getLogger(MyIO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (TransformerException ex) {
+            Logger.getLogger(MyIO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+
+        return true;        // Success
+    }
+    public Vector<Exclusion> readExclusions() {
+        
+        Vector<Exclusion> vReturn = new Vector<Exclusion>();
+
+        File file = new File(EXCLUSION_FILE_NAME);
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        
+        try {
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(file);
+            doc.getDocumentElement().normalize();
+
+            NodeList lstFileVersion = doc.getElementsByTagName("FileVersion");
+            NodeList lstExclusionRules = doc.getElementsByTagName("ExclusionRule");
+            
+            for (int iCount = 0; iCount < lstExclusionRules.getLength(); iCount++) {
+                Node node = lstExclusionRules.item(iCount);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element ele = (Element) node;
+                    
+                    // TODO: Type checking
+                    try {
+                        vReturn.add(new Exclusion(ele.getAttribute("Name")
+                            , ele.getAttribute("Field")
+                            , ele.getAttribute("Comparator")
+                            , ele.getAttribute("Value")));
+                    //System.out.println("Name: " + ele.getAttribute("Name"));
+                    //System.out.println("Field: " + ele.getAttribute("Field"));
+                    //System.out.println("Comparator: " + ele.getAttribute("Comparator"));
+                    //System.out.println("Value: " + ele.getAttribute("Value"));
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage() 
+                                + " Failed to read an exclusion rule.");
+                    }
+                }
+            }
+            
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(MyIO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SAXException ex) {
+            Logger.getLogger(MyIO.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MyIO.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return vReturn;
+    }
+    private static String getTagValue(String tag, Element element) {
+        NodeList nList = element.getElementsByTagName(tag).item(0).getChildNodes();
+        Node nValue = (Node) nList.item(0);
+        return nValue.getNodeValue();
     }
 }
