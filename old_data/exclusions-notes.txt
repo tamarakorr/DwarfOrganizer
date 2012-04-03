@@ -1,0 +1,21 @@
+exclusion rules
+juveniles
+nickname contains X
+
+exclusion lists
+list name: dwarf names
+
+
+Dwarf List changes:
+"Include" overrides exclusions but default value set from rules/lists
+"Exclusion list" column lists the lists/rules the dwarf is a member of
+
+
+exclusion-list.xml
+File version
+Exclusion rules
+	Name
+	Field
+	Comparator
+	Value
+Exclusion lists

@@ -848,7 +848,12 @@ public class MainWindow extends JFrame implements DirtyListener {
     }
     
     private Vector<Dwarf> getDwarves() {
-        return moDwarfListWindow.getIncludedDwarves();        
+        // Get included dwarves and reset all dwarf.time
+        Vector<Dwarf> vIncluded = (Vector<Dwarf>) moDwarfListWindow.getIncludedDwarves().clone();
+        for (Dwarf dwarf : vIncluded) {
+            dwarf.time = JobOptimizer.MAX_TIME;
+        }
+        return vIncluded;
     }
         
     // Note that balanced potentials are keyed by job name, not skill name.

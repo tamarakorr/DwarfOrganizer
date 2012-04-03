@@ -17,7 +17,7 @@ import myutils.MySimpleLogDisplay;
  */
 public class JobOptimizer { // implements ActionListener 
     
-    protected static final int MAX_TIME = 100;  // Maximum time units allowed to be spent scheduled for work
+    public static final int MAX_TIME = 100;  // Maximum time units allowed to be spent scheduled for work
         
     private static int NUM_JOBS;
     private static int NUM_DWARVES;
