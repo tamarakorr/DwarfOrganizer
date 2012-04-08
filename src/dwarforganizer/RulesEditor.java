@@ -202,7 +202,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(new JLabel("First Labor"), BorderLayout.NORTH);
-        mcboFirstLabor = new JComboBox<String>(vLaborNames);
+        mcboFirstLabor = new JComboBox(vLaborNames);
         mcboFirstLabor.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -215,7 +215,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(new JLabel("Second Labor"), BorderLayout.NORTH);
-        mcboSecondLabor = new JComboBox<String>(vLaborNames);
+        mcboSecondLabor = new JComboBox(vLaborNames);
         mcboSecondLabor.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

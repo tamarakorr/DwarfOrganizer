@@ -195,8 +195,8 @@ public class JobListPanel extends JPanel {
         // Build UI
         String[] columns = { "Group", "Labor", "Qty", "Time", "Job Priority"    // "Time Weight"
                 , "Current Skill Weight", "Reminder" };
-        Class[] columnClass = { String.class, String.class, int.class, int.class
-                , double.class, int.class, String.class };
+        Class[] columnClass = { String.class, String.class, Integer.class, Integer.class
+                , Double.class, Integer.class, String.class };  // No primitives allowed here in Java 6!!
         final MySimpleTableModel oModel = new MySimpleTableModel(columns
                 , mvLaborSettings.size(), columnClass);
         
