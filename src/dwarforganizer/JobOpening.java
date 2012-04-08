@@ -43,7 +43,7 @@ public class JobOpening extends Binnable {
     }
 
     @Override
-    public Comparable getProperty(String propName, boolean humanReadable) {
+    public Object getProperty(String propName, boolean humanReadable) {
         if (propName.equals("size"))
             return this.time;
         else {
@@ -60,6 +60,12 @@ public class JobOpening extends Binnable {
     //@Override
     public static String[] getSupportedProperties() {
         return SUPPORTED_PROPERTIES;
+    }
+
+    @Override
+    public long getKey() {
+        //TODO
+        return 0;
     }
 
 /*    @Override

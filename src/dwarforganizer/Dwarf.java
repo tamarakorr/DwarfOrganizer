@@ -13,10 +13,13 @@ import java.util.Vector;
  * @author Tamara Orr
  * MIT license: Refer to license.txt
  */
-public class Dwarf implements MyPropertyGetter {
+public class Dwarf implements MyPropertyGetter, Comparable {
     
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
             "Name", "Nickname", "Gender", "Age", "JobText" };
+    private static final Class[] SUPPORTED_PROP_CLASSES = new Class[] {
+        String.class, String.class, String.class, Integer.class, String.class
+    };
     
     protected String name;
     protected String nickname;
@@ -37,17 +40,17 @@ public class Dwarf implements MyPropertyGetter {
     }
 
     @Override
-    public Comparable getProperty(String propName, boolean humanReadable) {
+    public Object getProperty(String propName, boolean humanReadable) {
         String prop = propName.toLowerCase();
-        if (prop.equals("Name"))
+        if (prop.equals("name"))
             return this.name;
-        else if (prop.equals("Nickname"))
+        else if (prop.equals("nickname"))
             return this.nickname;
-        else if (prop.equals("Gender"))
+        else if (prop.equals("gender"))
             return this.gender;
-        else if (prop.equals("Age"))
+        else if (prop.equals("age"))
             return this.age;
-        else if (prop.equals("JobText"))
+        else if (prop.equals("jobtext"))
             return this.jobText;
         else
             return "Undefined property: " + propName;
@@ -60,7 +63,22 @@ public class Dwarf implements MyPropertyGetter {
     public static String[] getSupportedProperties() {
         return SUPPORTED_PROPERTIES;
     }
-    
+    public static Class[] getSupportedPropClasses() {
+        return SUPPORTED_PROP_CLASSES;
+    }
+
+    @Override
+    public long getKey() {
+        //TODO
+        return 0;
+    }
+
+    // Used for alphabetizing citizen lists. Not totally the correct way to do it, but easy
+    @Override
+    public int compareTo(Object o) {
+        Dwarf otherDwarf = (Dwarf) o;
+        return this.name.compareTo(otherDwarf.name);
+    }
     /*
     @Override
     public Class getPropertyClass(String propName, boolean humanReadable) {

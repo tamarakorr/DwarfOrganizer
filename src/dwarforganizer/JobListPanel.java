@@ -31,6 +31,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import myutils.MyHandyTable;
+import myutils.MyNumeric;
 import myutils.MySimpleTableModel;
 import myutils.MyTCRStripedHighlight;
 
@@ -71,7 +72,7 @@ public class JobListPanel extends JPanel {
     
     private JobBlacklist moBlacklist = new JobBlacklist();    
     
-    private MyIO moIO;
+    private DwarfOrganizerIO moIO;
     
     // A table cell editor that selects all text when we start to edit a cell:
     class SelectingEditor extends DefaultCellEditor {
@@ -87,7 +88,7 @@ public class JobListPanel extends JPanel {
                     , isSelected, row, column);
             if (c instanceof JTextComponent) {
                 final JTextField jtf = (JTextField) c;
-                if (isClassNumeric(table.getColumnClass(column))) {
+                if (MyNumeric.isNumericClass(table.getColumnClass(column))) {
                     jtf.setHorizontalAlignment(JTextField.RIGHT);
                 }
                 //TODO: Override isCellEditable so that we can detect an edit that
@@ -105,11 +106,11 @@ public class JobListPanel extends JPanel {
             }
             return c;
         }
-        private boolean isClassNumeric(Class c) {
+/*        private boolean isClassNumeric(Class c) {
             return (c == Integer.class || c == Long.class || c == Float.class
                     || c == Double.class || c == int.class || c == long.class
                     || c == float.class || c == double.class);
-        }
+        } */
     }
     
     // A JTable that uses SelectingEditors for column edits
@@ -151,7 +152,7 @@ public class JobListPanel extends JPanel {
     // is an outstanding bug in Java documented at
     // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4820794
     public JobListPanel(Vector<Labor> vLabors, Vector<LaborGroup> vLaborGroups
-            , JobBlacklist blacklist, MyIO io)   // , Vector<KeyStroke> keysToIgnore
+            , JobBlacklist blacklist, DwarfOrganizerIO io)   // , Vector<KeyStroke> keysToIgnore
             throws CouldntProcessFileException {
         
         mvLaborGroups = vLaborGroups;
@@ -263,7 +264,6 @@ public class JobListPanel extends JPanel {
         moTable.setTransferHandler(new MyTableTransferHandler());   // Allows single-cell cut copy paste
         moTable.setComponentPopupMenu(createEditMenuPopup());
         moTable.setRowSelectionAllowed(false);
-        
         
         loadLaborSettings();
         

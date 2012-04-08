@@ -38,7 +38,7 @@ import myutils.MySimpleTableModel;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class RulesEditor extends JPanel {
+public class RulesEditor extends JPanel implements DirtyForm {
 
     private static final Vector<String> mvHeadings = new Vector<String>(
             Arrays.asList(new String[]
@@ -52,8 +52,6 @@ public class RulesEditor extends JPanel {
     private static final String TEXT_ADD = "Add New";
     private static final String TEXT_EDIT = "Update";
         
-    private boolean mbDirty = false;    // True if any data has been changed.
-                                        // Use setDirty() to set this variable so that listeners are notified.
     private int mintCurrentEditedRow = -1;  // The currently edited row, if any. Only valid while EditingState is EDIT
     
     private enum EditingState { NEW, EDIT }
@@ -71,7 +69,10 @@ public class RulesEditor extends JPanel {
     private PlaceholderTextField mtxtComment;
     private JLabel mlblMeaning;
     
-    private Vector<DirtyListener> mvDirtyListener = new Vector<DirtyListener>();
+    //private boolean mbDirty = false;    // True if any data has been changed.
+                                        // Use setDirty() to set this variable so that listeners are notified.
+    //private Vector<DirtyListener> mvDirtyListener = new Vector<DirtyListener>();
+    private DirtyHandler moDirtyHandler;
     
     class InvalidInputException extends Exception { }
     
@@ -98,10 +99,14 @@ public class RulesEditor extends JPanel {
         }
     } */
     
+    // TODO: Normalize constructor
     public RulesEditor(Vector<String[]> ruleFileContents
             , Vector<Labor> vLabors) {
         
         super();
+        
+        moDirtyHandler = new DirtyHandler();
+        
         JPanel panEdit;
         
         Vector<String> vLaborNames = getLaborNames(vLabors);
@@ -264,25 +269,31 @@ public class RulesEditor extends JPanel {
         
     }
     
-    protected void addDirtyListener(DirtyListener newListener) {
+    /*
+    @Override
+    public void addDirtyListener(DirtyListener newListener) {
         Vector<DirtyListener> v = (Vector<DirtyListener>) mvDirtyListener.clone();
         if (! v.contains(newListener))
             mvDirtyListener.add(newListener);
     }
-    private void notifyDirtyListeners() {
+    @Override
+    public void notifyDirtyListeners() {
         Vector<DirtyListener> v = (Vector<DirtyListener>) mvDirtyListener.clone();
         for (DirtyListener listener : v) {
             listener.dirtyChanged(mbDirty);
         }
     }
-    protected boolean isDirty() { return mbDirty; }
-    protected void setClean() { setDirty(false); }
-    private void setDirty(boolean newValue) {
+    @Override
+    public boolean isDirty() { return mbDirty; }
+    @Override
+    public void setClean() { setDirty(false); }
+    @Override
+    public void setDirty(boolean newValue) {
         if (mbDirty != newValue) {
             mbDirty = newValue;
             notifyDirtyListeners();
         }
-    }
+    } */
     
     // Transforms the given vector of string arrays to a vector of vectors of
     // objects.
@@ -385,8 +396,8 @@ public class RulesEditor extends JPanel {
         if (row != -1) {
             int modelRow = mtblRules.convertRowIndexToModel(row);
             mmdlRules.removeRow(modelRow);
-            setDirty(true);
-        }        
+            moDirtyHandler.setDirty(true);
+        }
     }
     
     // Copies the given table model row data to the input controls
@@ -411,13 +422,13 @@ public class RulesEditor extends JPanel {
         Vector<Object> vRow = inputToVector();
         for (int iCount = 0; iCount < COLUMN_COUNT; iCount++)
             mmdlRules.setValueAt(vRow.get(iCount), modelRow, iCount);
-        setDirty(true);
+        moDirtyHandler.setDirty(true);
     }
     
     // Copies the data in the input controls to a new table row (inserted at end)
     private void inputToNewRow() throws InvalidInputException {
         mmdlRules.addRow(inputToVector());
-        setDirty(true);
+        moDirtyHandler.setDirty(true);
         MyHandyTable.ensureIndexIsVisible(mtblRules, mmdlRules.getRowCount() - 1);
     }
 
@@ -547,6 +558,11 @@ public class RulesEditor extends JPanel {
                     + " may never be done by the same citizen.";
         
         mlblMeaning.setText(strMeaning);
+    }
+
+    @Override
+    public DirtyHandler getDirtyHandler() {
+        return moDirtyHandler;
     }
     
 }

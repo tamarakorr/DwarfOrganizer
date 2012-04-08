@@ -43,7 +43,7 @@ import org.w3c.dom.NodeList;
  * This software is provided under the MIT license.
  * See the included license.txt for details.
  */
-public class MainWindow extends JFrame implements DirtyListener {
+public class MainWindow extends JFrame { // implements DirtyListener
 
     private static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one    
     //private static final String DEFAULT_DWARVES_XML
@@ -57,9 +57,9 @@ public class MainWindow extends JFrame implements DirtyListener {
     private JInternalFrame mitlExclusions;
     
     private DwarfListWindow moDwarfListWindow;
-    
     private JobListPanel moJobListPanel;
     //private Vector<KeyStroke> mvJobListAccelerators;
+    
     protected static enum JobListMenuAccelerator {
         SAVE(KeyStroke.getKeyStroke("control S"))
             , SAVE_AS(KeyStroke.getKeyStroke("control shift S"))
@@ -86,12 +86,17 @@ public class MainWindow extends JFrame implements DirtyListener {
     private static final String RULES_EDITOR_TITLE_DIRTY = "Edit Rules (Unsaved Changes)";
     private JobBlacklist moJobBlacklist = new JobBlacklist();
     private JobList moJobWhitelist = new JobList();    
+    //private DirtyListener moRuleDirtyListener;
     
-    private MyIO moIO = new MyIO();
+    private DwarfOrganizerIO moIO = new DwarfOrganizerIO();
+    private Vector<Dwarf> mvDwarves;
     
     private JFrame moAboutScreen = new AboutScreen(this);
     
     private static final String EXCLUSIONS_TITLE = "Manage Exclusions";
+    private static final String EXCLUSIONS_TITLE_DIRTY = EXCLUSIONS_TITLE + " (Unsaved Changes)";
+    
+    private ExclusionPanel moExclusionManager;
     
     private class AboutScreen extends JFrame {
         public AboutScreen(MainWindow main) {
@@ -149,7 +154,7 @@ public class MainWindow extends JFrame implements DirtyListener {
         try {
             readFiles();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             System.err.println("Failed to read at least one critical file.");
         }
         
@@ -161,17 +166,10 @@ public class MainWindow extends JFrame implements DirtyListener {
                 
         try {
             // Display a grid of the dwarves
-            /*JFrame frList = MyHandyWindow.createSimpleWindow("Dwarf List"
-                    , moDwarfListWindow, new BorderLayout());
-            frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frList.setVisible(true);            */
             mitlDwarfList = new JInternalFrame("Dwarf List", true
                     , false, true, true);
             mitlDwarfList.setLayout(new BorderLayout());
             mitlDwarfList.add(moDwarfListWindow);
-            //JMenuBar dwarvesFileMenu = createDwarfListMenuBar();
-            //JMenuBar desiredMenuBar = moDwarfListWindow.getMenu(mvLaborGroups);
-            //mitlDwarfList.setJMenuBar(desiredMenuBar);
             updateDwarfListMenu();
             
             mitlDwarfList.pack();
@@ -182,8 +180,6 @@ public class MainWindow extends JFrame implements DirtyListener {
             moJobListPanel = new JobListPanel(mvLabors
                     , mvLaborGroups, moJobBlacklist, moIO);   // final JobListPanel jobListPanel
             createChoosers();   // (Must be done after initializing JobListPanel)
-            //MyHandyWindow.createSimpleWindow("Job Settings"
-            //            , jobListPanel, new BorderLayout());
             mitlJobList = new JInternalFrame("Job Settings", true, false, true, true);
             mitlJobList.setJMenuBar(createJobListMenu(moJobListPanel));
             mitlJobList.setLayout(new BorderLayout());
@@ -198,8 +194,6 @@ public class MainWindow extends JFrame implements DirtyListener {
             this.setJMenuBar(createMenu(moJobListPanel));
             
             this.setLayout(new BorderLayout());
-            //this.add(panOptions, BorderLayout.PAGE_START);
-            //this.add(btnOptimize, BorderLayout.PAGE_START);
             this.add(desktop);
             
             this.setTitle("Dwarf Organizer");
@@ -230,31 +224,105 @@ public class MainWindow extends JFrame implements DirtyListener {
     
     private void createExclusionScreen(JDesktopPane desktop) {
         
-        // TODO: Remove testing here
-        //Exclusion excl = new Exclusion("Juveniles", "age", "Less than", new Integer(13));
-        Vector<Exclusion> vExcl = new Vector<Exclusion>();
-        //vExcl.add(excl);
-        //moIO.writeExclusions(vExcl);
-        vExcl = moIO.readExclusions();
-        for (Exclusion excl : vExcl)
-            System.out.println(excl.toString());
-        //--------        
+        final MainWindow main = this;
+        
+        Vector<Exclusion> vExcl = moIO.readExclusions(mvDwarves);
+
+        // Update title of Rules Editor when dirty state changes
+        DirtyListener dirtyListener = createDirtyListener(
+                EXCLUSIONS_TITLE_DIRTY, EXCLUSIONS_TITLE
+                , new FrameTitleSetter() {
+            @Override
+            public void setFrameTitle(String title) {
+                if (! title.equals(mitlExclusions.getTitle()))
+                    mitlExclusions.setTitle(title);                
+            }
+        });
+        
+        moExclusionManager = new ExclusionPanel(vExcl, mvDwarves, moIO); // moDwarfListWindow.getDwarves()
         
         mitlExclusions = new JInternalFrame(EXCLUSIONS_TITLE, true, true, true, true);
         mitlExclusions.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        mitlExclusions.setJMenuBar(createExclusionMgrMenu());
         mitlExclusions.setLayout(new BorderLayout());
-        mitlExclusions.add(new ExclusionPanel(vExcl
-                , moDwarfListWindow.getDwarves()));
+        mitlExclusions.add(moExclusionManager);
         mitlExclusions.pack();
+        
+        moExclusionManager.getDirtyHandler().addDirtyListener(dirtyListener);
+        mitlExclusions.addInternalFrameListener(new InternalFrameClosingAdapter(
+                new FrameClosingFunction() {
+            @Override
+            public void doFrameClosing(InternalFrameEvent e) {
+                doExclWindowClosing(main, moExclusionManager);
+            }
+        }));
         desktop.add(mitlExclusions);
+    }
+    
+    private interface FrameClosingFunction {
+        public void doFrameClosing(InternalFrameEvent e);
+    }
+    private class InternalFrameClosingAdapter implements InternalFrameListener {
+        private FrameClosingFunction f;
+        public InternalFrameClosingAdapter(FrameClosingFunction f) {
+            this.f = f;
+        }
+        @Override
+        public void internalFrameClosing(InternalFrameEvent e) {
+            f.doFrameClosing(e);
+        }
+        @Override
+        public void internalFrameOpened(InternalFrameEvent e) {}
+        @Override
+        public void internalFrameClosed(InternalFrameEvent e) {}
+        @Override
+        public void internalFrameIconified(InternalFrameEvent e) {}
+        @Override
+        public void internalFrameDeiconified(InternalFrameEvent e) {}
+        @Override
+        public void internalFrameActivated(InternalFrameEvent e) {}
+        @Override
+        public void internalFrameDeactivated(InternalFrameEvent e) {}
+    }
+    
+    private interface FrameTitleSetter {
+        public void setFrameTitle(String title);
+    }
+    private DirtyListener createDirtyListener(final String dirtyTitle
+            , final String cleanTitle, final FrameTitleSetter fts) {
+        return new DirtyListener(){
+            @Override
+            public void dirtyChanged(boolean newDirtyState) {
+                String strTitle;
+
+                // If dirty
+                if (newDirtyState)
+                    strTitle = dirtyTitle;
+                else
+                    strTitle = cleanTitle;
+
+                fts.setFrameTitle(strTitle);
+            }
+        };
     }
     
     private void createRulesEditorScreen(JDesktopPane desktop) {
 
+        final MainWindow main = this;
         final RulesEditor rulesEditor = new RulesEditor(
                 moIO.getRuleFileContents(), mvLabors);
-        rulesEditor.addDirtyListener(this);
-        final MainWindow main = this;
+        
+        // Update title of Rules Editor when dirty state changes
+        DirtyListener dirtyListener = createDirtyListener(
+                RULES_EDITOR_TITLE_DIRTY, RULES_EDITOR_TITLE_CLEAN
+                , new FrameTitleSetter() {
+
+            @Override
+            public void setFrameTitle(String title) {
+                if (! title.equals(mitlRulesEditor.getTitle()))
+                    mitlRulesEditor.setTitle(title);
+            }
+        });        
         
         mitlRulesEditor = new JInternalFrame(RULES_EDITOR_TITLE_CLEAN, true, true, true
                 , true);
@@ -263,38 +331,24 @@ public class MainWindow extends JFrame implements DirtyListener {
         
         mitlRulesEditor.setLayout(new BorderLayout());
         mitlRulesEditor.add(rulesEditor);
-        mitlRulesEditor.pack();        
+        mitlRulesEditor.pack();
         
-        mitlRulesEditor.addInternalFrameListener(new InternalFrameListener() {
-
+        rulesEditor.getDirtyHandler().addDirtyListener(dirtyListener);
+        mitlRulesEditor.addInternalFrameListener(new InternalFrameClosingAdapter(
+            new FrameClosingFunction() {
             @Override
-            public void internalFrameOpened(InternalFrameEvent e) { // Do nothing
-            }
-            @Override
-            public void internalFrameClosing(InternalFrameEvent e) {
+            public void doFrameClosing(InternalFrameEvent e) {
                 doRulesWindowClosing(main, rulesEditor);
             }
-            @Override
-            public void internalFrameClosed(InternalFrameEvent e) { // Do nothing
-            }
-            @Override
-            public void internalFrameIconified(InternalFrameEvent e) { // Do nothing
-            }
-            @Override
-            public void internalFrameDeiconified(InternalFrameEvent e) { // Do nothing
-            }
-            @Override
-            public void internalFrameActivated(InternalFrameEvent e) { // Do nothing
-            }
-            @Override
-            public void internalFrameDeactivated(InternalFrameEvent e) { // Do nothing
-            }
-        });
-
+        }));
+        
         desktop.add(mitlRulesEditor);
     }
-    private void doRulesWindowClosing(MainWindow main, RulesEditor rulesEditor) {
-        if (rulesEditor.isDirty()) {
+    
+    private interface ConfirmFunction { public void doConfirm(); }
+    private void doWindowClosing(MainWindow main, DirtyForm editor
+            , ConfirmFunction cf) {
+        if (editor.getDirtyHandler().isDirty()) {
             MyHandyOptionPane optionPane = new MyHandyOptionPane();
             Object[] options = { "Yes", "No" };
             Object result = optionPane.yesNoDialog(main
@@ -302,12 +356,36 @@ public class MainWindow extends JFrame implements DirtyListener {
                     , "Would you like to save your changes?"
                     , "Save changes?");
             if ("Yes".equals(result.toString()))
-                saveRuleFile(rulesEditor);
-        }
+                cf.doConfirm();
+        }            
     }
+    private void doRulesWindowClosing(MainWindow main, final RulesEditor rulesEditor) {
+        doWindowClosing(main, rulesEditor, new ConfirmFunction() {
+            @Override
+            public void doConfirm() {
+                saveRuleFile(rulesEditor);
+            }
+        });
+    }
+    private void doExclWindowClosing(MainWindow main, final ExclusionPanel exclMgr) {
+        doWindowClosing(main, exclMgr, new ConfirmFunction() {
+            @Override
+            public void doConfirm() {
+                saveExclusions(exclMgr);
+            }
+        });
+    }
+    private void saveExclusions(ExclusionPanel exclMgr) {
+        exclMgr.saveExclusions();
+        exclMgr.getDirtyHandler().setClean();
+
+        //TODO: Update dwarf list exclusion defaults?
+        
+    }
+    
     private void saveRuleFile(RulesEditor rulesEditor) {
         moIO.writeRuleFile(rulesEditor.getCurrentFile());
-        rulesEditor.setClean();
+        rulesEditor.getDirtyHandler().setClean();
         
         // Recreate local blacklist structures & resend blacklist to Job Settings screen
         setBlacklistStructures();
@@ -337,14 +415,45 @@ public class MainWindow extends JFrame implements DirtyListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //try {
                 doRulesWindowClosing(main, rulesEditor);
                 mitlRulesEditor.setVisible(false);
-/*                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                    ex.printStackTrace();
-                    System.err.println("Failed to close JInternalFrame");
-                } */
+            }
+        });
+        menu.add(menuItem);
+        
+        return menuBar;
+    }
+    
+    private JMenuBar createExclusionMgrMenu() {
+        final MainWindow main = this;
+        
+        JMenuBar menuBar = new JMenuBar();
+        
+        JMenu menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
+        menuBar.add(menu);
+        
+        JMenuItem menuItem = new JMenuItem("Save");
+        menuItem.setMnemonic(KeyEvent.VK_S);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke("control S"));
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moExclusionManager.saveExclusions();
+            }
+        });
+        menu.add(menuItem);
+        
+        menu.add(new JSeparator());
+        
+        menuItem = new JMenuItem("Close");
+        menuItem.setMnemonic(KeyEvent.VK_C);
+        menuItem.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                doExclWindowClosing(main, moExclusionManager);
+                mitlExclusions.setVisible(false);
             }
         });
         menu.add(menuItem);
@@ -495,7 +604,7 @@ public class MainWindow extends JFrame implements DirtyListener {
             
         } catch (Exception e) {
             throw e;
-        }
+        }   
     }
     private void setBlacklistStructures() {
         moJobBlacklist = moIO.getBlacklist();
@@ -612,7 +721,7 @@ public class MainWindow extends JFrame implements DirtyListener {
                 }
             }
         });
-        menuItem.setEnabled(false); // TODO: enable when this is complete
+        menuItem.setEnabled(false); // TODO
         menu.add(menuItem);
         
         // -------------------------------
@@ -833,16 +942,25 @@ public class MainWindow extends JFrame implements DirtyListener {
     
     private void readDwarves() throws Exception {
         NodeList nodes = null;
+        mvDwarves = new Vector<Dwarf>();
         try {
-            nodes = moIO.readDwarves(mstrDwarvesXML);
+            
+            DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
+            dwarfIO.readDwarves(mstrDwarvesXML);
+            mvDwarves = dwarfIO.getDwarves();
+            
+            //nodes = moIO.readDwarves(mstrDwarvesXML);
+            
             /*myXMLReader xmlFileReader = new myXMLReader(mstrDwarvesXML);
             NodeList nodes = xmlFileReader.getDocument().getElementsByTagName("Creature"); */
-            System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");            
+            //System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");            
         } catch (Exception e) {
+            System.err.println("DwarfIO failed to read dwarves.xml");
             throw e;
         } finally {
             // Display a grid of the dwarves
-            moDwarfListWindow = new DwarfListWindow(nodes, mvLabors, mvLaborGroups);
+            //moDwarfListWindow = new DwarfListWindow(nodes, mvLabors, mvLaborGroups);
+            moDwarfListWindow = new DwarfListWindow(mvDwarves, mvLabors); //, mvLaborGroups);
         }
         
     }
@@ -899,7 +1017,7 @@ public class MainWindow extends JFrame implements DirtyListener {
         }
     }
 
-    // Updates the title of Rules Editor when the dirty state changes
+/*    // Updates the title of Rules Editor when the dirty state changes
     @Override
     public void dirtyChanged(boolean newDirtyState) {
         
@@ -913,6 +1031,6 @@ public class MainWindow extends JFrame implements DirtyListener {
         
         if (! strTitle.equals(mitlRulesEditor.getTitle()))
             mitlRulesEditor.setTitle(strTitle);
-    }
+    } */
     
 }
