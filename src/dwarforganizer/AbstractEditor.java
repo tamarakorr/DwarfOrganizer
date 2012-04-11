@@ -9,7 +9,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Arrays;
 import javax.swing.JButton;
 import javax.swing.JTable;
 import myutils.MyHandyTable;
@@ -51,8 +50,8 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     
     protected void initialize(JTable table, MyTableModel model
             , JButton btnUpdate, boolean clearAfterAdd
-            , boolean clearAfterEdit, boolean editOnDoubleClick
-            , final int[] editKeys, final int[] deleteKeys) { // DefaultTableModel
+            , boolean clearAfterEdit, boolean editOnDoubleClick) {
+            //, final int[] editKeys, final int[] deleteKeys) { // DefaultTableModel
         
         moTable = table;
         moModel = model;
@@ -85,17 +84,22 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             });
         }
         
-        if (editKeys.length > 0 || deleteKeys.length > 0) {
-            Arrays.sort(editKeys);      // Arrays must be sorted before binarySearch
-            Arrays.sort(deleteKeys);
+        // Keys are hard coded because I couldn't find a way to pass them in
+        // as integers using modifier masks (example: control enter to edit)
+        //if (editKeys.length > 0 || deleteKeys.length > 0) {
+            //Arrays.sort(editKeys);      // Arrays must be sorted before binarySearch
+            //Arrays.sort(deleteKeys);
             moTable.addKeyListener(new KeyListener() {
 
                 @Override
                 public void keyTyped(KeyEvent e) {
-                    if (Arrays.binarySearch(editKeys, e.getKeyCode()) >= 0)
+                    //if (Arrays.binarySearch(editKeys, e.getKeyChar()) >= 0)
+                    if (e.isControlDown() && (e.getKeyChar() == KeyEvent.VK_ENTER))
                         editRow();
-                    else if (Arrays.binarySearch(deleteKeys, e.getKeyCode()) >= 0)
+                    else if (e.getKeyChar() == KeyEvent.VK_DELETE)
                         deleteRow();
+                    //else
+                    //    System.out.println("Key typed: " + e.getKeyChar());
                 }
                 @Override
                 public void keyPressed(KeyEvent e) { // Do nothing
@@ -104,13 +108,13 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
                 public void keyReleased(KeyEvent e) { // Do nothing
                 }
             });
-        }
+        //}
         this.setEditingState(EditingState.NEW); // Default editing state
     }
     
     public abstract void clearInput();
     public abstract boolean validateInput();
-    public abstract T createRowData(); // Create row data from input control contents // Vector<Object>
+    public abstract T createRowData(boolean isNew); // Create row data from input control contents // Vector<Object>
     public abstract boolean rowDataToInput(T rowData); // int modelRow
     
     @Override
@@ -121,26 +125,6 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     protected int getCurrentEditedRow() {
         return mintCurrentEditedRow;
     }
-    
-/*    protected void addDirtyListener(DirtyListener newListener) {
-        Vector<DirtyListener> v = (Vector<DirtyListener>) mvDirtyListener.clone();
-        if (! v.contains(newListener))
-            mvDirtyListener.add(newListener);
-    }
-    private void notifyDirtyListeners() {
-        Vector<DirtyListener> v = (Vector<DirtyListener>) mvDirtyListener.clone();
-        for (DirtyListener listener : v) {
-            listener.dirtyChanged(mbDirty);
-        }
-    }
-    protected boolean isDirty() { return mbDirty; }
-    protected void setClean() { setDirty(false); }
-    protected void setDirty(boolean newValue) {
-        if (mbDirty != newValue) {
-            mbDirty = newValue;
-            notifyDirtyListeners();
-        }
-    }    */
     
     public boolean addRecord() {
         try {
@@ -205,12 +189,12 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             int modelRow = moTable.convertRowIndexToModel(row);
             moModel.removeRow(modelRow);
             mintCurrentEditedRow = -1;
+            setEditingState(EditingState.NEW);
             moDirtyHandler.setDirty(true);
             return true;
         }
         else
             return false;
-        
     }
     
     private boolean inputToRow(int modelRow) {        
@@ -220,7 +204,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             }
             
             //Vector<Object> vRowData = createRowData();
-            T rowData = createRowData();
+            T rowData = createRowData(false);
             moModel.updateRow(modelRow, rowData);
             //moModel.removeRow(modelRow);
             //moModel.insertRow(modelRow, vRowData);
@@ -229,7 +213,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             MyHandyTable.ensureIndexIsVisible(moTable
                     , moTable.convertRowIndexToView(modelRow));
 
-        } catch (Exception e) {
+        } catch (Exception ignore) {
             return false;
         }
         return true;        
@@ -240,7 +224,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
                 return false;
             }
             
-            moModel.addRow(createRowData());
+            moModel.addRow(createRowData(true));
 
             moDirtyHandler.setDirty(true);
             int modelIndex = moModel.getRowCount() - 1;

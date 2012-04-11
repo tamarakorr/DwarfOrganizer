@@ -5,6 +5,7 @@
 
 package dwarforganizer;
 
+import java.util.Arrays;
 import java.util.Vector;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
@@ -13,64 +14,55 @@ import javax.swing.table.AbstractTableModel;
  * A less simple table model.
  * Allows storage of objects instead of just attributes
  * 
+ * @see MyEditableTableModel for editable version (T must extend
+ * MyPropertySetter as well)
+ * 
  * @author Tamara Orr
  */
 public class MyTableModel<T extends MyPropertyGetter>
         extends AbstractTableModel {
 
     private Object[] maoColumnHeadings;
-    private Class[] maColumnClass;
-    private String[] masColumnPropertyNames;
-    private Vector<T> mvRowData;
-    private Vector<Integer> mvEditableExceptionCols = new Vector<Integer>();
-    private boolean mbEditable = false;
+    //private Class[] maColumnClass;
+    private Vector<Class> mvColumnClass;
+    //protected String[] masColumnPropertyNames;
+    protected Vector<String> mvColumnPropertyNames;
+    protected Vector<T> mvRowData;
+    //private Vector<Integer> mvEditableExceptionCols;
+    //private boolean mbEditable;
     private SortKeySwapper moSortKeySwapper;    // For preventing API bug with fireTableRowsInserted() on sorted table
     
-    //public MyTableModel() { super(); }
-/*    public MyTableModel(Object[] cols, int rowCount, Vector<T> rows) {
-        super(cols, rowCount);
-        maoColumnHeadings = cols;
-        mvRowData = rows;
-    }
-    public MyTableModel(Object[] cols, int rowCount, Class[] columnClass
-            , Vector<T> rows) {
-        super(cols, rowCount, columnClass);
-        maoColumnHeadings = cols;
-        mvRowData = rows;
-    }
-    public MyTableModel(Vector cols, int rowCount, Vector<T> rows) {
-        super(cols, rowCount);
-        maoColumnHeadings = cols.toArray();
-        mvRowData = rows;
-    }
-    public MyTableModel(Vector cols, int rowCount, Class[] columnClass
-            , Vector<T> rows) {
-        super(cols, rowCount, columnClass);
-        maoColumnHeadings = cols.toArray();
-        mvRowData = rows;
-    } */
-    //public MyTableModel(boolean editable) {
-    //    super(editable);
-    //}
     public MyTableModel(Object[] cols, Class[] colClasses, String[] colProps
             , Vector<T> rows, SortKeySwapper sortKeySwapper) {
         //super();
         maoColumnHeadings = cols;
-        maColumnClass = colClasses;
-        masColumnPropertyNames = colProps;
+        mvColumnClass = new Vector<Class>(Arrays.asList(colClasses));
+        mvColumnPropertyNames = new Vector<String>(Arrays.asList(colProps));
         mvRowData = rows;
         moSortKeySwapper = sortKeySwapper;
+        
+        //initialize();
     }
     public MyTableModel(Vector<Object> cols, Class[] colClasses
             , String[] colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
         //super();
         maoColumnHeadings = cols.toArray();
-        maColumnClass = colClasses;
-        masColumnPropertyNames = colProps;
+        mvColumnClass = new Vector<Class>(Arrays.asList(colClasses));
+        mvColumnPropertyNames = new Vector<String>(Arrays.asList(colProps));
+        mvRowData = rows;
+        moSortKeySwapper = sortKeySwapper;
+        
+        //initialize();
+    }
+    public MyTableModel(Vector<Object> cols, Vector<Class> colClasses
+            , Vector<String> colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
+        maoColumnHeadings = cols.toArray();
+        mvColumnClass = colClasses;
+        mvColumnPropertyNames = colProps;
         mvRowData = rows;
         moSortKeySwapper = sortKeySwapper;
     }
-    
+        
     @Override
     public int getRowCount() {
         return mvRowData.size();
@@ -85,7 +77,7 @@ public class MyTableModel<T extends MyPropertyGetter>
     public Object getValueAt(int rowIndex, int columnIndex) {
         T oRow = mvRowData.get(rowIndex);
         // Get the user readable version of the property:
-        return oRow.getProperty(masColumnPropertyNames[columnIndex].toString()
+        return oRow.getProperty(mvColumnPropertyNames.get(columnIndex).toString()
                 , true);
     }
     
@@ -123,18 +115,7 @@ public class MyTableModel<T extends MyPropertyGetter>
                 fireTableRowsInserted(firstIndex, lastIndex);
                 moSortKeySwapper.swapSortKeys();                
             }
-        });
-        
-/*        Runnable runnable = new Runnable() {            
-            @Override
-            public void run() {
-                moSortKeySwapper.swapSortKeys();        // TODO: This swap isn't really safe
-                fireTableRowsInserted(firstIndex, lastIndex);
-                moSortKeySwapper.swapSortKeys();
-            }
-        };
-
-        runSynchronousOnEDT(runnable); */
+        });        
     }
     private void runSynchronousOnEDT(Runnable runnable) {
         if (SwingUtilities.isEventDispatchThread())
@@ -196,7 +177,7 @@ public class MyTableModel<T extends MyPropertyGetter>
 
         runSynchronousOnEDT(runnable);        */
     }
-    private void fireUpdated(final int firstIndex, final int lastIndex) {
+    protected void fireUpdated(final int firstIndex, final int lastIndex) {
         runFireOnEDT(new FiringFunction() {
             @Override
             public void fireIt() {
@@ -244,15 +225,19 @@ public class MyTableModel<T extends MyPropertyGetter>
     public Vector<T> getRowData() {
         return mvRowData;
     }
+    public void setRowData(Vector<T> newRowData) {
+        mvRowData = newRowData;
+        this.fireTableDataChanged();
+    }
     
     @Override
     public Class getColumnClass(int columnIndex) {
         try {
             
             // If column class array is set, use its value
-            if (maColumnClass != null) {
+            if (mvColumnClass != null) {
                 //System.out.println("Returning " + maColumnClass[columnIndex].getSimpleName());
-                return maColumnClass[columnIndex];
+                return mvColumnClass.get(columnIndex);
             }
             // If column class array is not set, guess the value by looking
             // for a non-null in the specified column
@@ -269,15 +254,13 @@ public class MyTableModel<T extends MyPropertyGetter>
         }
     }
     
-    public void addEditableException(int col) {
-        if (! mvEditableExceptionCols.contains(col))
-            mvEditableExceptionCols.add(col);
+    // Calls for a repaints when the underlying object was changed
+    public void fireUpdateForKey(long key) {
+        for (int iCount = 0; iCount < mvRowData.size(); iCount++) {
+            if (key == getKeyForRow(iCount)) {
+                fireUpdated(iCount, iCount);
+                break;
+            }
+        }
     }
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        if (mvEditableExceptionCols.contains(column))
-            return ! mbEditable;
-        else
-            return mbEditable;
-    }    
 }

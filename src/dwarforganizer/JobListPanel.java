@@ -106,11 +106,6 @@ public class JobListPanel extends JPanel {
             }
             return c;
         }
-/*        private boolean isClassNumeric(Class c) {
-            return (c == Integer.class || c == Long.class || c == Float.class
-                    || c == Double.class || c == int.class || c == long.class
-                    || c == float.class || c == double.class);
-        } */
     }
     
     // A JTable that uses SelectingEditors for column edits
@@ -159,15 +154,6 @@ public class JobListPanel extends JPanel {
         mvLabors = vLabors;
         moBlacklist = blacklist;
         moIO = io;
-        
-/*        // Read rule file
-        try {
-            readRuleFile();
-        } catch (Exception ex) {
-            System.err.println("Failed to process rules.txt. All results are invalid.");
-            ex.printStackTrace();
-            throw new CouldntProcessFileException();
-        } */
         
         // Create labor settings
         for (Labor labor : vLabors) {
@@ -404,7 +390,7 @@ public class JobListPanel extends JPanel {
     }
     
     public File getDirectory() {
-        // TODO: My Documents is nice but multiplatform makes me incredibly nervous.
+        // TODO: My Documents is nice but multiplatform makes me nervous.
         // Samples is not the right place either but using it for now...
         
         //String strDir = System.getProperty("user.home") + "/My Documents/";

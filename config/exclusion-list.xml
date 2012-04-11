@@ -2,7 +2,26 @@
 <Exclusions>
     <FileVersion Version="B"/>
     <ExclusionRules>
-        <ExclusionRule Comparator="Less than" Field="Age" ID="0" Name="Juveniles" Value="13"/>
+        <ExclusionRule Comparator="Less than" Field="Age" ID="2" Name="Juvenile" Value="13"/>
+        <ExclusionRule Comparator="Contains" Field="Nickname" ID="7" Name="Vampire" Value="Vampire"/>
     </ExclusionRules>
-    <ExclusionLists/>
+    <ExclusionLists>
+        <ExclusionList ID="8" Name="Earthsplatter Dead">
+            <Citizens>
+                <Citizen Name="Thob Thob Etarnish"/>
+                <Citizen Name="Catten `Catten N' Rovodusen"/>
+                <Citizen Name="Minkot `Minkot N' Kûbuktath"/>
+                <Citizen Name="Asën `Asen M13' Dakostothlest"/>
+                <Citizen Name="Momuz `Momuz N' Soshtirist"/>
+                <Citizen Name="Mosus `Mosus M12' Eturfer"/>
+                <Citizen Name="Kulet `Kulet M10' Rakustzas"/>
+                <Citizen Name="Kol `Kol M10' Sazirmubun"/>
+                <Citizen Name="Deduk `Deduk M10' Edoslikot"/>
+                <Citizen Name="Fath `Fath M8' Lamcerol"/>
+                <Citizen Name="Lokum `Lokum M7' Anilavuz"/>
+                <Citizen Name="Solon `Solon M7' Gamilzas"/>
+                <Citizen Name="Kivish `Kivish M5' Unibrinul"/>
+            </Citizens>
+        </ExclusionList>
+    </ExclusionLists>
 </Exclusions>

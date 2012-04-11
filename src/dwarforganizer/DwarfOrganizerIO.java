@@ -47,6 +47,8 @@ import org.xml.sax.SAXException;
  */
 public class DwarfOrganizerIO {
     
+    public static final boolean DEFAULT_EXCLUSION_ACTIVE = true;
+    
     private static final String GROUP_LIST_FILE_NAME = "config/group-list.txt";
     private static final String LABOR_LIST_FILE_NAME = "config/labor-list.txt";
     private static final String RULE_FILE_NAME = "config/rules.txt";
@@ -299,6 +301,18 @@ public class DwarfOrganizerIO {
         
         public Vector<Dwarf> getDwarves() {
             return mvDwarves;
+        }
+
+        public Hashtable<String, MetaSkill> getMetaSkills() {
+            return mhtMetaSkills;
+        }
+
+        public Hashtable<String, Skill> getSkills() {
+            return mhtSkills;
+        }
+
+        public Hashtable<String, Stat> getStats() {
+            return mhtStats;
         }
         
         public void readDwarves(String filePath) throws Exception { // NodeList
@@ -586,7 +600,7 @@ public class DwarfOrganizerIO {
                 Hashtable<String, Long> statValues = new Hashtable<String, Long>();
                 Hashtable<String, Long> htPercents = new Hashtable<String, Long>();
                 for (String key : mhtStats.keySet()) {
-                    //System.out.println("Getting " + htStats.get(key).name);
+                    //System.out.println("Getting " + mhtStats.get(key).name);
 
                     long value;
                     if (mhtStats.get(key).xmlName != null)
@@ -629,15 +643,15 @@ public class DwarfOrganizerIO {
                 // Create a dwarf object
                 Dwarf oDwarf = new Dwarf();
 
-                oDwarf.name = getTagValue(thisCreature, "Name", "Error - Null Name");
-                oDwarf.age = age;
-                oDwarf.gender = getTagValue(thisCreature, "Sex", "Error - Null Sex");
-                oDwarf.nickname = getTagValue(thisCreature, "Nickname", "");
+                oDwarf.setName(getTagValue(thisCreature, "Name", "Error - Null Name"));
+                oDwarf.setAge(age);
+                oDwarf.setGender(getTagValue(thisCreature, "Sex", "Error - Null Sex"));
+                oDwarf.setNickname(getTagValue(thisCreature, "Nickname", ""));
                 oDwarf.statPercents = htPercents;
                 oDwarf.statValues = statValues;
-                oDwarf.time = MAX_DWARF_TIME;
-                oDwarf.jobText = getTagList(thisCreature, "Labours");
-                String jobs[] = oDwarf.jobText.split("\n");
+                oDwarf.setTime(MAX_DWARF_TIME);
+                oDwarf.setJobText(getTagList(thisCreature, "Labours"));
+                String jobs[] = oDwarf.getJobText().split("\n");
                 //if (jobs.length <= 1)
                     //System.out.println("No labors enabled.");
                 //else {    
@@ -682,7 +696,7 @@ public class DwarfOrganizerIO {
 
                 } catch (java.lang.NullPointerException e) {
                     System.err.println("Skills are not present in the given dwarves.xml file. "
-                            + oDwarf.name + " will not have skill levels.");
+                            + oDwarf.getName() + " will not have skill levels.");
                 }
 
                 // Simple skill potentials
@@ -943,10 +957,10 @@ public class DwarfOrganizerIO {
                     
                     Element eleCitizens = doc.createElement("Citizens");
                     eleList.appendChild(eleCitizens);
-                    for (Dwarf citizen : list.getCitizenList()) {
+                    for (String citizen : list.getCitizenList()) {
                         Element eleCitizen = doc.createElement("Citizen");
                         eleCitizens.appendChild(eleCitizen);
-                        eleCitizen.setAttribute("Name", citizen.name);
+                        eleCitizen.setAttribute("Name", citizen);
                     }
                 }
             }
@@ -1027,7 +1041,7 @@ public class DwarfOrganizerIO {
                         srf.setID(id);
                         srf.doVersionBPlusFunction(ele);
                     }
-
+                    //System.out.println("Reading exclusion #" + id);
                     mintMaxExclID = Math.max(mintMaxExclID, id);
                     vReturn.add(srf.createExclusion());
                     
@@ -1040,12 +1054,13 @@ public class DwarfOrganizerIO {
         return vReturn;
     }
     
-    public Vector<Exclusion> readExclusions(final Vector<Dwarf> citizens) {
+    public DeepCloneableVector<Exclusion> readExclusions(final Vector<Dwarf> citizens) {
+            //, final Hashtable<Integer, Boolean> htActive) {
         Node node;
         Element ele;
         String version;
                 
-        Vector<Exclusion> vReturn = new Vector<Exclusion>();
+        DeepCloneableVector<Exclusion> vReturn = new DeepCloneableVector<Exclusion>();
 
         File file = new File(EXCLUSION_FILE_NAME);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -1075,8 +1090,10 @@ public class DwarfOrganizerIO {
 
                 @Override
                 public Exclusion createExclusion() {
-                    return new ExclusionRule(this.ID, this.name, this.field
-                            , this.comparator, this.value);
+                    return new ExclusionRule(this.ID, this.name
+                            , DEFAULT_EXCLUSION_ACTIVE
+                            , this.field
+                            , this.comparator, this.value); // isExclusionActive(this.ID, htActive)
                 }
 
                 @Override
@@ -1089,7 +1106,8 @@ public class DwarfOrganizerIO {
             
             // Exclusion Lists---------------
             SectionReader exclusionListReader = new SectionReader() {
-                private Vector<Dwarf> vCitizen;
+                //private DeepCloneableVector<Dwarf> vCitizen;
+                Vector<String> vCitizenName;
                 
                 @Override
                 public void doVersionAPlusFunction(Element ele) {
@@ -1098,7 +1116,7 @@ public class DwarfOrganizerIO {
 
                 @Override
                 public void doVersionBPlusFunction(Element ele) {
-                    Vector<String> vCitizenName = new Vector<String>();
+                    vCitizenName = new Vector<String>();
                     NodeList nlist = ele.getElementsByTagName("Citizen");
                     for (int iCount = 0; iCount < nlist.getLength(); iCount++) {
                         Node node = nlist.item(iCount);
@@ -1108,13 +1126,14 @@ public class DwarfOrganizerIO {
                         }
                     }
                     //System.out.println("Citizens in list: " + vCitizenName.size() + ", citizen total list size = " + citizens.size());
-                    vCitizen = getCitizensFromNames(vCitizenName, citizens);
+                    //vCitizen = getCitizensFromNames(vCitizenName, citizens);
                     //System.out.println("    Found " + vCitizen.size() + " matching citizen objects");
                 }
                 
                 @Override
                 public Exclusion createExclusion() {
-                    return new ExclusionList(this.ID, this.name, vCitizen);
+                    return new ExclusionList(this.ID, this.name
+                            , DEFAULT_EXCLUSION_ACTIVE, vCitizenName); // isExclusionActive(this.ID, htActive)
                 }
 
             };
@@ -1154,17 +1173,30 @@ public class DwarfOrganizerIO {
         mintMaxExclID++;
         return mintMaxExclID;
     }
-    private Vector<Dwarf> getCitizensFromNames(Vector<String> names
+    protected Integer getMaxUsedExclusionID() {
+        return mintMaxExclID;
+    }
+    private boolean isExclusionActive(int ID
+            , Hashtable<Integer, Boolean> htActive) {
+        if (htActive == null)
+            return false;
+        else if (htActive.containsKey(ID))
+            return htActive.get(ID);
+        else
+            return false;
+    }
+    private DeepCloneableVector<Dwarf> getCitizensFromNames(Vector<String> names
             , Vector<Dwarf> citizens) {
         
-        Vector<Dwarf> vReturn = new Vector<Dwarf>();
+        DeepCloneableVector<Dwarf> vReturn = new DeepCloneableVector<Dwarf>();
         
         for (String name : names) {
             //System.out.println("Looking for " + name);
             
             //Get the dwarf object for the name
             for (Dwarf citizen : citizens) {
-                if (citizen.name.equals(name)) {
+                //Dwarf citizen = (Dwarf) oCitizen;
+                if (citizen.getName().equals(name)) {
                     vReturn.add(citizen);
                     break;
                 }

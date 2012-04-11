@@ -351,10 +351,10 @@ public class ResultsView implements ActionListener {
         
         // Fill in a row for each dwarf.
         for (int row = 0; row < mvDwarves.size(); row++) {
-            oModel.setValueAt(mvDwarves.get(row).name, row, 0);
-            oModel.setValueAt(mvDwarves.get(row).nickname, row, 1);
+            oModel.setValueAt(mvDwarves.get(row).getName(), row, 0);
+            oModel.setValueAt(mvDwarves.get(row).getNickname(), row, 1);
             oModel.setValueAt( //NumberFormat.getInstance().format(
-                    JobOptimizer.MAX_TIME - mvDwarves.get(row).time, row, 2);   // getPercentInstance()
+                    JobOptimizer.MAX_TIME - mvDwarves.get(row).getTime(), row, 2);   // getPercentInstance()
             oModel.setValueAt( //NumberFormat.getNumberInstance().format(
                     mdblScores[row], row, 5);  // getSkillSum(row)
             

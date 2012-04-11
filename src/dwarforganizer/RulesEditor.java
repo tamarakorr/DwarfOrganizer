@@ -248,23 +248,21 @@ public class RulesEditor extends JPanel implements DirtyForm {
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.add(new JLabel("Comment"), BorderLayout.NORTH);
-        mtxtComment = new PlaceholderTextField(40, "Add a comment (optional)", true);
-        //MyHandyTextField.autoHighlight(mtxtComment);
+        mtxtComment = new PlaceholderTextField(20, "Add a comment (optional)", true);
         panel.add(mtxtComment, BorderLayout.SOUTH);
         
         panCommentOnTop.add(panel, BorderLayout.NORTH);
         panCommentOnTop.add(panEdit, BorderLayout.CENTER);
         
         panel = new JPanel();
-        //panel.setLayout(new FlowLayout());
-        //panel.add(new JLabel("Meaning: "));
-        mlblMeaning = new JLabel("X");
+        mlblMeaning = new JLabel("[Message]");
         //mlblMeaning.setFont(mlblMeaning.getFont().deriveFont(Font.ITALIC));
         panel.add(mlblMeaning);
+        updateMeaning();
         panCommentOnTop.add(panel, BorderLayout.SOUTH);
         
         this.setLayout(new BorderLayout());
-        this.add(sp, BorderLayout.NORTH);
+        this.add(sp, BorderLayout.CENTER);
         this.add(panCommentOnTop, BorderLayout.SOUTH);
         
     }

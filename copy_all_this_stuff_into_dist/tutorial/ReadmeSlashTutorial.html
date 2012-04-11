@@ -12,8 +12,8 @@
       Organizer program" name="description">
   </head>
   <body dir="LTR" lang="en-US">
-    <a name="Top"></a>Table of Contents : Dwarf Organizer - v1.14 -
-    April 8, 2012<br>
+    <a name="Top"></a>Table of Contents : Dwarf Organizer - v1.20 -
+    April 11, 2012<br>
     <ol id="mozToc">
       <!--mozToc h1 1 h2 2 h3 3 h4 4 h5 5 h6 6-->
       <li><a href="#mozTocId6767">Readme/Tutorial for Dwarf Organizer</a></li>
@@ -49,6 +49,7 @@
       </li>
       <li><a href="#mozTocId593648">Advanced Concepts</a>
         <ol>
+          <li><a href="#mozTocId461722">Using the Exclusion Manager</a></li>
           <li><a href="#mozTocId529560">Blacklisting Jobs with the Rules
               Editor </a></li>
           <li><a href="#mozTocId737476">Whitelisting Jobs with the Rules
@@ -64,15 +65,16 @@
     Dwarf Organizer is a tool that can be useful to help distribute
     labor among your citizens in Dwarf Fortress.<br>
     <p>Disclaimer: Dwarf Organizer was originally written for personal
-      use, on my own time. It was worked-on in the very noisy
+      use, in my free time. It was worked-on in the very noisy
       environment of my home. While working on it, I was often tired,
       sometimes intoxicated, and frequently interrupted by household
       members, burglars, policemen, repairmen, power and internet
-      outages, the general public, and a cat. As such, the programming,
-      interface, and overall finish do not reach the high standards that
-      my paid projects achieve! Dwarf Organizer is not fully-featured,
-      it is probably not totally foolproof, and it might not do all the
-      things you wish. That said, I use it a lot, and it works so...<br>
+      outages, the general public, and a very friendly cat. As such, the
+      programming, interface, and overall finish do not reach the high
+      standards that my paid projects achieve! Dwarf Organizer is not
+      fully-featured, it is probably not totally foolproof, and it might
+      not do all the things you wish. That said, I use it a lot, and it
+      works so...<br>
     </p>
     <p>If you want to try it, this tutorial should get you started!<br>
     </p>
@@ -86,6 +88,7 @@
     <p>2<a href="ReadmeSlashTutorial.html#Star">*</a>. Make an <b>XML
         export of your dwarves</b>. You can use <a
         href="http://www.bay12forums.com/smf/index.php?topic=59056.0">Runesmith
+
 
 
 
@@ -111,9 +114,10 @@
       whatever you called it in Step 2) and click Open.<br>
     </p>
     <p><a name="Star"></a>*If you would just like to try out Dwarf
-      Organizer without using Runesmith or DFHack, there is a
-      sample-dwarves.xml file included with the program in the
-      Samples\Dwarves\ directory. (It should open by default.) </p>
+      Organizer without using Runesmith or DFHack, there are a couple
+      sample dwarves.xml files included with the program in the
+      samples\dwarves\ directory. (It should open by default, but on
+      Windows Vista, it doesn't.) </p>
     <p>If you followed these steps without problems, then you are ready
       to use Dwarf Organizer!<br>
     </p>
@@ -130,9 +134,11 @@
     <p>Use the "Columns" menu to view more (or less) information about
       your dwarves.<br>
     </p>
-    <p>"Include" is the only column you can edit. This tells Dwarf
-      Organizer which dwarves you want to assign labor. Use the
+    <p>"Include" is the only column you can edit directly. This tells
+      Dwarf Organizer which dwarves you want to assign labor. Use the
       right-click context menu to include or exclude all selected
+      dwarves. See <a href="#mozTocId461722">Using the Exclusion
+        Manager</a> for more information about automatically excluding
       dwarves.<br clear="all">
     </p>
     <h1 style=" margin-top: 0.17in; page-break-after: avoid"><a
@@ -149,12 +155,13 @@
       Open <span style="font-weight: bold;">Sample-Starting-Seven-Aquifer.txt</span>
       (in the Samples\Jobs\ directory) using the dialog that follows.<br>
     </p>
-    <p><br clear="all">
+    <p>This profile is more complex than what you may want to do with
+      Dwarf Organizer, but it's good for an example.<br clear="all">
       <img style=" width: 658px; height: 448px;" alt="Job Settings
         Picture" src="jobsettings.jpg" align="left"><br>
-      Now the Job Settings window should be populated with some real
+      So now the Job Settings window should be populated with some real
       data. It is a colorful window that is probably behind the Dwarf
-      List window. <b>Bring it to the front by clicking on it</b> or
+      List window. <b>Bring it to the front by clicking on it</b> or by
       choosing Window-&gt;Job Settings, if you haven't already. I will
       explain the contents of this window now:</p>
     <p>The Job Settings window contains a table with some columns. Jobs
@@ -163,9 +170,9 @@
     <p>In the Job Settings table, "Labor" corresponds with the labor
       names you are familiar with in DF. "Qty" is the number of
       different dwarves you would like to assign that labor. You can
-      see, for example, in Sample-Starting-Seven-Aquifer profile that we
-      are not choosing a Chief Medical Dwarf, and that we are choosing
-      four Miners.<br clear="all">
+      see, for example, in the Sample-Starting-Seven-Aquifer profile
+      that we are not choosing a Chief Medical Dwarf, and that we are
+      choosing four Miners.<br clear="all">
     </p>
     <h2 style=" margin-top: 0.17in; page-break-after: avoid"><a
         class="mozTocH2" name="mozTocId517770"></a>The Time Column</h2>
@@ -180,8 +187,10 @@
       a value below 100 here, then a dwarf could be assigned multiple
       labors, as long as those labors do not add up to more than 100
       Time units. You can see, for example, that we have Time=5 on the
-      Bookkeeper position. This means the Bookkeeper may do other jobs
-      as long as they do not total more than 95 time units.</p>
+      Bookkeeper position. (This file is from DF2010, when Bookkeeping
+      took very little or no time at all.) Time = 5 means this
+      Bookkeeper may do other jobs as long as they do not total more
+      than 95 time units.</p>
     <p>Remember to <b>use common sense</b> when you are filling out the
       “Time” column. Some jobs, like mining, can take up a huge amount
       of a dwarf's time (depending on how you manage your fort, of
@@ -198,28 +207,26 @@
     <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a><br>
       "Job Priority" is a decimal value that should contain the "Time"
       value divided by 100 in most cases (unless you are very sure about
-      what you are doing). So, if "Time" contains 50, then "Job
-      Priority" usually contains 0.5. When you edit the Time column, the
-      Job Priority currently does not adjust. You'll have to do that by
-      hand.</p>
+      what you are doing). So, a good rule is, if "Time" contains 50,
+      then "Job Priority" usually contains 0.5. When you edit the Time
+      column, the Job Priority currently does not adjust. You'll have to
+      do that by hand.</p>
     <p>In the optimizer, "Job Priority" is used to adjust the priority
-      for filling a job. Jobs taking up 100 time units in the Time
-      column will normally have a Job Priority of 1.0, and the
-      best-suited dwarves will be chosen for those jobs first. But if
-      you set Job Priority lower, the job you changed will be less
-      important to the optimizer.</p>
+      for filling a job. The best-suited dwarves will be chosen for the
+      highest-priority jobs first. If you set Job Priority lower, the
+      job you changed will be less important to the optimizer.</p>
     <p>Let's say you have a position that does not take up a lot of a
       dwarf's time, but you still want a really well-suited dwarf in
       that position. That is what Job Priority is for. Increase this to
       1.0 (or higher if you like) to improve the match-up of a good
       dwarf for this job.</p>
-    <p>In the Sample-Ishlumas-200-Plus file (Job
-      Settings-&gt;File-&gt;Open-&gt;choose
-      Sample-Ishlumas-200-Plus.txt) you can see that Carpentry is only a
-      50 Time job, but the Job Priority is set to 1.0 so that the
-      Carpentry dwarves are chosen as if it is a more important job.
-      Masonry and Stone Detailing are also set to high importance in
-      this way.</p>
+    <p>In the Sample-Ishlumas-200-Plus file (if you want to follow
+      along: choose Job
+      Settings-&gt;File-&gt;Open-&gt;Sample-Ishlumas-200-Plus.txt) you
+      can see that Carpentry is only a 50 Time job, but the Job Priority
+      is set to 1.0 so that the Carpentry dwarves are chosen as if it is
+      a more important job. Masonry and Stone Detailing are also set to
+      high importance in this way.</p>
     <p>Remember, if you want to set priorities, then setting the Job
       Priority high for too many jobs is not helpful. If everything is a
       high priority, then nothing is a high priority!</p>
@@ -235,21 +242,23 @@
       for it, against a dwarf who just has good stats for that labor
       (but no skill level in it). You will want to decide how you want
       to set this up for your own fort. An example:</p>
-    <p>In my Ishlumas job profile, many jobs are set to a Current Skill
-      Weight of 50. This means that a dwarf who has skilled 80% to the
-      maximum skill level in a labor, and has very poor stats for it,
-      will receive roughly equal priority to a dwarf who has nothing but
-      a skill potential a little over 80% in that labor. A Current Skill
-      Weight of 100 means that dwarves are considered for that job based
-      only on their current skill level, ignoring stats entirely. And, a
-      Current Skill Weight of zero means that skill levels are ignored,
-      and only stats are considered for the position.</p>
+    <p>In the Sample-Ishlumas-200-Plus job profile, many jobs are set to
+      a Current Skill Weight of 50. This means that a dwarf who has
+      skilled 80% to the maximum skill level in a labor, and has very
+      poor stats for it, will receive roughly equal priority to a dwarf
+      who has nothing but a skill potential a little over 80% in that
+      labor. A Current Skill Weight of 100 means that dwarves are
+      considered for that job based only on their current skill level,
+      ignoring stats entirely. And, a Current Skill Weight of zero means
+      that skill levels are ignored, and only stats are considered for
+      the position.</p>
     <p>So, as the Current Skill Weight value approaches 100, current
       skill levels become increasingly important, and good stats become
-      less important. So, this column is how you decide if you want to
-      use, for example, the recent Talented migrant weaponsmith who has
-      terrible smithing stats, or to train up a new Dabbling Weaponsmith
-      who has great smithing stats. It's up to you!<br>
+      less important. This column is how you tell Dwarf Organizer
+      whether you generally want to use, for example, the recent
+      Talented migrant weaponsmith who has terrible smithing stats, or
+      to train up a new Dabbling Weaponsmith who has great smithing
+      stats. It's up to you!<br>
     </p>
     <p>Note that setting Current Skill Weight to values below 100 causes
       jobs to be exchanged between low-skilled dwarves more often when
@@ -317,7 +326,7 @@
       When I take a new mason, I need to remember to add him to a
       profile. So in Dwarf Organizer I write "Workshop" under Reminder,
       on the Masonry line. <br clear="all">
-      Another example is that in my Ishlumas fort, I have a farmer's
+      Another example is that in the Ishlumas fort, I have a farmer's
       cottage which I assign to the current farmer. When the farmer
       changes, I want to remember to update the assignment of the bed in
       the cottage, so I write "Farmer's Cottage". I also write “Burrow”
@@ -458,7 +467,7 @@
       a labor. You also might find an equals (=) sign, like for Eshtan's
       Mining. This means the labor is already enabled, and the optimizer
       suggests leaving it this way.</p>
-    <p>So the above results are telling me that the optimizer thinks I
+    <p>So the results above are telling me that the optimizer thinks I
       should make Catten a miner, and disable some of these other
       labors, because other dwarves looking for work can do them better.<br>
     </p>
@@ -478,15 +487,13 @@
     <p>The "Reminder" column will contain anything you wrote under
       "Reminder" in the Job Settings. And finally, "Score" is a weighted
       value. It was summed and used to rank this solution. Dwarves with
-      higher Scores are probably your better workers and will have
-      received priority for the most important jobs. "Score" is probably
-      only important to you if you are really interested in what jobs
-      and dwarves the program decided were the most important.</p>
+      higher Scores probably have the best stats, and will have received
+      priority for the most important jobs. "Score" is probably only
+      important to you if you are really interested in what jobs and
+      dwarves the program decided were the most important.</p>
     <p>There are also some options at the bottom of the screen. You can
-      choose whether to display labors that the program thinks you
-      should disable. And you can filter the list to show either all
-      dwarves, only appointed dwarves, or only dwarves with reminder
-      notes.<br>
+      set some filters from the menu (not pictured) and the radio
+      buttons at the bottom of the list.<br>
     </p>
     <h2><a class="mozTocH2" name="mozTocId240204"></a>A Note About
       Altruism</h2>
@@ -518,10 +525,11 @@
     <p>Another thing you can do is, just not allow the optimizer to
       assign jobs that don't really matter in your fort, and manually
       give those jobs to dwarves with nothing to do. For example, many
-      labors such as Lye Making and Brewing can only be done faster at
-      higher skill levels. (The information isn't centralized in one
-      article anywhere that I know of, but you can find out about
-      labors, the skills involved, and product quality using the <a
+      labors such as Lye Making and Brewing can only be done <span
+        style="font-style: italic;">faster </span>at higher skill
+      levels. (The information isn't centralized in one article anywhere
+      that I know of, but you can find out about labors, the skills
+      involved, and product quality at the <a
         href="http://dwarffortresswiki.org/index.php/Main_Page">Dwarf
         Fortress wiki</a>.) There is no product quality to worry about
       for these labors. So in my forts I often assign all the
@@ -536,10 +544,12 @@
     <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> There
       are only a couple of labors that dwarves who are missing
       hands/arms (or have no feeling in them) can do. Dwarf Organizer
-      currently cannot detect that a dwarf has no hands/arms. So, in my
-      Dwarf List I have to uncheck the "Include" box for these guys
-      before I optimize. Otherwise the optimizer will try to give them a
-      job that will make them spam annoying red error messages in DF. We
+      currently cannot detect that a dwarf has no hands/arms. There are
+      two options to avoid assigning labor to these guys: 1) Add them to
+      the <a href="#mozTocId461722">Exclusion Manager</a>; or 2) in the
+      Dwarf List, uncheck the "Include" box for these guys before
+      optimizing. Otherwise the optimizer will try to give them a job
+      that will make them spam annoying red error messages in DF. We
       wouldn't want that.</p>
     <h2><a class="mozTocH2" name="mozTocId436705"></a>Ghosts and the
       dead</h2>
@@ -547,8 +557,9 @@
       in your fort (and dead citizens, in DF2012) may appear in
       dwarves.xml. Both the Runesmith and the DFHack exports have this
       problem. Dwarf Organizer cannot tell the difference between a
-      ghost, a dead citizen, and a real live citizen. You will have to
-      manually exclude ghosts and your dead in the Dwarf List.</p>
+      ghost, a dead citizen, and a real live citizen. You must add
+      ghosts and your dead to the <a href="#mozTocId461722">Exclusion
+        Manager</a>, or manually exclude them in the Dwarf List.</p>
     <h2><a class="mozTocH2" name="mozTocId275574"></a>The caravan</h2>
     <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> If you
       export your dwarves with Runesmith while the trade caravan is
@@ -560,12 +571,117 @@
         exporting your dwarves to XML until after the caravan is gone</span>.</p>
     <h2><a class="mozTocH2" name="mozTocId529232"></a>Juveniles</h2>
     <p><a href="ReadmeSlashTutorial.html#Top">[Return to Top]</a> Dwarf
-      Organizer will attempt to exclude juveniles (because they can't be
-      assigned normal labor unless you are cheating), but for now there
-      are nasty bugs in DF with calculating the ages of dwarves. It is
-      likely that some citizens will be categorized incorrectly. You may
-      have to use the Include checkbox in these cases.</p>
+      Organizer will, by default, attempt to exclude juveniles (because
+      they can't be assigned normal labor unless you are cheating). But
+      for now, there are still nasty bugs in DF 2012 with calculating
+      the ages of dwarves. It is likely that some citizens will be
+      categorized incorrectly if you are running DF 2012. You may have
+      to use the Include checkbox in these cases.</p>
     <h1><a class="mozTocH1" name="mozTocId593648"></a>Advanced Concepts</h1>
+    <h2><a class="mozTocH2" name="mozTocId461722"></a>Using the
+      Exclusion Manager<span style="text-decoration: underline;"></span></h2>
+    <p><a href="#Top">[Return to Top]</a> Currently dwarves.xml will
+      contain dead and crippled dwarves, and other dwarves you might not
+      want to assign labor (for whatever reason). Especially in violent,
+      plagued, or older forts, the process of manually excluding all
+      these guys can become tedious. To simplify this process, we have
+      the Exclusion Manager. Go to Window-&gt;Exclusion Manager to view
+      it.</p>
+    <p><img style=" width: 736px; height: 578px;" alt="Picture of
+        Exclusions Manager" src="exclusions-manager.jpg" align="middle">(Figure
+      1: The Exclusion Manager)</p>
+    <p>Your screen will look very similar to the picture, the first
+      time. This is the Exclusion Manager for a large fort with a lot of
+      children and babies in residence. You can see that there is an
+      active exclusion rule called "Juvenile" for citizens aged below 13
+      years. You can change this rule by double-clicking on it, changing
+      the controls, and pressing Update when you're done. (It might be
+      better to just add a new rule, though.) You can also delete this
+      rule if you always run sweatshops--or you can just uncheck the
+      "Active" box if only this particular fort is a sweatshop, for
+      example.<br>
+    </p>
+    <p>In this particular fort, I have a few exclusion-related problems
+      besides my 103 children. First, this fort has several walled-up
+      vampire citizens. Vampires have awesome stats, so Dwarf Organizer
+      is always eager to assign them labor if I allow it. Let's stop
+      that from happening.</p>
+    <p><img style=" width: 705px; height: 98px;" alt="Exclude Vampires
+        Picture 1" src="exclude-vampires-1.jpg" align="middle"> (Figure
+      2: Excluding vampires)<br>
+      I assign all my vampires a nickname with the word "Vampire" in it.
+      So above, I have started creating a rule about nicknames, which
+      will apply to all my forts.<br>
+    </p>
+    <p><img style=" width: 708px; height: 130px;" alt="Exclude Vampires
+        Picture 2" src="exclude-vampires-2.jpg" align="middle">(Figure
+      3: It worked)<br>
+      After I press [Enter] to add this rule, it shows up in the list. I
+      can see that my new rule affects six citizens in this fort, and
+      the list to the right displays the vampires. Great, on to the next
+      problem!<br>
+    </p>
+    <p>Early in this fort's history we had an ambush that resulted in a
+      death. Then, a few years later, a soldier went into the prisoner
+      execution chamber without his helmet, and got, well...that was
+      fatal. For a few years of fort history, manually excluding my dead
+      from the optimizer might have been fine. But then, one night I was
+      managing my fort while really tired, and I told some kid to pull
+      the spike repeater lever while Team Janitor were cleaning up
+      outside around the spikes. We had a whole bunch of deaths before I
+      noticed what was going on. It was way too many for me to remember
+      all their names. Long story short: let's exclude these dead people
+      forever.<br>
+    </p>
+    <p><img style=" width: 330px; height: 89px;" alt="Exclude Dead
+        Picture 1" src="exclude-dead-1.JPG" align="left">For this we
+      will use the "Exclusions by list" section of the screen. This
+      section is for excluding groups of dwarves by their full names,
+      instead of by traits. (There's no trait in the export file for
+      "dead", and in DF 2012 we can't change other attributes, like
+      nicknames, after death.) We have to be careful when we do this,
+      because sometimes dwarves in different forts over time will have
+      the same names--but exclusions are shared. I will type the name of
+      my fort ("Earthsplatter") as part of the list name, so that I
+      remember to deactivate this list when I'm looking at a different
+      fort.<br>
+    </p>
+    <p><img style=" width: 239px; height: 45px;" alt="Exclude Dead
+        Picture 2" src="exclude-dead-2.JPG" align="right">Now we have a
+      new, active, empty list called "Earthsplatter Dead". Next, we need
+      to add our dead citizens. To do this, first I make sure the
+      correct list is highlighted, and then go into Dwarf Fortress,
+      bring up this fort's list of Dead/Missing units, comb through it
+      for dwarves, and add them one-by-one to the list. (Remember, you
+      can type the first few letters of a name to scroll the list.)<img
+        style=" width: 722px; height: 232px;" alt="Exclude Dead Picture
+        3" src="exclude-dead-3.JPG" align="left"></p>
+    <p>There we go, 13 dead citizens. Now we press the very important
+      "Save and Apply" button (or alternately, go to File-&gt;Save and
+      Apply). This will save all our exclusion rules and lists, and it
+      also updates the "Include" column in the Dwarf List.<br>
+    </p>
+    <p>Remember: you can deactivate an exclusion rule or list at any
+      time by just un-checking the Active column, and then doing Save
+      and Apply. So you can do some fairly creative things, like setting
+      up lists by migration wave or whatever other conditions you like.<br>
+    </p>
+    <p><img style=" width: 674px; height: 341px;" alt="Dwarf List after
+        Exclusions Set Picture" src="post-exclusion.JPG" align="right">We
+      can see that after saving and closing the Exclusion Manager, the
+      Dwarf List reflects my changes in a few places. The "Exclusion"
+      column shows the active exclusions for each citizen, and "Inactive
+      Lists" would show any inactive exclusions. Also, at the very
+      bottom of the screen we see the reminder: "3 active exclusion
+      rule(s)".<br>
+    </p>
+    <p>You can always override anything the Exclusion Manager has done,
+      by changing the "Include" column yourself.<br>
+      <br clear="all">
+      <br>
+    </p>
+    <p><br>
+    </p>
     <h2><a class="mozTocH2" name="mozTocId529560"></a>Blacklisting Jobs
       with the Rules Editor<br>
     </h2>

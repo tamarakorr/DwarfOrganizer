@@ -24,9 +24,10 @@ public class ExclusionRule extends Exclusion {
     };    
     
     // Example: new Exclusion("Juveniles", "Age", "Less than", 13) excludes juveniles
-    public ExclusionRule(Integer ID, String name, String propertyName, String comparator
+    public ExclusionRule(Integer ID, String name, boolean active
+            , String propertyName, String comparator
             , Object value) {
-        super(ID, name);
+        super(ID, name, active);
         this.propertyName = propertyName;
         this.comparator = comparator;
         this.value = value;
@@ -113,8 +114,17 @@ public class ExclusionRule extends Exclusion {
             return this.getValue();
         else if (prop.equals("id"))
             return this.getID();
+        else if (prop.equals("active"))
+            return this.isActive();
         else
             return "Unknown property: " + propName;
+    }
+
+    @Override
+    public Object deepClone() {
+        return new ExclusionRule(this.getID(), this.getName(), this.isActive()
+            , this.getPropertyName(), this.getComparator()
+            , this.getValue());
     }
     
 }

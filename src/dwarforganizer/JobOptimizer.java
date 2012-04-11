@@ -76,7 +76,7 @@ public class JobOptimizer { // implements ActionListener
             jobHours += job.time * job.qtyDesired;
         long dwarfHours = 0l;
         for (Dwarf dwarf : mvDwarves)
-            dwarfHours += dwarf.time;
+            dwarfHours += dwarf.getTime();
         moLog.addEvent(jobHours + " job hours to be matched with " + dwarfHours // mvDwarves.size()
                 + " dwarf hours");
         
@@ -291,7 +291,7 @@ public class JobOptimizer { // implements ActionListener
         mbSolution = new boolean[NUM_JOBS][NUM_DWARVES];
         mdblScores = new double[NUM_DWARVES];           // Initialize scores
         for (Dwarf dwarf : mvDwarves)
-            dwarf.time = MAX_TIME;
+            dwarf.setTime(MAX_TIME);
         
         // Assign the bin-packed solution to the dwarves.
         for (int dCount = 0; dCount < vPackedBins.size(); dCount++) {
@@ -303,10 +303,10 @@ public class JobOptimizer { // implements ActionListener
                 mbSolution[jobIndex][dCount] = true;
                 
                 // Decrease the dwarf's available time
-                dwarf.time -= job.time;
+                dwarf.setTime(dwarf.getTime() - job.time);
                 
                 System.out.println("Selected initial job for "
-                        + dwarf.name + ": " + job.name);
+                        + dwarf.getName() + ": " + job.name);
             }
         }
         
@@ -390,7 +390,7 @@ public class JobOptimizer { // implements ActionListener
             Arrays.fill(mdblScores, 0);
             
             for (int dwarf = 0; dwarf < mbSolution[0].length; dwarf++) {
-                System.out.println("Examining " + mvDwarves.get(dwarf).name
+                System.out.println("Examining " + mvDwarves.get(dwarf).getName()
                         + "'s jobs...");
                 for (int job = 0; job < mbSolution.length; job++) {
 
@@ -410,7 +410,7 @@ public class JobOptimizer { // implements ActionListener
                                 && otherDwarfSkill > dwarfSkill) {     
 
                                 System.out.println(" ("
-                                        + mvDwarves.get(otherDwarf).name
+                                        + mvDwarves.get(otherDwarf).getName()
                                         + " is better at "
                                         + mvJobs.get(job).name + ")");
 
@@ -446,7 +446,7 @@ public class JobOptimizer { // implements ActionListener
                 if (mbSolution[job][dwarf])
                     intTime -= mvJobs.get(job).time;
             //mvdDwarfTimeNew.set(dwarf, time);
-            mvDwarves.get(dwarf).time = intTime;
+            mvDwarves.get(dwarf).setTime(intTime);
         }
     }
     
@@ -558,7 +558,7 @@ public class JobOptimizer { // implements ActionListener
         if (oDwarf.balancedPotentials.get(thisJob.name) == null) {
             System.err.println("ERROR: Potential for job '"
                     + thisJob.name + "' not found"
-                    + " for dwarf " + oDwarf.name + "."
+                    + " for dwarf " + oDwarf.getName() + "."
                     + " All results are invalid. (Dwarf has "
                     + oDwarf.balancedPotentials.size() + " valid job potentials.)");
             throw new SolutionImpossibleException();
@@ -583,11 +583,11 @@ public class JobOptimizer { // implements ActionListener
             boolean bNew = isJobIncludedInCombo(iCount, jobCombo, intNumJobs); 
             
             if (! bOld && bNew)
-                System.out.println(mvDwarves.get(dwarfIndex).name + " +"
+                System.out.println(mvDwarves.get(dwarfIndex).getName() + " +"
                         + mvJobs.get(job).name + " (" + mvJobs.get(job).time
                         + " time units)");
             else if (bOld && ! bNew)
-                System.out.println(mvDwarves.get(dwarfIndex).name
+                System.out.println(mvDwarves.get(dwarfIndex).getName()
                         + " -" + mvJobs.get(job).name
                         + " (" + mvJobs.get(job).time + " time units"
                         + ")");
