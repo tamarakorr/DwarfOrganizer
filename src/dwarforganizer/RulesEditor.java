@@ -11,9 +11,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Vector;
@@ -27,6 +25,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import myutils.Adapters.KeyTypedAdapter;
+import myutils.Adapters.MouseClickedAdapter;
 import myutils.MyHandyTable;
 import myutils.MySimpleTableModel;
 
@@ -99,28 +99,29 @@ public class RulesEditor extends JPanel implements DirtyForm {
         }
     } */
     
-    // TODO: Normalize constructor
     public RulesEditor(Vector<String[]> ruleFileContents
             , Vector<Labor> vLabors) {
-        
+        // Superconstructor-----------------------------------------------------
         super();
         
-        moDirtyHandler = new DirtyHandler();
-        
+        // Declarations---------------------------------------------------------
         JPanel panEdit;
         
-        Vector<String> vLaborNames = getLaborNames(vLabors);
+        // Create objects-------------------------------------------------------
+        moDirtyHandler = new DirtyHandler();
         
+        Vector<String> vLaborNames = getLaborNames(vLabors);
         vLaborNames.add(0, DEFAULT_LABOR);
         
+        // Create model---------------------------------------------------------
         mmdlRules = new MySimpleTableModel();
         mmdlRules.setDataVector(stringArrayToVVO(ruleFileContents), mvHeadings);
-
         //mdlRules.addEditableException(3);   // Comment editable
-                
+        
+        // Create table---------------------------------------------------------
         mtblRules = new JTable(mmdlRules);
         mtblRules.setComponentPopupMenu(createPopUpMenu());
-        mtblRules.addMouseListener(new MouseListener() {
+        mtblRules.addMouseListener(new MouseClickedAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -129,20 +130,8 @@ public class RulesEditor extends JPanel implements DirtyForm {
                     startEditingRow(mtblRules.rowAtPoint(e.getPoint()));
                 }   
             }
-            @Override
-            public void mousePressed(MouseEvent e) { //Do nothing
-            }
-            @Override
-            public void mouseReleased(MouseEvent e) { // Do nothing
-            }
-            @Override
-            public void mouseEntered(MouseEvent e) { // Do nothing
-            }
-            @Override
-            public void mouseExited(MouseEvent e) { // Do nothing
-            }
         });
-        mtblRules.addKeyListener(new KeyListener() {
+        mtblRules.addKeyListener(new KeyTypedAdapter() {
 
             @Override
             public void keyTyped(KeyEvent e) {
@@ -152,12 +141,6 @@ public class RulesEditor extends JPanel implements DirtyForm {
                     editRow();
                 else if (e.getKeyChar() == KeyEvent.VK_DELETE)
                     deleteRow();
-            }
-            @Override
-            public void keyPressed(KeyEvent e) { // Do nothing
-            }
-            @Override
-            public void keyReleased(KeyEvent e) { // Do nothing
             }
         });
         
@@ -181,7 +164,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
         MyHandyTable.handyTable(mtblRules, sp, mmdlRules, false
                 , true);
         
-        // -------- Editing panel -------------
+        // Build the UI---------------------------------------------------------
         JPanel panCommentOnTop = new JPanel();
         panCommentOnTop.setLayout(new BorderLayout());
         panEdit = new JPanel();
@@ -266,7 +249,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
         this.add(panCommentOnTop, BorderLayout.SOUTH);
         
     }
-    
+        
     /*
     @Override
     public void addDirtyListener(DirtyListener newListener) {

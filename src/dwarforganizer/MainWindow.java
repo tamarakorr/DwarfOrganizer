@@ -844,9 +844,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
     
+    // Reset job settings to user defaults
     private void resetJobSettings(JobListPanel jobPanel) {
-        //TODO: Decide whether to load these from a file,
-        // or from private load(DEFAULT_FILE_TEXT) in JobListPanel.
         jobPanel.load(new File(JobListPanel.MY_DEFAULT_SETTINGS_FILE));
     }
     
@@ -861,9 +860,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     
     // If saving as "DEFAULT SETTINGS", change name to "MY DEFAULT SETTINGS"
-    // TODO: This is not thought-through very well. DEFAULT SETTINGS should
-    // be read-only (and created by the installation?) and the program should
-    // suggest the file name MY DEFAULT SETTINGS.
+    // (That logic is now unused since .txt is added to file names, and we don't load from
+    // default settings in this way anymore)
     private void updateCurrentJobSettings(File file) {
         String fileName = file.getName();
         if (fileName.equals("DEFAULT SETTINGS")) {

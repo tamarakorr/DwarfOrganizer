@@ -11,4 +11,5 @@ package dwarforganizer;
  */
 public interface DirtyForm {
     public DirtyHandler getDirtyHandler();  // TODO Really we should be getting a dirty handler adapter
+                                            // or better yet, just providing AddListener methods
 }

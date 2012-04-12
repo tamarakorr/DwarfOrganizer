@@ -86,7 +86,8 @@ public class MyJTable extends JTable {
         
         // First, allow Ctrl+C, Ctrl+X, Ctrl+V to be processed (copy, cut, paste)
         // TODO: There is probably some way to avoid hard-coding these bindings,
-        // and instead read them properly from a data structure, but I don't know it...
+        // and instead read them properly from a data structure, but I don't know
+        // the best practice to deal with the masks...
         if (e.isControlDown() && (e.getKeyCode() == KeyEvent.VK_C
                 || e.getKeyCode() == KeyEvent.VK_X
                 || e.getKeyCode() == KeyEvent.VK_V)) {
