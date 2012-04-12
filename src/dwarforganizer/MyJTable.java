@@ -118,7 +118,7 @@ public class MyJTable extends JTable {
         menuItem.addActionListener(actionListener);
         menuItem.setAccelerator(
           KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
-        menuItem.setMnemonic(KeyEvent.VK_T);
+        menuItem.setMnemonic(KeyEvent.VK_U);
         menuItem.setEnabled(false); // TODO: Make Cut work, or remove it
         editMenu.add(menuItem);
         
@@ -137,7 +137,7 @@ public class MyJTable extends JTable {
         menuItem.addActionListener(actionListener);
         menuItem.setAccelerator(
           KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
-        menuItem.setMnemonic(KeyEvent.VK_P);
+        menuItem.setMnemonic(KeyEvent.VK_T);
         editMenu.add(menuItem);
         
     }

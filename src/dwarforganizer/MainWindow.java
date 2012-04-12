@@ -41,6 +41,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
 import myutils.MyHandyOptionPane;
+import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
  *
@@ -553,16 +554,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         
         menu.addSeparator();
         
-        menuItem = new JMenuItem("Reset to Default", KeyEvent.VK_R);
-        menuItem.setAccelerator(JobListMenuAccelerator.RESET.getKeyStroke()); // KeyStroke.getKeyStroke(
+        menuItem = new JMenuItem("Reset to My Defaults", KeyEvent.VK_R);
+        //menuItem.setAccelerator(JobListMenuAccelerator.RESET.getKeyStroke()); // KeyStroke.getKeyStroke(
                 //KeyEvent.VK_R, ActionEvent.CTRL_MASK));
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                resetJobSettings();
+                resetJobSettings(jobListPanel);
             }
         });
-        menuItem.setEnabled(false);     // TODO: Make this do something
         menu.add(menuItem);
 
         // -------------------------------------
@@ -776,9 +776,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    // TODO: Look into workaround at http://www.centerkey.com/java/browser/
-                    // for Java 6 Desktop bug on Windows and Linux
-                    java.awt.Desktop.getDesktop().open(new File(TUTORIAL_FILE));
+                    // TODO: Find out if this fix worked for users
+                    // (for Java 6 Desktop non-implementation on some Linux builds)
+                    //java.awt.Desktop.getDesktop().open(new File(TUTORIAL_FILE));
+                    BareBonesBrowserLaunch.openURL(new File(
+                            TUTORIAL_FILE).toURI().toURL().toString());
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                     ex.printStackTrace();
@@ -842,9 +844,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
     
-    private void resetJobSettings() {
+    private void resetJobSettings(JobListPanel jobPanel) {
         //TODO: Decide whether to load these from a file,
         // or from private load(DEFAULT_FILE_TEXT) in JobListPanel.
+        jobPanel.load(new File(JobListPanel.MY_DEFAULT_SETTINGS_FILE));
     }
     
     private void loadJobSettings(JobListPanel jobListPanel) {

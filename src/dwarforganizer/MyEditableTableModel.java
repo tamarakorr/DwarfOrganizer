@@ -32,7 +32,7 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
             , Vector<String> colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
-    }        
+    }
     
     // Initialize variables
     private void initialize() {
@@ -42,6 +42,15 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     public void addEditableException(int col) {
         if (! mvEditableExceptionCols.contains(col))
             mvEditableExceptionCols.add(col);
+    }
+    // Adds an editable exception for the first column with the given identifier
+    public void addEditableException(Object colIdentifier) {
+        for (int iCount = 0; iCount < this.getColumnCount(); iCount++) {
+            if (colIdentifier.toString().equals(this.getColumnName(iCount))) {
+                addEditableException(iCount);
+                return;
+            }
+        }
     }
     @Override
     public boolean isCellEditable(int row, int column) {

@@ -55,7 +55,14 @@ public class JobListPanel extends JPanel {
     // DEFAULT SETTINGS shouldn't be used - it just exists as a read-only file
     // with the stock defaults
     private static final String DEFAULT_SETTINGS_FILE = "samples/jobs/DEFAULT SETTINGS";
-    private static final String MY_DEFAULT_SETTINGS_FILE = "samples/jobs/MY DEFAULT SETTINGS";
+    protected static final String MY_DEFAULT_SETTINGS_FILE = "samples/jobs/MY DEFAULT SETTINGS";
+    
+    // Column identifiers
+    private static final String QTY_COL_IDENTIFIER = "Qty";
+    private static final String TIME_COL_IDENTIFIER = "Time";
+    private static final String JOB_PRIO_COL_IDENTIFIER = "Job Priority";
+    private static final String CUR_SKILL_WT_COL_IDENTIFIER = "Current Skill Weight";
+    private static final String REMINDER_COL_IDENTIFIER = "Reminder";
     
     private Vector<Labor> mvLabors; // Set in constructor
     private Vector<LaborGroup> mvLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
@@ -179,8 +186,9 @@ public class JobListPanel extends JPanel {
         panHours.add(lblHours, BorderLayout.LINE_START);
         
         // Build UI
-        String[] columns = { "Group", "Labor", "Qty", "Time", "Job Priority"    // "Time Weight"
-                , "Current Skill Weight", "Reminder" };
+        Object[] columns = { "Group", "Labor", QTY_COL_IDENTIFIER
+                , TIME_COL_IDENTIFIER, JOB_PRIO_COL_IDENTIFIER    // "Time Weight"
+                , CUR_SKILL_WT_COL_IDENTIFIER, REMINDER_COL_IDENTIFIER };
         Class[] columnClass = { String.class, String.class, Integer.class, Integer.class
                 , Double.class, Integer.class, String.class };  // No primitives allowed here in Java 6!!
         final MySimpleTableModel oModel = new MySimpleTableModel(columns
@@ -238,13 +246,12 @@ public class JobListPanel extends JPanel {
             }
         });        
 
-        // TODO: Darned hard coding
         // Quantity, time, weights, and reminder editable
-        oModel.addEditableException(2);
-        oModel.addEditableException(3);
-        oModel.addEditableException(4);
-        oModel.addEditableException(5);
-        oModel.addEditableException(6);
+        oModel.addEditableException(QTY_COL_IDENTIFIER); // 2
+        oModel.addEditableException(TIME_COL_IDENTIFIER); // 3
+        oModel.addEditableException(JOB_PRIO_COL_IDENTIFIER); // 4
+        oModel.addEditableException(CUR_SKILL_WT_COL_IDENTIFIER); // 5
+        oModel.addEditableException(REMINDER_COL_IDENTIFIER); // 6
         
         moTable = new SelectingTable(oModel);
         moTable.setTransferHandler(new MyTableTransferHandler());   // Allows single-cell cut copy paste
@@ -279,8 +286,9 @@ public class JobListPanel extends JPanel {
         
         // Load any saved settings
         //load(DEFAULT_FILE_TEXT);    //txtName.getText()
-        load(new File(MY_DEFAULT_SETTINGS_FILE));
         mbLoading = false;
+        load(new File(MY_DEFAULT_SETTINGS_FILE)); // Takes care of mbLoading itself
+        
         
         //this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         //this.pack();
@@ -439,12 +447,15 @@ public class JobListPanel extends JPanel {
     
     // Loads job settings from file
     public void load(File file) {
+        mbLoading = true;
+        
         moIO.readJobSettings(file, mvLaborSettings, DEFAULT_REMINDER);
         
         // Display the values in the table.
         loadLaborSettings();
         new HoursDisplayUpdater().execute();
         
+        mbLoading = false;
     }
     
     // Loads the file with the given name

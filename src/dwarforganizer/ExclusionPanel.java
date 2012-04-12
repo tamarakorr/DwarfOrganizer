@@ -67,6 +67,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     private static final String UNSELECTED_COMPARISON = "-Select-";
     private static final String COMPARISON_TEXT_ATTR_UNSELECTED = "(Select Attribute)";
 
+    private static final String ACTIVE_COL_IDENTIFIER = "Active";
+    
     //private Hashtable<Integer, Boolean> mhtExclusionsActive;
 
     private String[] masDwarfProperties; // Dwarf supported properties
@@ -762,8 +764,9 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             exclModel = new MyEditableTableModel<TableItem>(getTableCols(), getColClasses()
                     , getColProperties()
                     , toTableItems(lstExclusion), swapper);
-            exclModel.addEditableException(0);      // TODO: lookup column index from col name. Active checkbox editable
-
+            //exclModel.addEditableException(0);
+            exclModel.addEditableException(ACTIVE_COL_IDENTIFIER); // "Active" checkbox editable
+            
             // When the table is edited, update saved exclusions.
             exclModel.addTableModelListener(new TableModelListener() {
                 @Override
@@ -771,7 +774,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
                     if (bCreating)
                         return;
 
-                    int activeColumn = getColIndex("Active");
+                    int activeColumn = getColIndex(ACTIVE_COL_IDENTIFIER);
                     if (activeColumn >= 0) {
                         if (e.getType() == TableModelEvent.DELETE)
                             updateExclusions();
@@ -1011,7 +1014,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         @Override
         public Vector<Object> getTableCols() {
             return new Vector<Object>(Arrays.asList(
-                new Object[] { "Active", "Name", "Citizens"}));
+                new Object[] { ACTIVE_COL_IDENTIFIER, "Name", "Citizens"}));
         }
 
         @Override
@@ -1160,7 +1163,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         @Override
         public Vector<Object> getTableCols() {
             return new Vector<Object>(Arrays.asList(
-                new Object[] { "Active", "Citizens", "Name", "Attribute"
+                new Object[] { ACTIVE_COL_IDENTIFIER, "Citizens", "Name", "Attribute"
                         , "Comparison", "Value" }));  // Column identifiers
         }
 

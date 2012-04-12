@@ -135,51 +135,26 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         }
     }
-    private Vector<DwarfListItem> toDwarfListItems(Vector<Dwarf> vDwarves
-            , Collection<Exclusion> colExclusions) {
-
-        Vector<DwarfListItem> vReturn = new Vector<DwarfListItem>();
-
-        for (Dwarf dwarf : vDwarves) {
-            vReturn.add(new DwarfListItem(DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE
-                    , dwarf, formatJuvenile(dwarf)
-                    , formatExclusions(dwarf, true, colExclusions)
-                    , formatExclusions(dwarf, false, colExclusions)
-                    , listCombatLevels("Close", dwarf.skillLevels)
-                    , listCombatLevels("Ranged", dwarf.skillLevels)));
-        }
-
-        return vReturn;
-    }
-
-    // TODO: In an ideal world I would normalize this constructor
     public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
             , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta) {
-            //, Vector<LaborGroup> vLaborGroups) { // NodeList nodes
-        /*Vector<Dwarf> vDwarves, Vector<Labor> vLabors
-            , Collection<Exclusion> vExclusions*/
-
+        
+        // Parent constructor---------------------------------------------------
         super();
 
-        // Set local variables
+        // Set local variables--------------------------------------------------
         mvLabors = vLabors;
         mhtStats = htStat;
         mhtSkills = htSkill;
         mhtMetaSkills = htMeta;
 
+        // Create objects-------------------------------------------------------
         mvDwarves = new Vector<Dwarf>(); //vDwarves;
         Collection<Exclusion> vExclusions = new Vector<Exclusion>();
 
         mbLoading = true;
 
-        //createMenu();
-
-        // Read dwarves from the node list
-        //if (nodes != null)
-        //    getDwarves(nodes);
-
         // Create table column data---------------------------------------------
-        Vector<String> vColumns = new Vector<String>(Arrays.asList(new String[]
+        Vector<Object> vColumns = new Vector<Object>(Arrays.asList(new String[]
             { "Include", "Name", "Nickname", "Gender", "Age", "Exclusion"
                       , "Inactive Lists"
                 })); // , "Squad", "Squad Leader", "Strength", "Agility", "Focus"
@@ -225,18 +200,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         vColumns.add("Jobs");
         vClasses.add(String.class);
         vColProps.add("dwarf.jobtext");
-        // End table column data creation---------------------------------------
 
-        //Experimenting with MyEditableTableModel--------------
+        //Create the table model------------------------------------------------
         SortKeySwapper swapper = new SortKeySwapper();
-        moModel = new MyEditableTableModel(vColumns, vClasses
-            , vColProps, toDwarfListItems(mvDwarves, vExclusions)
-            , swapper); // vExclusions // TODO: Should be able to include <DwarfListItem> here???
-        // We apply exclusions to this data after the monitors are created
-        //-----------------------------------------------------
+        moModel = new MyEditableTableModel<DwarfListItem>(vColumns, vClasses
+            , vColProps, toDwarfListItems(mvDwarves, vExclusions), swapper);
+        // (We apply exclusions to this data after the statistic monitors are created)
 
         // Display data in a grid (JTable)
-        // Commented - Experimental
         //moModel = new MySimpleTableModel(vColumns
         //        , mvDwarves.size());    //  nodes.getLength()
         moModel.addEditableException(0);     // First column editable.
@@ -247,13 +218,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     updateSelectedLabel();
             }
         });
-        //setModelData(moModel, vExclusions);       // , nodes  Commented - experimental
+        //setModelData(moModel, vExclusions);       // , nodes
 
-        // Create the dwarf data table
+        // Create the dwarf data table------------------------------------------
         moTable = new JTable(moModel, new HideableTableColumnModel());
         moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
 
-        // Set column renderer for skill levels (numeric format, right-justified, nulls blank)
+        // Set column renderer for skill levels (numeric format, right-justified,
+        // nulls blank)
         for (String key : mhtSkills.keySet()) {
             String id = getColumnNameForSkillLevel(mhtSkills.get(key).name);
             moTable.getColumn(id).setCellRenderer(new NumberOrNullRenderer());
@@ -275,17 +247,18 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             setLaborGroupVisible(labor.groupName, false);
         setSecondaryColumnsVisible(false);
 
-        JPanel tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(mspScrollPane);
-        tablePanel.setPreferredSize(new Dimension(750, 250));
-
-        // Show some statistics
+        // Show some statistics-------------------------------------------------
         mlblPop = new JLabel("X total dwarves from XML"); // total adult
         mlblSelected = new JLabel(getNumSelectedText(mvDwarves.size()));
         mlblExclusions = new JLabel("X active exclusion rules/lists");
         applyExclusions(vExclusions); // Apply exclusions to data & update labels
 
+        // Build the UI---------------------------------------------------------
+        JPanel tablePanel = new JPanel();
+        tablePanel.setLayout(new BorderLayout());
+        tablePanel.add(mspScrollPane);
+        tablePanel.setPreferredSize(new Dimension(750, 250));
+        
         JPanel panInfo = new JPanel();
         panInfo.setLayout(new BorderLayout());
         panInfo.add(mlblPop, BorderLayout.NORTH);
@@ -302,6 +275,22 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         mbLoading = false;
     }
+    private Vector<DwarfListItem> toDwarfListItems(Vector<Dwarf> vDwarves
+            , Collection<Exclusion> colExclusions) {
+
+        Vector<DwarfListItem> vReturn = new Vector<DwarfListItem>();
+
+        for (Dwarf dwarf : vDwarves) {
+            vReturn.add(new DwarfListItem(DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE
+                    , dwarf, formatJuvenile(dwarf)
+                    , formatExclusions(dwarf, true, colExclusions)
+                    , formatExclusions(dwarf, false, colExclusions)
+                    , listCombatLevels("Close", dwarf.skillLevels)
+                    , listCombatLevels("Ranged", dwarf.skillLevels)));
+        }
+
+        return vReturn;
+    }    
     public void loadData(Vector<Dwarf> vDwarves
             , Collection<Exclusion> vExclusions) { //, Hashtable<String, Stat> htStat
             //, Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta) {
@@ -737,6 +726,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         public DwarfListItem(boolean include, Dwarf dwarf, String juvenile
                 , String activeExclusions, String inactiveExclusions
                 , String closeCombatLevels, String rangedCombatLevels) {
+            super();
             this.include = include;
             this.dwarf = dwarf;
             this.juvenile = juvenile;
