@@ -412,9 +412,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         moListCitizen.setList(new Vector<String>());
         
         // Set citizen list-----------------------------------------------------
-        // Must be done before loading rule/list tables, or citizen counts will be inaccurate
+        // Must be done before loading rule/list tables, or citizen counts will
+        // be inaccurate
         moCitizenNameCombo.setCitizenList(vCitizen);
-        mlstCitizen = vCitizen;        
+        mlstCitizen = vCitizen;
         
         // Set exclusion rules/lists--------------------------------------------
         moRuleTable.loadData(colExclusion);
@@ -626,7 +627,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         return table;
     }
 
-    // Skip the given table in focus traversal policy whenever it has no rows
+/*    // Skip the given table in focus traversal policy whenever it has no rows,
+    // and use normal focus traversal keys
     private JTable createSmarterFocusTable(final JTable table) {
         table.addFocusListener(new FocusListener() {
 
@@ -678,7 +680,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             .getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
 
         return table;
-    }
+    } */
 
     private abstract class AbstractExclusionEditor<T extends Exclusion>
             extends AbstractEditor<TableItem> {
@@ -789,7 +791,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             });
 
             //exclTable = new JTable(exclModel);
-            exclTable = createSmarterFocusTable(new JTable(exclModel)); // createRowBorderTable
+            exclTable = MyHandyTable.createSmarterFocusTable(new JTable(
+                    exclModel)); // createRowBorderTable
             swapper.setTable(exclTable);
 
             // Single, full row selection
@@ -1257,7 +1260,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             //    , new Class[] { String.class }, new String[] { "name" }
             //    , new Vector<Dwarf>(), swapper);
             model = new MySimpleTableModel(columns, 0);
-            table = createSmarterFocusTable(new JTable(model));
+            table = MyHandyTable.createSmarterFocusTable(new JTable(model));
             table.setDefaultRenderer(Object.class, new MyTCRStripedHighlight(2));
             MyHandyTable.sortByCol(table, model, 0, SortOrder.ASCENDING);   // Works for empty tables
             //swapper.setTable(table);

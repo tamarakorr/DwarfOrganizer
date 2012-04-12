@@ -40,6 +40,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
+import myutils.DefaultFocus;
 import myutils.MyHandyOptionPane;
 import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 
@@ -65,6 +66,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
+    private RulesEditor moRulesEditor;
     //private Vector<KeyStroke> mvJobListAccelerators;
     
     protected static enum JobListMenuAccelerator {
@@ -333,8 +335,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void createRulesEditorScreen(JDesktopPane desktop) {
 
         final MainWindow main = this;
-        final RulesEditor rulesEditor = new RulesEditor(
-                moIO.getRuleFileContents(), mvLabors);
+        moRulesEditor = new RulesEditor(mvLabors);
         
         // Update title of Rules Editor when dirty state changes
         DirtyListener dirtyListener = createDirtyListener(
@@ -351,18 +352,20 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mitlRulesEditor = new JInternalFrame(RULES_EDITOR_TITLE_CLEAN, true, true, true
                 , true);
         mitlRulesEditor.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        mitlRulesEditor.setJMenuBar(createRulesEditorMenu(rulesEditor));
+        mitlRulesEditor.setJMenuBar(createRulesEditorMenu(moRulesEditor));
+        //DefaultFocus.alwaysFocusOnActivate(mitlRulesEditor
+        //        , moRulesEditor.getDefaultFocusComp());
         
         mitlRulesEditor.setLayout(new BorderLayout());
-        mitlRulesEditor.add(rulesEditor);
+        mitlRulesEditor.add(moRulesEditor);
         mitlRulesEditor.pack();
         
-        rulesEditor.getDirtyHandler().addDirtyListener(dirtyListener);
+        moRulesEditor.getDirtyHandler().addDirtyListener(dirtyListener);
         mitlRulesEditor.addInternalFrameListener(new InternalFrameClosingAdapter(
             new FrameClosingFunction() {
             @Override
             public void doFrameClosing(InternalFrameEvent e) {
-                doRulesWindowClosing(main, rulesEditor);
+                doRulesWindowClosing(main, moRulesEditor);
             }
         }));
         
@@ -730,6 +733,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (mitlRulesEditor.isVisible() == false) {
+                    moRulesEditor.loadData(moIO.getRuleFileContents());
+                    mitlRulesEditor.pack();
+                }
                 mitlRulesEditor.setVisible(true);
                 try {
                     mitlRulesEditor.setSelected(true);
