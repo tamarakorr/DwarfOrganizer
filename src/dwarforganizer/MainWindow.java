@@ -40,7 +40,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
-import myutils.DefaultFocus;
 import myutils.MyHandyOptionPane;
 import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 
@@ -215,6 +214,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             desktop.setPreferredSize(new Dimension(width, height));
             
             this.setJMenuBar(createMenu(moJobListPanel));
+            
+            // TODO: Was hoping this would help me find the problem with Alt+P
+            // and Alt+W not functioning...but it didn't
+            //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
             
             this.setLayout(new BorderLayout());
             this.add(desktop);

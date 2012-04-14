@@ -1,6 +1,6 @@
 Dwarf Organizer v1.20
 
-This program is provided under the MIT license (see license.txt), except BareBonesBrowserLaunch which is public domain software.
+This software is provided under the MIT license. See license.txt for details.
 
 For information about using the program, read ReadmeSlashTutorial.html in the "tutorial" directory, or from the Help->Tutorial menu in Dwarf Organizer.
 
