@@ -309,58 +309,7 @@ public class JobOptimizer { // implements ActionListener
                         + dwarf.getName() + ": " + job.name);
             }
         }
-        
-        /* Old method commented
-        
-        // Create a vector containing the number of remaining positions for
-        // each job.
-        Vector<Integer> vintRemainingJobs = new Vector<Integer>();
-        for (int iCount = 0; iCount < NUM_JOBS; iCount++)
-            vintRemainingJobs.add(mvJobs.get(iCount).qtyDesired);
-        
-        // Find "a" solution.
-        for (int dCount = 0; dCount < NUM_DWARVES; dCount++) {
-            for (int jCount = 0; jCount < NUM_JOBS; jCount++) {
-                int intDwarfTime = mvDwarves.get(dCount).time;
-                int jobs = vintRemainingJobs.get(jCount);
-                if (intDwarfTime > 0 && jobs > 0) {
-                    
-                    // Is this dwarf+job combination legal?
-                    if (! isJobLegalForDwarf(jCount, dCount))
-                        System.out.println(" (Skipping job " + mvJobs.get(jCount).name
-                                + " for " + mvDwarves.get(dCount).name
-                                + " because it would be illegal.)");
-                    // Does the dwarf have enough time remaining?
-                    else if (intDwarfTime >= mvJobs.get(jCount).time) {
-                    
-                        // Select this dwarf/job combination.
-                        mvDwarves.get(dCount).time = intDwarfTime 
-                                - mvJobs.get(jCount).time;
-                        vintRemainingJobs.set(jCount, jobs - 1);
-
-                        mbSolution[jCount][dCount] = true;
-                        System.out.println("Selected initial job for "
-                                + mvDwarves.get(dCount).name
-                                + ": " + mvJobs.get(jCount).name);
-                    }
-                }
-            }
-        }
-        
-        // Verify that all jobs were assigned. If not, throw a
-        // SolutionImpossible error.
-        for (int jCount = 0; jCount < NUM_JOBS; jCount++) {
-            if (vintRemainingJobs.get(jCount) > 0) {
-                Job errorJob = mvJobs.get(jCount);
-                moLog.addEvent("At least one job was not able to be assigned:"
-                        + " " + errorJob.name //+ " x " + errorJob.qtyDesired
-                        + "\n Increase the labor force, loosen restrictions,"
-                        + " or decrease the number of jobs and try again.");
-                throw new SolutionImpossibleException();
-            }
-        }
-        */
-        
+                
         double skillSum = getSkillSum();
         moLog.addEvent("Initial skill sum: " + skillSum);
         return skillSum;

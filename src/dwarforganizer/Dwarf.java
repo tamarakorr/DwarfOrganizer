@@ -28,15 +28,18 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
     protected Hashtable<String, Long> statValues;
     protected Hashtable<String, Long> statPercents;
     private int time;
-    protected Hashtable<String, Long> skillPotentials
-            = new Hashtable<String, Long>();
-    protected Hashtable<String, Long> skillLevels = new Hashtable<String, Long>();
-    protected Hashtable<String, Long> balancedPotentials = new Hashtable<String, Long>();
+    protected Hashtable<String, Long> skillPotentials;
+    protected Hashtable<String, Long> skillLevels;
+    protected Hashtable<String, Long> balancedPotentials;
     private String jobText;
-    protected Vector<String> labors = new Vector<String>(); 
+    protected Vector<String> labors;
     
     public Dwarf() {
         super();
+        skillPotentials = new Hashtable<String, Long>();
+        skillLevels = new Hashtable<String, Long>();
+        balancedPotentials = new Hashtable<String, Long>();
+        labors = new Vector<String>();
     }
     public Dwarf(String name, String nickname, String gender, int age
             , Hashtable<String, Long> statValues, Hashtable<String, Long> statPercents

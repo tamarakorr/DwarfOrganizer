@@ -496,13 +496,13 @@ public class DwarfOrganizerIO {
                 //Element ele = (Element) nlStatGroup.item(0);
                 //System.out.println(nlStatGroup.getLength() + " stat groups");
                 for (int iCount = 0; iCount < nlStatGroup.getLength(); iCount++) {
-                    vStat = new Vector<Stat>();
 
                     Element thisStatGroup = (Element) nlStatGroup.item(iCount);
                     String strStatGroupName = getTagValue(thisStatGroup, "Name"
                             , "Error - Null name in XML"); // thisStatGroup.getAttribute("Name");
                     //System.out.println("Stat group name: " + strStatGroupName);
                     stat = thisStatGroup.getElementsByTagName("Stat");
+                    vStat = new Vector<Stat>(stat.getLength());
                     for (int jCount = 0; jCount < stat.getLength(); jCount++) {
                         thisStat = (Element) stat.item(jCount);
                         String strStatName = thisStat.getAttribute("Name");
@@ -519,8 +519,7 @@ public class DwarfOrganizerIO {
                     NodeList nlLaborSkill = xmlFileReader.getDocument().getElementsByTagName(
                                 classItem.getSimpleName());   // "Skill"
                     for (int kCount = 0; kCount < nlLaborSkill.getLength(); kCount++) {
-                        vStat = new Vector<Stat>();
-
+                        
                         Element thisLaborSkill = (Element) nlLaborSkill.item(kCount);
                         String strName = getTagValue(thisLaborSkill, "Name"
                                 , "Error - Null labor skill name in XML");
@@ -529,6 +528,7 @@ public class DwarfOrganizerIO {
                         // Stats and StatGroupRefs can be listed
                         // Add stats to stat list
                         stat = thisLaborSkill.getElementsByTagName("Stat");
+                        vStat = new Vector<Stat>(stat.getLength());
                         //System.out.println(stat.getLength() + " stats");
                         for (int mCount = 0; mCount < stat.getLength(); mCount++) {
                             String strStatName = stat.item(mCount).getTextContent();

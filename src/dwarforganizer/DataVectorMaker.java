@@ -23,7 +23,7 @@ public class DataVectorMaker<T extends MyPropertyGetter> {
     public Vector<Vector<Object>> toDataVector(List<T> list
             , Vector<Object> vColProperties, Vector<Integer> vColIndices
             , boolean humanReadable, int numCols) {
-        Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>();
+        Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(list.size());
         
         for (MyPropertyGetter item : list) {
             vReturn.add(toRowData(item, vColProperties, vColIndices

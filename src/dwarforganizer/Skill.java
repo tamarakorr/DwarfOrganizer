@@ -13,7 +13,7 @@ import java.util.Vector;
  * See MIT license in license.txt
  */
 public class Skill {
-    protected Vector<Stat> mvStats = new Vector<Stat>();
+    protected Vector<Stat> mvStats;
     protected String name;
 
     public Skill(String name, Vector<Stat> stats) {

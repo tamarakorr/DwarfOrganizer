@@ -8,11 +8,8 @@ package dwarforganizer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.FocusTraversalPolicy;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -706,7 +703,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             super();
 
             // Set "constants"--------------------------------------------------
-            EMPTY_CITIZEN_LIST = new Vector<String>();
+            EMPTY_CITIZEN_LIST = new Vector<String>(1);
 
             // Set variables
             moCitizenList = citizenList;  // List of citizens for this exclusion
@@ -846,16 +843,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             else
                 moCitizenList.setList(EMPTY_CITIZEN_LIST);
         }
-        // Call moCitizenList.setList()
-/*        protected void setCitizenList(TableItem tableItem) {
-            Vector<Dwarf> list = new Vector<Dwarf>();
-            for (Dwarf citizen : mlstCitizen) {
-                if (((T) tableItem.getExclusion()).appliesTo(citizen)) {
-                    list.add(citizen);
-                }
-            } 
-            moCitizenList.setList(toCitizenListFormat(list));
-        } */
 
         // Returns the number of citizens affected by the given exclusion
         protected int getNumCitizens(Exclusion exclusion) {
@@ -1057,7 +1044,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     }
 
     private Vector<String> vDwarfToVString(Vector<Dwarf> vDwarf) {
-        Vector<String> vReturn = new Vector<String>();
+        Vector<String> vReturn = new Vector<String>(vDwarf.size());
         for (Dwarf dwarf : vDwarf) {
             vReturn.add(dwarf.getName());
         }
@@ -1275,7 +1262,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             MyHandyTable.sortByCol(table, model, 0, SortOrder.ASCENDING);   // setDataVector ate our sortkeys
         }
         private Vector<Vector<Object>> toVVO(Vector<String> list) {
-            Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>();
+            Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(list.size());
             for (String item : list) {
                 vReturn.add(new Vector<Object>(Arrays.asList(new Object[] { item })));
             }
@@ -1332,7 +1319,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     }
 
     private Vector<String> getCitizenNames(List<Dwarf> list) {
-        Vector<String> vReturn = new Vector<String>();
+        Vector<String> vReturn = new Vector<String>(list.size());
         for (Dwarf dwarf : list) {
             vReturn.add(dwarf.getName());
         }

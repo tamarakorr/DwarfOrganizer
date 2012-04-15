@@ -87,8 +87,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private MyFileChooser mjfcOpen; //= new JFileChooser();
     private MyFileChooser mjfcDwarves;
     
-    private Vector<Labor> mvLabors = new Vector<Labor>();
-    private Vector<LaborGroup> mvLaborGroups = new Vector<LaborGroup>();
+    private Vector<Labor> mvLabors;
+    private Vector<LaborGroup> mvLaborGroups;
     
     private static final String RULES_EDITOR_TITLE_CLEAN = "Edit Rules";
     private static final String RULES_EDITOR_TITLE_DIRTY = "Edit Rules (Unsaved Changes)";
@@ -134,6 +134,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     public MainWindow() {
         super();
+        
+        mvLabors = new Vector<Labor>();
+        mvLaborGroups = new Vector<LaborGroup>();
         
         JDesktopPane desktop = new JDesktopPane();
         //this.getContentPane().add(desktop);

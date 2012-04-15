@@ -34,10 +34,12 @@ import javax.swing.table.TableColumn;
  */
 public class HideableTableColumnModel extends DefaultTableColumnModel {
 
-    protected Vector<TableColumn> mvAllTableColumns = new Vector<TableColumn>();
+    protected Vector<TableColumn> mvAllTableColumns;
     
     public HideableTableColumnModel() {
         super();
+        
+        mvAllTableColumns = new Vector<TableColumn>();
     }
     
     // Method to use column identifier instead of TableColumn

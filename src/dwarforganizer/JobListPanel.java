@@ -66,7 +66,7 @@ public class JobListPanel extends JPanel {
     
     private Vector<Labor> mvLabors; // Set in constructor
     private Vector<LaborGroup> mvLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
-    private Vector<Job> mvLaborSettings = new Vector<Job>();
+    private Vector<Job> mvLaborSettings;
     //private Vector<String> mvstrGroups = new Vector<String>();
     
     //private JTextField txtName;
@@ -163,6 +163,7 @@ public class JobListPanel extends JPanel {
         moIO = io;
         
         // Create labor settings
+        mvLaborSettings = new Vector<Job>(vLabors.size());
         for (Labor labor : vLabors) {
             mvLaborSettings.add(new Job(labor.name, labor.skillName
                     , DEFAULT_QTY //, 0
@@ -171,8 +172,8 @@ public class JobListPanel extends JPanel {
         }  //  getSkillNameForJob(labor.name)
         
         // Create job settings table
-        Vector<Color> vBackgroundColors = new Vector<Color>();
-        Vector vGroups = new Vector();
+        Vector<Color> vBackgroundColors = new Vector<Color>(mvLaborGroups.size());
+        Vector vGroups = new Vector(mvLaborGroups.size());
         for (LaborGroup laborGroup : mvLaborGroups) {
             //vBackgroundColors.add(getColor(laborGroup.color));
             vBackgroundColors.add(getColor(laborGroup.R, laborGroup.G, laborGroup.B));

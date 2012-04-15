@@ -28,11 +28,13 @@ public class Stat {
     protected String name;
     protected long[] range;
     protected String xmlName;
-    protected Vector<StatHint> vStatHints = new Vector<StatHint>();
+    protected Vector<StatHint> vStatHints;
     
     public Stat(String name, long[] range) {
         this.name = name;
         this.range = range;
+        
+        vStatHints = new Vector<StatHint>();
     };
     public void addStatHint(String hintText, int hintMin, int hintMax) {
         vStatHints.add(new StatHint(hintText, hintMin, hintMax));

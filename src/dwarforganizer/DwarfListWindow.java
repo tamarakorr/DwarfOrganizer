@@ -86,7 +86,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private Hashtable<String, Stat> mhtStats;
     private Hashtable<String, Skill> mhtSkills;
-    private Vector<Dwarf> mvDwarves = new Vector<Dwarf>();
+    private Vector<Dwarf> mvDwarves;
     private Hashtable<String, MetaSkill> mhtMetaSkills;
 
     //JobListPanel moOptimizerSettings;
@@ -278,7 +278,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private Vector<DwarfListItem> toDwarfListItems(Vector<Dwarf> vDwarves
             , Collection<Exclusion> colExclusions) {
 
-        Vector<DwarfListItem> vReturn = new Vector<DwarfListItem>();
+        Vector<DwarfListItem> vReturn = new Vector<DwarfListItem>(vDwarves.size());
 
         for (Dwarf dwarf : vDwarves) {
             vReturn.add(new DwarfListItem(DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE

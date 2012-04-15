@@ -42,7 +42,7 @@ public class ExclusionList extends Exclusion {
 
     @Override
     public Object deepClone() {
-        Vector<String> vNames = new Vector<String>();
+        Vector<String> vNames = new Vector<String>(mvCitizenNames.size());
         for (String name : mvCitizenNames) {
             vNames.add(name);
         }

@@ -283,10 +283,10 @@ public class RulesEditor extends JPanel implements DirtyForm {
     // objects.
     private Vector<Vector<Object>> stringArrayToVVO(Vector<String[]> transformMe) {
 
-        Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>();
+        Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(transformMe.size());
 
         for (String[] strRow : transformMe) {
-            Vector<Object> vRow = new Vector<Object>();
+            Vector<Object> vRow = new Vector<Object>(strRow.length);
             vRow.addAll(Arrays.asList(strRow));
             vReturn.add(vRow);
         }
@@ -295,7 +295,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
     }
     // Does the reverse of stringArrayToVVO
     private Vector<String[]> VVOToStringArray(Vector<Vector<Object>> transformMe) {
-        Vector<String[]> vReturn = new Vector<String[]>();
+        Vector<String[]> vReturn = new Vector<String[]>(transformMe.size());
 
         for (Vector<Object> vFields : transformMe) {
             String[] row = new String[vFields.size()];
@@ -313,7 +313,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
 
     // Converts Vector<Labor> into Vector<String> (.name property)
     private Vector<String> getLaborNames(Vector<Labor> vLabors) {
-        Vector<String> vReturn = new Vector<String>();
+        Vector<String> vReturn = new Vector<String>(vLabors.size());
 
         for (Labor labor : vLabors)
             vReturn.add(labor.name);
@@ -419,7 +419,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
     // Converts the data in the input controls to a vector (in the style of
     // TableModel.setDataVector())
     private Vector<Object> inputToVector() throws InvalidInputException {
-        Vector<Object> vReturn = new Vector<Object>();
+        Vector<Object> vReturn = new Vector<Object>(4);
 
         if (validateInput()) {
             vReturn.add(mcboType.getSelectedItem().toString());
