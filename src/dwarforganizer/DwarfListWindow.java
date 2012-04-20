@@ -118,9 +118,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private Vector<Labor> mvLabors; // Set in constructor
 
     private Map<String, GridView> moViews;
-
+    private ViewHandler moViewHandler;
+    
     public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
-            , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta) {
+            , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta
+            , Vector<LaborGroup> vLaborGroups) {
 
         // Parent constructor---------------------------------------------------
         super();
@@ -138,8 +140,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mbLoading = true;
 
         // Create table column data---------------------------------------------
-        TableCreator tableCreator = new TableCreator();
-        moModel = tableCreator.createDwarfListModel(vExclusions);
+        moViewHandler = new ViewHandler(vLaborGroups);
+        moModel = moViewHandler.createDwarfListModel(vExclusions);
 
         // Create the dwarf data table------------------------------------------
         moTable = new JTable(moModel, new HideableTableColumnModel());
@@ -148,7 +150,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // Set column renderer for skill levels (numeric format, right-justified,
         // nulls blank)
         for (String key : mhtSkills.keySet()) {
-            String id = getColumnNameForSkillLevel(mhtSkills.get(key).name);
+            String id = getColumnNameForSkillLevel(mhtSkills.get(key).getName());
             moTable.getColumn(id).setCellRenderer(new NumberOrNullRenderer());
         }
 
@@ -173,7 +175,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             setLaborGroupVisible(labor.groupName, false);
         setSecondaryColumnsVisible(false);
 */
-        tableCreator.createDwarfListViews();
+        moViewHandler.createDwarfListViews();
         setView(DEFAULT_VIEW_NAME);    // // "Military View"
         //FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane); TODO
         
@@ -208,27 +210,59 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void setView(String viewName) {
         moViews.get(viewName).applyToTable(moTable);
     }
-    private class TableCreator {
+    private class ColumnGroup {
+        private String[] columns;
+        private boolean showByDefault;
+        private String name;
+        
+        public ColumnGroup(String name, String[] columns, boolean showByDefault) {
+            this.name = name;
+            this.columns = columns;
+            this.showByDefault = showByDefault;
+        }
+        public String[] getColumns() {
+            return columns;
+        }
+        public boolean isShownByDefault() {
+            return showByDefault;
+        }
+        public String getName() {
+            return name;
+        }
+    }
+    private class ViewHandler {
 
-        private final String[] alwaysShowCols = new String[] { "Include"
-                , "Name" };
-        private final String[] nickCol = new String[] { "Nickname" };
-        private final String[] genderCol = new String[] { "Gender" };
-        private final String[] ageCol = new String[] { "Age" };
-        private final String[] exclCols = new String[] { "Exclusion"
-                , "Inactive Lists" };
-        private final String[] jobsCol = new String[] { "Jobs" };
-        private String[] statCols;
-
+        // Define column group keys
+        private static final String COL_GROUP_ALWAYS_SHOW = "Always Show";
+        private static final String COL_GROUP_NICKNAME = "Nickname";
+        private static final String COL_GROUP_GENDER = "Gender";
+        private static final String COL_GROUP_AGE = "Age";
+        private static final String COL_GROUP_EXCL = "Exclusion Info";
+        private static final String COL_GROUP_STATS = "Stats";
+        private static final String COL_GROUP_SECONDARY = "Secondary Skills";
+        private static final String COL_GROUP_CUR_LABORS = "Current Labors";
+        
+        private Map<String, ColumnGroup> mhmColGroups;
+        private ArrayList<ColumnGroup> malColOrder;
+        
         private Vector<Object> mvColumns;
         private Vector<Class> mvClasses;
         private Vector<String> mvColProps;
 
-        public TableCreator() {
+        public ViewHandler(Vector<LaborGroup> vLaborGroups) {
 
+            mhmColGroups = createColumnGroups(vLaborGroups);
+            malColOrder = setColumnOrder(vLaborGroups);
+            System.out.println(mhmColGroups.size() + " column groups");
+            System.out.println(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()[0]);
+            
             // Create all the column data---------------------------------------
             mvColumns = new Vector<Object>(Arrays.asList(MyArrayUtils.concatAll(
-                    alwaysShowCols, nickCol, genderCol, ageCol, exclCols)));
+                    mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()
+                    , mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()
+                    , mhmColGroups.get(COL_GROUP_GENDER).getColumns()
+                    , mhmColGroups.get(COL_GROUP_AGE).getColumns()
+                    , mhmColGroups.get(COL_GROUP_EXCL).getColumns())));
     /*        Vector<Object> vColumns = new Vector<Object>(Arrays.asList(new String[]
                 { "Include", "Name", "Nickname", "Gender", "Age", "Exclusion"
                           , "Inactive Lists"
@@ -242,29 +276,39 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                           , "dwarf.age", "activeexclusions"
                           , "inactiveexclusions" }));
 
-            statCols = new String[mhtStats.size()];
-            int iCount = 0;
+            // Stats
+            //msaStatCols = new String[mhtStats.size()];
+            //int statCount = 0;
             String colName;
             for (String key : mhtStats.keySet()) {
-                colName = mhtStats.get(key).name;
-                statCols[iCount++] = colName;
+                colName = mhtStats.get(key).getName();
+                //msaStatCols[statCount++] = colName;
                 mvColumns.add(colName);
                 mvClasses.add(Long.class);   // Stats are Longs
                 mvColProps.add("dwarf.statvalues." + key);
             }
+            
+            // Skills
+            //mvSecondaryCols = new Vector<String>();
             for (String key : mhtSkills.keySet()) {
-                mvColumns.add(getColumnNameForSkill(mhtSkills.get(key).name));       //  + " Potential"
+                colName = getColumnNameForSkill(mhtSkills.get(key).getName());
+                //if (mhtSkills.get(key) instanceof SecondarySkill)
+                //    mvSecondaryCols.add(colName);
+                mvColumns.add(colName);       //  + " Potential"
                 mvClasses.add(Long.class);   // Skills are Longs
                 mvColProps.add("dwarf.skillpotentials." + key);
 
                 // Print relevant skill levels for ranged/close combat
                 // (Override dwarf.skilllevels.)
-                mvColumns.add(getColumnNameForSkillLevel(mhtSkills.get(key).name));
-                if (mhtSkills.get(key).name.equals("Ranged Combat")) {
+                colName = getColumnNameForSkillLevel(mhtSkills.get(key).getName());
+                //if (mhtSkills.get(key) instanceof SecondarySkill)
+                //    mvSecondaryCols.add(colName);
+                mvColumns.add(colName);
+                if (mhtSkills.get(key).getName().equals("Ranged Combat")) {
                     mvClasses.add(String.class);
                     mvColProps.add("rangedcombatlevels");
                 }
-                else if (mhtSkills.get(key).name.equals("Close Combat")) {
+                else if (mhtSkills.get(key).getName().equals("Close Combat")) {
                     mvClasses.add(String.class);
                     mvColProps.add("closecombatlevels");
                 }
@@ -279,25 +323,122 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 mvClasses.add(Long.class);
                 mvColProps.add("dwarf.skillpotentials." + key);
             }
-            mvColumns.addAll(Arrays.asList(jobsCol)); // "Jobs"
+            mvColumns.addAll(Arrays.asList(mhmColGroups.get(
+                    COL_GROUP_CUR_LABORS).getColumns())); // "Jobs"
             mvClasses.add(String.class);
             mvColProps.add("dwarf.jobtext");
         }
 
+        protected ArrayList<ColumnGroup> getColumnGroups() {
+            return malColOrder;
+        }
+        
+        private Map<String, ColumnGroup> createColumnGroups(
+                Vector<LaborGroup> vLaborGroups) {
+            
+            Map<String, ColumnGroup> hmReturn;
+            
+            final String[] asAlwaysShowCols = new String[] { "Include"
+                    , "Name" };
+            final String[] asNickCols = new String[] { "Nickname" };
+            final String[] asGenderCols = new String[] { "Gender" };
+            final String[] asAgeCols = new String[] { "Age" };
+            final String[] asExclCols = new String[] { "Exclusion"
+                    , "Inactive Lists" };
+            final String[] asJobsCols = new String[] { "Jobs" };
+            String[] asStatCols;
+            Vector<String> vsSecondaryCols;
+            
+            // Stat columns
+            asStatCols = new String[mhtStats.size()];
+            int iCount = 0;
+            for (String key : mhtStats.keySet()) {
+                asStatCols[iCount++] = mhtStats.get(key).getName();
+            }
+            
+            // Secondary columns
+            vsSecondaryCols = new Vector<String>();
+            for (String key : mhtSkills.keySet()) {
+                Skill skill = mhtSkills.get(key);
+                if (skill instanceof SecondarySkill) {
+                    String skillName = skill.getName();
+                    vsSecondaryCols.add(getColumnNameForSkill(skillName));
+                    vsSecondaryCols.add(getColumnNameForSkillLevel(skillName));
+                }
+            }
+            
+            hmReturn = new HashMap<String, ColumnGroup>();
+            
+            hmReturn.put(COL_GROUP_ALWAYS_SHOW, new ColumnGroup(
+                    COL_GROUP_ALWAYS_SHOW, asAlwaysShowCols, true));
+            hmReturn.put(COL_GROUP_NICKNAME, new ColumnGroup(COL_GROUP_NICKNAME
+                    , asNickCols, true));
+            hmReturn.put(COL_GROUP_GENDER, new ColumnGroup(COL_GROUP_GENDER
+                    , asGenderCols, true));
+            hmReturn.put(COL_GROUP_AGE, new ColumnGroup(COL_GROUP_AGE
+                    , asAgeCols, true));
+            hmReturn.put(COL_GROUP_EXCL, new ColumnGroup(COL_GROUP_EXCL
+                    , asExclCols, true));
+            hmReturn.put(COL_GROUP_STATS, new ColumnGroup(COL_GROUP_STATS
+                    , asStatCols, true));
+            hmReturn.put(COL_GROUP_SECONDARY, new ColumnGroup(
+                    COL_GROUP_SECONDARY, vsSecondaryCols.toArray(
+                    new String[vsSecondaryCols.size()]), false));
+            for (LaborGroup group : vLaborGroups) {
+                Vector<String> vCols = getLaborColsForGroup(group.getName());
+                String strName = "Job Group: " + group.getName();
+                hmReturn.put(strName, new ColumnGroup(strName
+                        , vCols.toArray(new String[vCols.size()]), false));
+            }
+            hmReturn.put(COL_GROUP_CUR_LABORS, new ColumnGroup(
+                    COL_GROUP_CUR_LABORS, asJobsCols, true));
+            
+            return hmReturn;
+        }
+        private ArrayList<ColumnGroup> setColumnOrder(
+                Vector<LaborGroup> vLaborGroups) {
+            
+            ArrayList<ColumnGroup> alReturn = new ArrayList<ColumnGroup>(
+                    mhmColGroups.size());
+            alReturn.add(mhmColGroups.get(COL_GROUP_NICKNAME));
+            alReturn.add(mhmColGroups.get(COL_GROUP_GENDER));
+            alReturn.add(mhmColGroups.get(COL_GROUP_AGE));
+            alReturn.add(mhmColGroups.get(COL_GROUP_EXCL));
+            alReturn.add(mhmColGroups.get(COL_GROUP_STATS));
+            alReturn.add(mhmColGroups.get(COL_GROUP_SECONDARY));
+            for (LaborGroup group : vLaborGroups) {
+                alReturn.add(mhmColGroups.get("Job Group: " + group.getName()));
+            }
+            alReturn.add(mhmColGroups.get(COL_GROUP_CUR_LABORS));
+            return alReturn;
+        }
+        
+        private Vector<String> getLaborColsForGroup(String groupName) {
+            Vector<String> vReturn = new Vector<String>();
+            for (Labor labor : mvLabors) {
+                if (labor.getGroupName().equals(groupName)) {
+                    vReturn.add(getColumnNameForSkill(labor.getSkillName()));
+                    vReturn.add(getColumnNameForSkillLevel(labor.getSkillName()));
+                }
+            }
+            return vReturn;
+        }
+        
         public void createDwarfListViews() {
             moViews = new HashMap<String, GridView>();
 
             // TODO: Read from file?
             // Default view-----------------------------------------------------
             List<Object> colOrder = new ArrayList<Object>();
-            colOrder.addAll(Arrays.asList(alwaysShowCols));
-            colOrder.addAll(Arrays.asList(nickCol));
-            colOrder.addAll(Arrays.asList(genderCol));
-            colOrder.addAll(Arrays.asList(ageCol));
-            colOrder.addAll(Arrays.asList(exclCols));
-            colOrder.addAll(Arrays.asList(statCols));
-            colOrder.addAll(Arrays.asList(jobsCol));
-
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_GENDER).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_AGE).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_EXCL).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_STATS).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_CUR_LABORS).getColumns()));
+            //System.out.println("colOrder has " + colOrder.size() + " entries");
+            
             moViews.put(DEFAULT_VIEW_NAME, new GridView(DEFAULT_VIEW_NAME, "Name"
                     , GridView.KeyAxis.X_AXIS, false, colOrder));
 
@@ -305,8 +446,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             String[] skills = new String[] { "Close Combat", "Ranged Combat" };
 
             colOrder = new ArrayList<Object>();
-            colOrder.addAll(Arrays.asList(alwaysShowCols));
-            colOrder.addAll(Arrays.asList(nickCol));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()));
 
             // Add close/ranged combat potentials
             for (String skillName : skills) {
@@ -317,14 +458,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             // Add the relevant stats
             for (String skillName : skills) {
                 for (Stat stat : mhtSkills.get(skillName).getStats()) {
-                    if (! colOrder.contains(stat.name))
-                        colOrder.add(stat.name);
+                    if (! colOrder.contains(stat.getName()))
+                        colOrder.add(stat.getName());
                 }
             }
 
             // Gender, exclusions
-            colOrder.addAll(Arrays.asList(genderCol));
-            colOrder.addAll(Arrays.asList(exclCols));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_GENDER).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_EXCL).getColumns()));
 
             moViews.put("Military View", new GridView("Military View", "Name"
                     , GridView.KeyAxis.X_AXIS, false, colOrder));
@@ -485,17 +626,35 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     // Expected to be called by owner frame
     protected JMenuBar getMenu(Vector<LaborGroup> vLaborGroups) {
 
-        final String[] vitalsCols = new String[] { "Gender", "Age" };
+/*        final String[] vitalsCols = new String[] { "Gender", "Age" };
         final String[] exclCols = new String[] { "Exclusion", "Inactive Lists" };
         final String[] nickCol = new String[] { "Nickname" };
-        final String[] jobsCol = new String[] { "Jobs" };
+        final String[] jobsCol = new String[] { "Jobs" }; */
 
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Columns");
         menu.setMnemonic(KeyEvent.VK_C);
         menuBar.add(menu);
 
-        final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Nickname", true);
+        ArrayList<ColumnGroup> alColGroups = moViewHandler.getColumnGroups();        
+        for (ColumnGroup group : alColGroups) {
+            if (! group.getName().equals("Always Show")) {
+                //ColumnGroup columnGroup = hmColGroups.get(key);
+                final String[] arrColumns = group.getColumns();
+                final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(
+                        group.getName(), group.isShownByDefault());
+                menuItem.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        setColumnsVisible(arrColumns, menuItem.isSelected());
+                    }
+                });
+                menu.add(menuItem);
+            }
+        }
+        menu.add(new JSeparator());
+        
+/*        final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Nickname", true);
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -543,11 +702,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         for (final LaborGroup group : vLaborGroups) {
             final JCheckBoxMenuItem jobGroupItem = new JCheckBoxMenuItem(
-                    "Job Group: " + group.name, false);
+                    "Job Group: " + group.getName(), false);
             jobGroupItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    setLaborGroupVisible(group.name, jobGroupItem.isSelected());
+                    setLaborGroupVisible(group.getName()
+                            , jobGroupItem.isSelected());
                 }
             });
             menu.add(jobGroupItem);
@@ -561,7 +721,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         });
         menu.add(jobItem);
-
+*/
         // Views----------------------------------------------------------------
         menu = new JMenu("View");
         menuBar.add(menu);
@@ -584,7 +744,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         }
 
         menu.add(new JSeparator());
-        item = new JMenuItem("Create a View..."); // TODO
+        item = new JMenuItem("Manage Views..."); // TODO
         item.setEnabled(false); // TODO
         menu.add(item);
 
@@ -660,10 +820,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     // Sets the visibility of the columns associated with the given labor group
     private void setLaborGroupVisible(String group, boolean visible) {
         for (Labor labor : mvLabors) {
-            if (labor.groupName.equals(group)) {
+            if (labor.getGroupName().equals(group)) {
                 //System.out.println("Setting visibility of " + labor.skillName);
-                setColumnVisible(getColumnNameForSkill(labor.skillName), visible);
-                setColumnVisible(getColumnNameForSkillLevel(labor.skillName), visible);
+                setColumnVisible(getColumnNameForSkill(labor.getSkillName()), visible);
+                setColumnVisible(getColumnNameForSkillLevel(labor.getSkillName()), visible);
             }
         }
     }
@@ -672,8 +832,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void setSecondaryColumnsVisible(boolean visible) {
         for (Skill skill : mhtSkills.values()) {
             if (skill instanceof SecondarySkill) {
-                setColumnVisible(getColumnNameForSkill(skill.name), visible);
-                setColumnVisible(getColumnNameForSkillLevel(skill.name), visible);
+                setColumnVisible(getColumnNameForSkill(skill.getName()), visible);
+                setColumnVisible(getColumnNameForSkillLevel(skill.getName()), visible);
             }
         }
     }
@@ -681,7 +841,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     // Sets the visibility of stat columns
     private void setStatColumnsVisible(boolean visible) {
         for (Stat stat : mhtStats.values())
-            setColumnVisible(stat.name, visible);
+            setColumnVisible(stat.getName(), visible);
     }
     private void setColumnsVisible(String[] cols, boolean visible) {
         for (String col : cols)
@@ -728,7 +888,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     }
     private void printStatGroup(Vector<Stat> statGroup) {
         for (Stat stat : statGroup) {
-            System.out.println("    " + stat.name);
+            System.out.println("    " + stat.getName());
         }
     }
 
@@ -818,13 +978,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         out.write("<" + tagName + ">");
 
         out.newLine();
-        out.write("    <Name>" + skill.name + "</Name>");
+        out.write("    <Name>" + skill.getName() + "</Name>");
         out.newLine();
         out.write("    <Stats>");
         out.newLine();
 
         for (Stat stat : skill.getStats()) {
-            out.write("        <Stat>" + stat.name + "</Stat>");
+            out.write("        <Stat>" + stat.getName() + "</Stat>");
             out.newLine();
         }
         out.write("    </Stats>");
@@ -1034,7 +1194,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             // Stats
             int columnIndex = 7;  // 6; 5; 7;
             for (Stat stat : mhtStats.values()) {
-                oModel.setValueAt(oDwarf.statValues.get(stat.name)
+                oModel.setValueAt(oDwarf.statValues.get(stat.getName())
                         , iCount, columnIndex);
                 columnIndex++;
             }

@@ -316,7 +316,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
         Vector<String> vReturn = new Vector<String>(vLabors.size());
 
         for (Labor labor : vLabors)
-            vReturn.add(labor.name);
+            vReturn.add(labor.getName());
         Collections.sort(vReturn);
         return vReturn;
     }

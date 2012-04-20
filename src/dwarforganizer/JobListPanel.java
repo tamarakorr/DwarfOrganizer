@@ -165,7 +165,7 @@ public class JobListPanel extends JPanel {
         // Create labor settings
         mvLaborSettings = new Vector<Job>(vLabors.size());
         for (Labor labor : vLabors) {
-            mvLaborSettings.add(new Job(labor.name, labor.skillName
+            mvLaborSettings.add(new Job(labor.getName(), labor.getSkillName()
                     , DEFAULT_QTY //, 0
                     , DEFAULT_TIME, DEFAULT_WT, DEFAULT_SKILL_WT
                     , DEFAULT_REMINDER));
@@ -176,8 +176,9 @@ public class JobListPanel extends JPanel {
         Vector vGroups = new Vector(mvLaborGroups.size());
         for (LaborGroup laborGroup : mvLaborGroups) {
             //vBackgroundColors.add(getColor(laborGroup.color));
-            vBackgroundColors.add(getColor(laborGroup.R, laborGroup.G, laborGroup.B));
-            vGroups.add(laborGroup.name);
+            vBackgroundColors.add(getColor(laborGroup.getRed()
+                    , laborGroup.getGreen(), laborGroup.getBlue()));
+            vGroups.add(laborGroup.getName());
         }
         
         // Hours label
@@ -538,8 +539,8 @@ public class JobListPanel extends JPanel {
     private String getGroupForLabor(String laborName) {
         
         for (Labor labor : mvLabors)
-            if (labor.name.equals(laborName))
-                return labor.groupName;
+            if (labor.getName().equals(laborName))
+                return labor.getGroupName();
         
         return "";
     }    

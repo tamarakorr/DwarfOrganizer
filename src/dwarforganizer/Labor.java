@@ -12,14 +12,26 @@ package dwarforganizer;
  */
 public class Labor {
     
-    protected String name;
-    protected String skillName;
-    protected String groupName;
+    private String name;
+    private String skillName;
+    private String groupName;
 
     public Labor(String name, String skillName, String groupName) {
         this.name = name;
         this.skillName = skillName;
         this.groupName = groupName;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSkillName() {
+        return skillName;
     }
     
     @Override

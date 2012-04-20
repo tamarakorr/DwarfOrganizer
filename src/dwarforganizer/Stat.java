@@ -25,9 +25,9 @@ public class Stat {
         }
     }
     
-    protected String name;
+    private String name;
     protected long[] range;
-    protected String xmlName;
+    private String xmlName;
     protected Vector<StatHint> vStatHints;
     
     public Stat(String name, long[] range) {
@@ -39,4 +39,17 @@ public class Stat {
     public void addStatHint(String hintText, int hintMin, int hintMax) {
         vStatHints.add(new StatHint(hintText, hintMin, hintMax));
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getXmlName() {
+        return xmlName;
+    }
+
+    public void setXmlName(String xmlName) {
+        this.xmlName = xmlName;
+    }
+    
 }

@@ -11,11 +11,11 @@ package dwarforganizer;
  * See MIT license in license.txt
  */
 public class LaborGroup {
-    String name;
-    String color;
-    int R;
-    int G;
-    int B;
+    private String name;
+    private String color;
+    private int R;
+    private int G;
+    private int B;
 
     public LaborGroup(String name, String color, int colorR, int colorG
             , int colorB) {
@@ -24,6 +24,22 @@ public class LaborGroup {
         this.R = colorR;
         this.G = colorG;
         this.B = colorB;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getBlue() {
+        return B;
+    }
+
+    public int getGreen() {
+        return G;
+    }
+
+    public int getRed() {
+        return R;
     }
 
 }

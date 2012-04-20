@@ -14,12 +14,16 @@ import java.util.Vector;
  */
 public class Skill {
     protected Vector<Stat> mvStats;
-    protected String name;
+    private String name;
 
     public Skill(String name, Vector<Stat> stats) {
         this.name = name;
         mvStats = stats;
     }
     public Vector<Stat> getStats() { return mvStats; }
+
+    public String getName() {
+        return name;
+    }
 
 }

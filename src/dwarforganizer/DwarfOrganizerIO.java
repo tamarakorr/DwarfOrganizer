@@ -390,25 +390,25 @@ public class DwarfOrganizerIO {
             createStats(SOCIAL_TRAITS, socialRange);
 
             // Set XML names for stats that don't need to be hinted
-            mhtStats.get("Focus").xmlName = "Focus";
-            mhtStats.get("Spatial Sense").xmlName = "SpatialSense";
-            mhtStats.get("Strength").xmlName = "Strength";
-            mhtStats.get("Toughness").xmlName = "Toughness";
-            mhtStats.get("Analytical Ability").xmlName = "AnalyticalAbility";
-            mhtStats.get("Creativity").xmlName = "Creatvity";   // Yes, it's missing an "i".
-            mhtStats.get("Patience").xmlName = "Patience";
-            mhtStats.get("Memory").xmlName = "Memory";
-            mhtStats.get("Endurance").xmlName = "Endurance";
-            mhtStats.get("Disease Resistance").xmlName = "DiseaseResistance";
-            mhtStats.get("Recuperation").xmlName = "Recuperation";
-            mhtStats.get("Intuition").xmlName = "Intuition";
-            mhtStats.get("Willpower").xmlName = "Willpower";
-            mhtStats.get("Kinesthetic Sense").xmlName = "KinaestheticSense";
-            mhtStats.get("Linguistic Ability").xmlName = "LinguisticAbility";
-            mhtStats.get("Musicality").xmlName = "Musicality";
-            mhtStats.get("Empathy").xmlName = "Empathy";
-            mhtStats.get("Social Awareness").xmlName = "SocialAwareness";
-            mhtStats.get("Agility").xmlName = "Agility";       
+            mhtStats.get("Focus").setXmlName("Focus");
+            mhtStats.get("Spatial Sense").setXmlName("SpatialSense");
+            mhtStats.get("Strength").setXmlName("Strength");
+            mhtStats.get("Toughness").setXmlName("Toughness");
+            mhtStats.get("Analytical Ability").setXmlName("AnalyticalAbility");
+            mhtStats.get("Creativity").setXmlName("Creatvity");   // Yes, it's missing an "i".
+            mhtStats.get("Patience").setXmlName("Patience");
+            mhtStats.get("Memory").setXmlName("Memory");
+            mhtStats.get("Endurance").setXmlName("Endurance");
+            mhtStats.get("Disease Resistance").setXmlName("DiseaseResistance");
+            mhtStats.get("Recuperation").setXmlName("Recuperation");
+            mhtStats.get("Intuition").setXmlName("Intuition");
+            mhtStats.get("Willpower").setXmlName("Willpower");
+            mhtStats.get("Kinesthetic Sense").setXmlName("KinaestheticSense");
+            mhtStats.get("Linguistic Ability").setXmlName("LinguisticAbility");
+            mhtStats.get("Musicality").setXmlName("Musicality");
+            mhtStats.get("Empathy").setXmlName("Empathy");
+            mhtStats.get("Social Awareness").setXmlName("SocialAwareness");
+            mhtStats.get("Agility").setXmlName("Agility");
 
             // TODO ... Figure out why I wrote TODO here and what this is/was for
             //mhtStats.get("Friendliness").xmlName = 
@@ -603,9 +603,9 @@ public class DwarfOrganizerIO {
                     //System.out.println("Getting " + mhtStats.get(key).name);
 
                     long value;
-                    if (mhtStats.get(key).xmlName != null)
+                    if (mhtStats.get(key).getXmlName() != null)
                         value = Long.parseLong(getTagValue(thisCreature
-                            , mhtStats.get(key).xmlName, "0"));
+                            , mhtStats.get(key).getXmlName(), "0"));
 
                     else {  // Look under Traits if there is no attribute XML name
 
@@ -616,7 +616,7 @@ public class DwarfOrganizerIO {
                         Element traits = (Element) thisCreature.getElementsByTagName(
                                 "Traits").item(0);
                         value = Long.parseLong(getXMLValueByKey(traits, "Trait"
-                                , "name", mhtStats.get(key).name, "value"
+                                , "name", mhtStats.get(key).getName(), "value"
                                 , "-1"));   // DEFAULT_TRAIT_VALUE
 
                         // If we could not get the exact trait value, perhaps
@@ -702,7 +702,7 @@ public class DwarfOrganizerIO {
                 // Simple skill potentials
                 for (String key : mhtSkills.keySet()) {
                     Skill oSkill = mhtSkills.get(key);
-                    oDwarf.skillPotentials.put(oSkill.name
+                    oDwarf.skillPotentials.put(oSkill.getName()
                             , getPotential(oDwarf, oSkill));
                 }
                 // Meta skill potentials
@@ -711,7 +711,7 @@ public class DwarfOrganizerIO {
                     double dblSum = 0.0d;
 
                     for (Skill oSkill : meta.vSkills)
-                        dblSum += oDwarf.skillPotentials.get(oSkill.name);
+                        dblSum += oDwarf.skillPotentials.get(oSkill.getName());
 
                     oDwarf.skillPotentials.put(meta.name
                             , Math.round(dblSum / meta.vSkills.size()));
@@ -728,7 +728,7 @@ public class DwarfOrganizerIO {
             double numStats = (double) vStats.size();
 
             for (int kCount = 0; kCount < numStats; kCount++) {
-                double addValue = oDwarf.statPercents.get(vStats.get(kCount).name);
+                double addValue = oDwarf.statPercents.get(vStats.get(kCount).getName());
 
                 // If the dwarf cannot gain skill because of a personality trait
                 if (oSkill.getClass() == SocialSkill.class) {

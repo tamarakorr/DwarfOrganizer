@@ -185,7 +185,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         createExclusionScreen(desktop);
         
         // Create dwarf list window
-        moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill, mhtMetaSkill); //, mvLaborGroups);
+        moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
+                , mhtMetaSkill, mvLaborGroups);
         moDwarfListWindow.loadData(mvDwarves, mvExclusions);
         moExclusionManager.getAppliedBroadcaster().addListener(moDwarfListWindow); // Listen for exclusions applied
         
@@ -1081,9 +1082,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         for (String wlJobName : whitelist.keySet()) {
             for (Labor labor : labors) {
                 // Add all non-whitelisted jobs to the blacklist.
-                if (! wlJobName.equals(labor.name)) {
-                    if (! whitelist.get(wlJobName).contains(labor.name))
-                        blacklist.addOneWayEntry(wlJobName, labor.name);
+                if (! wlJobName.equals(labor.getName())) {
+                    if (! whitelist.get(wlJobName).contains(labor.getName()))
+                        blacklist.addOneWayEntry(wlJobName, labor.getName());
                 }
             }
         }
