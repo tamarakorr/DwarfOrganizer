@@ -238,7 +238,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private void updateDwarfListMenu() {
         mitlDwarfList.setJMenuBar(appendMenuBar(createDwarfListMenuBar()
-            , moDwarfListWindow.getMenu(mvLaborGroups)));
+            , moDwarfListWindow.getMenu())); // mvLaborGroups
     }
     
     // Returns a JMenuBar made of the menus in the first menu bar, followed

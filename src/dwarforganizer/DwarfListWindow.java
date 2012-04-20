@@ -54,7 +54,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private static final int INCLUDE_COLUMN = 0;  // Index of the "Include" column in the table
     private static final String DEFAULT_VIEW_NAME = "Default View";
-    
+
     //private static final int MAX_DWARF_TIME = 100;
     //private static final String DEFAULT_DWARF_AGE = "999";
     //private static final String DEFAULT_TRAIT_VALUE = "50";
@@ -117,9 +117,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private Vector<Labor> mvLabors; // Set in constructor
 
-    private Map<String, GridView> moViews;
+    private Map<String, GridView> moViews;  // Keyed by view name
+    private Map<String, List<String>> moViewColumnGroups; // Keyed by view name, values are lists of column group keys
     private ViewHandler moViewHandler;
-    
+
+    private JMenuBar moMenuBar;
+    private Map<String, JCheckBoxMenuItem> moColMenus;
+
     public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
             , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta
             , Vector<LaborGroup> vLaborGroups) {
@@ -139,7 +143,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         mbLoading = true;
 
-        // Create table column data---------------------------------------------
+        // Create view data-----------------------------------------------------
         moViewHandler = new ViewHandler(vLaborGroups);
         moModel = moViewHandler.createDwarfListModel(vExclusions);
 
@@ -161,7 +165,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moTable.setColumnSelectionAllowed(false);
         moTable.setRowSelectionAllowed(true);
         moTable.addKeyListener(new ClipboardKeyAdapter(moTable, true, false, false));
-        
+
         mspScrollPane = new JScrollPane(moTable);
 
         // Sort by name
@@ -176,9 +180,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         setSecondaryColumnsVisible(false);
 */
         moViewHandler.createDwarfListViews();
+        moMenuBar = createMenu();   // Must be done after creating views
         setView(DEFAULT_VIEW_NAME);    // // "Military View"
         //FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane); TODO
-        
+
         // Show some statistics-------------------------------------------------
         mlblPop = new JLabel("X total dwarves from XML"); // total adult
         mlblSelected = new JLabel(getNumSelectedText(mvDwarves.size()));
@@ -208,13 +213,20 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mbLoading = false;
     }
     private void setView(String viewName) {
+        // Set the table columns/view
         moViews.get(viewName).applyToTable(moTable);
+        
+        // Set the selected column groups in the menu
+        for (String columnKey : moColMenus.keySet()) {
+            moColMenus.get(columnKey).setSelected(
+                    moViewColumnGroups.get(viewName).contains(columnKey));
+        }
     }
     private class ColumnGroup {
         private String[] columns;
         private boolean showByDefault;
         private String name;
-        
+
         public ColumnGroup(String name, String[] columns, boolean showByDefault) {
             this.name = name;
             this.columns = columns;
@@ -241,10 +253,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         private static final String COL_GROUP_STATS = "Stats";
         private static final String COL_GROUP_SECONDARY = "Secondary Skills";
         private static final String COL_GROUP_CUR_LABORS = "Current Labors";
-        
+
         private Map<String, ColumnGroup> mhmColGroups;
         private ArrayList<ColumnGroup> malColOrder;
-        
+
         private Vector<Object> mvColumns;
         private Vector<Class> mvClasses;
         private Vector<String> mvColProps;
@@ -253,9 +265,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
             mhmColGroups = createColumnGroups(vLaborGroups);
             malColOrder = setColumnOrder(vLaborGroups);
-            System.out.println(mhmColGroups.size() + " column groups");
-            System.out.println(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()[0]);
-            
+            //System.out.println(mhmColGroups.size() + " column groups");
+            //System.out.println(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()[0]);
+
             // Create all the column data---------------------------------------
             mvColumns = new Vector<Object>(Arrays.asList(MyArrayUtils.concatAll(
                     mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()
@@ -287,7 +299,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 mvClasses.add(Long.class);   // Stats are Longs
                 mvColProps.add("dwarf.statvalues." + key);
             }
-            
+
             // Skills
             //mvSecondaryCols = new Vector<String>();
             for (String key : mhtSkills.keySet()) {
@@ -332,12 +344,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         protected ArrayList<ColumnGroup> getColumnGroups() {
             return malColOrder;
         }
-        
+
         private Map<String, ColumnGroup> createColumnGroups(
                 Vector<LaborGroup> vLaborGroups) {
-            
+
             Map<String, ColumnGroup> hmReturn;
-            
+
             final String[] asAlwaysShowCols = new String[] { "Include"
                     , "Name" };
             final String[] asNickCols = new String[] { "Nickname" };
@@ -348,14 +360,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             final String[] asJobsCols = new String[] { "Jobs" };
             String[] asStatCols;
             Vector<String> vsSecondaryCols;
-            
+
             // Stat columns
             asStatCols = new String[mhtStats.size()];
             int iCount = 0;
             for (String key : mhtStats.keySet()) {
                 asStatCols[iCount++] = mhtStats.get(key).getName();
             }
-            
+
             // Secondary columns
             vsSecondaryCols = new Vector<String>();
             for (String key : mhtSkills.keySet()) {
@@ -366,9 +378,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     vsSecondaryCols.add(getColumnNameForSkillLevel(skillName));
                 }
             }
-            
+
             hmReturn = new HashMap<String, ColumnGroup>();
-            
+
             hmReturn.put(COL_GROUP_ALWAYS_SHOW, new ColumnGroup(
                     COL_GROUP_ALWAYS_SHOW, asAlwaysShowCols, true));
             hmReturn.put(COL_GROUP_NICKNAME, new ColumnGroup(COL_GROUP_NICKNAME
@@ -392,12 +404,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
             hmReturn.put(COL_GROUP_CUR_LABORS, new ColumnGroup(
                     COL_GROUP_CUR_LABORS, asJobsCols, true));
-            
+
             return hmReturn;
         }
         private ArrayList<ColumnGroup> setColumnOrder(
                 Vector<LaborGroup> vLaborGroups) {
-            
+
             ArrayList<ColumnGroup> alReturn = new ArrayList<ColumnGroup>(
                     mhmColGroups.size());
             alReturn.add(mhmColGroups.get(COL_GROUP_NICKNAME));
@@ -412,7 +424,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             alReturn.add(mhmColGroups.get(COL_GROUP_CUR_LABORS));
             return alReturn;
         }
-        
+
         private Vector<String> getLaborColsForGroup(String groupName) {
             Vector<String> vReturn = new Vector<String>();
             for (Labor labor : mvLabors) {
@@ -423,28 +435,40 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
             return vReturn;
         }
-        
+
         public void createDwarfListViews() {
+            ArrayList<String> alColGroupList;
+            
             moViews = new HashMap<String, GridView>();
+            moViewColumnGroups = new HashMap<String, List<String>>();
 
             // TODO: Read from file?
             // Default view-----------------------------------------------------
+            alColGroupList = new ArrayList<String>(Arrays.asList(new String[] { 
+                COL_GROUP_ALWAYS_SHOW, COL_GROUP_NICKNAME, COL_GROUP_GENDER
+                        , COL_GROUP_AGE, COL_GROUP_EXCL, COL_GROUP_STATS
+                        , COL_GROUP_CUR_LABORS
+            }));
             List<Object> colOrder = new ArrayList<Object>();
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
+            for (String columnKey : alColGroupList) {
+                colOrder.addAll(Arrays.asList(mhmColGroups.get(columnKey).getColumns()));
+            }
+/*            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_GENDER).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_AGE).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_EXCL).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_STATS).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_CUR_LABORS).getColumns()));
+            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_CUR_LABORS).getColumns())); */
             //System.out.println("colOrder has " + colOrder.size() + " entries");
-            
+
             moViews.put(DEFAULT_VIEW_NAME, new GridView(DEFAULT_VIEW_NAME, "Name"
                     , GridView.KeyAxis.X_AXIS, false, colOrder));
-
+            moViewColumnGroups.put(DEFAULT_VIEW_NAME, alColGroupList);
+            
             // Military view----------------------------------------------------
             String[] skills = new String[] { "Close Combat", "Ranged Combat" };
-
+            
             colOrder = new ArrayList<Object>();
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()));
@@ -469,7 +493,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
             moViews.put("Military View", new GridView("Military View", "Name"
                     , GridView.KeyAxis.X_AXIS, false, colOrder));
-
+            moViewColumnGroups.put("Military View", new ArrayList<String>(
+                Arrays.asList(new String[] { COL_GROUP_ALWAYS_SHOW
+                        , COL_GROUP_NICKNAME, COL_GROUP_GENDER, COL_GROUP_EXCL
+            })));
+            
             // TODO: Potential view
         }
 
@@ -598,7 +626,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // ---------------------------------------------------------------------
         popUp.add(new JSeparator());
-        
+
         // Copy selected rows to clipboard in spreadsheet-friendly format-----
         menuItem = new JMenuItem("Copy");
         menuItem.setAccelerator(KeyStroke.getKeyStroke("ctrl C"));
@@ -606,11 +634,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             @Override
             public void actionPerformed(ActionEvent e) {
                 MyHandyTable.cancelEditing(moTable);
-                MyHandyTable.copyToClipboard(moTable, false);                
+                MyHandyTable.copyToClipboard(moTable, false);
             }
         });
         popUp.add(menuItem);
-        
+
         moTable.setComponentPopupMenu(popUp);
     }
 
@@ -624,19 +652,18 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     // Returns the desired menu for this panel.
     // Expected to be called by owner frame
-    protected JMenuBar getMenu(Vector<LaborGroup> vLaborGroups) {
-
-/*        final String[] vitalsCols = new String[] { "Gender", "Age" };
-        final String[] exclCols = new String[] { "Exclusion", "Inactive Lists" };
-        final String[] nickCol = new String[] { "Nickname" };
-        final String[] jobsCol = new String[] { "Jobs" }; */
+    protected JMenuBar getMenu() {
+        return moMenuBar;
+    }
+    private JMenuBar createMenu() {
 
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Columns");
         menu.setMnemonic(KeyEvent.VK_C);
         menuBar.add(menu);
 
-        ArrayList<ColumnGroup> alColGroups = moViewHandler.getColumnGroups();        
+        ArrayList<ColumnGroup> alColGroups = moViewHandler.getColumnGroups();
+        moColMenus = new HashMap<String, JCheckBoxMenuItem>(alColGroups.size());
         for (ColumnGroup group : alColGroups) {
             if (! group.getName().equals("Always Show")) {
                 //ColumnGroup columnGroup = hmColGroups.get(key);
@@ -649,79 +676,18 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                         setColumnsVisible(arrColumns, menuItem.isSelected());
                     }
                 });
+                
+                // Store a reference to the menu item, keyed by group name
+                moColMenus.put(group.getName(), menuItem);
+
+                /*if (arrColumns.length > 1) {
+                    System.out.println("Submenu needed for " + group.getName());
+                } */
+
                 menu.add(menuItem);
             }
         }
-        menu.add(new JSeparator());
-        
-/*        final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem("Nickname", true);
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setColumnsVisible(nickCol, menuItem.isSelected());
-            }
-        });
-        menu.add(menuItem);
 
-        final JCheckBoxMenuItem vitalsItem = new JCheckBoxMenuItem("Some Vitals", true);
-        vitalsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setColumnsVisible(vitalsCols, vitalsItem.isSelected());
-            }
-        });
-        menu.add(vitalsItem);
-
-        final JCheckBoxMenuItem exclItem = new JCheckBoxMenuItem("Exclusion Info", true);
-        exclItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setColumnsVisible(exclCols, exclItem.isSelected());
-            }
-        });
-        menu.add(exclItem);
-
-        final JCheckBoxMenuItem statItem = new JCheckBoxMenuItem("Stats", true);
-        statItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setStatColumnsVisible(statItem.isSelected());
-            }
-        });
-        menu.add(statItem);
-
-        final JCheckBoxMenuItem secondaryItem = new JCheckBoxMenuItem(
-                "Secondary Skills", false);
-        secondaryItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setSecondaryColumnsVisible(secondaryItem.isSelected());
-            }
-        });
-        menu.add(secondaryItem);
-
-        for (final LaborGroup group : vLaborGroups) {
-            final JCheckBoxMenuItem jobGroupItem = new JCheckBoxMenuItem(
-                    "Job Group: " + group.getName(), false);
-            jobGroupItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setLaborGroupVisible(group.getName()
-                            , jobGroupItem.isSelected());
-                }
-            });
-            menu.add(jobGroupItem);
-        }
-
-        final JCheckBoxMenuItem jobItem = new JCheckBoxMenuItem("Current Labors", true);
-        jobItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setColumnsVisible(jobsCol, jobItem.isSelected());
-            }
-        });
-        menu.add(jobItem);
-*/
         // Views----------------------------------------------------------------
         menu = new JMenu("View");
         menuBar.add(menu);
