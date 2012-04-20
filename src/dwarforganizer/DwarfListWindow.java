@@ -14,12 +14,17 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -27,7 +32,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -44,7 +51,8 @@ import myutils.MyTCRStripedHighlightCheckBox;
 public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private static final int INCLUDE_COLUMN = 0;  // Index of the "Include" column in the table
-
+    private static final String DEFAULT_VIEW_NAME = "Default View";
+    
     //private static final int MAX_DWARF_TIME = 100;
     //private static final String DEFAULT_DWARF_AGE = "999";
     //private static final String DEFAULT_TRAIT_VALUE = "50";
@@ -107,9 +115,250 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private Vector<Labor> mvLabors; // Set in constructor
 
+    private Map<String, GridView> moViews;
+
+    public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
+            , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta) {
+
+        // Parent constructor---------------------------------------------------
+        super();
+
+        // Set local variables--------------------------------------------------
+        mvLabors = vLabors;
+        mhtStats = htStat;
+        mhtSkills = htSkill;
+        mhtMetaSkills = htMeta;
+
+        // Create objects-------------------------------------------------------
+        mvDwarves = new Vector<Dwarf>(); //vDwarves;
+        Collection<Exclusion> vExclusions = new Vector<Exclusion>();
+
+        mbLoading = true;
+
+        // Create table column data---------------------------------------------
+        TableCreator tableCreator = new TableCreator();
+        moModel = tableCreator.createDwarfListModel(vExclusions);
+
+        // Create the dwarf data table------------------------------------------
+        moTable = new JTable(moModel, new HideableTableColumnModel());
+        moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
+
+        // Set column renderer for skill levels (numeric format, right-justified,
+        // nulls blank)
+        for (String key : mhtSkills.keySet()) {
+            String id = getColumnNameForSkillLevel(mhtSkills.get(key).name);
+            moTable.getColumn(id).setCellRenderer(new NumberOrNullRenderer());
+        }
+
+        moTable.setDefaultRenderer(Boolean.class, new MyTCRStripedHighlightCheckBox());
+        moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight());
+
+        mspScrollPane = new JScrollPane(moTable);
+
+        // Sort by name
+        MyHandyTable.handyTable(moTable, mspScrollPane, moModel, true, 1, true);   // this
+
+        // Create the popup menu for mass including/excluding
+        createPopup();
+
+/*        // Hide columns for labor groups and secondary skills by default
+        for (Labor labor : mvLabors)
+            setLaborGroupVisible(labor.groupName, false);
+        setSecondaryColumnsVisible(false);
+*/
+        tableCreator.createDwarfListViews();
+        setView(DEFAULT_VIEW_NAME);    // // "Military View"
+        //FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane); TODO
+        
+        // Show some statistics-------------------------------------------------
+        mlblPop = new JLabel("X total dwarves from XML"); // total adult
+        mlblSelected = new JLabel(getNumSelectedText(mvDwarves.size()));
+        mlblExclusions = new JLabel("X active exclusion rules/lists");
+        applyExclusions(vExclusions); // Apply exclusions to data & update labels
+
+        // Build the UI---------------------------------------------------------
+        JPanel tablePanel = new JPanel();
+        tablePanel.setLayout(new BorderLayout());
+        tablePanel.add(mspScrollPane);
+        tablePanel.setPreferredSize(new Dimension(750, 250));
+
+        JPanel panInfo = new JPanel();
+        panInfo.setLayout(new BorderLayout());
+        panInfo.add(mlblPop, BorderLayout.NORTH);
+        panInfo.add(mlblSelected, BorderLayout.CENTER);
+        panInfo.add(mlblExclusions, BorderLayout.SOUTH);
+
+        JPanel panDwarfList = new JPanel();
+        panDwarfList.setLayout(new BorderLayout());
+        panDwarfList.add(tablePanel, BorderLayout.CENTER);
+        panDwarfList.add(panInfo, BorderLayout.SOUTH);
+
+        this.setLayout(new BorderLayout());
+        this.add(panDwarfList); // , BorderLayout.LINE_START
+
+        mbLoading = false;
+    }
+    private void setView(String viewName) {
+        moViews.get(viewName).applyToTable(moTable);
+    }
+    private class TableCreator {
+
+        private final String[] alwaysShowCols = new String[] { "Include"
+                , "Name" };
+        private final String[] nickCol = new String[] { "Nickname" };
+        private final String[] genderCol = new String[] { "Gender" };
+        private final String[] ageCol = new String[] { "Age" };
+        private final String[] exclCols = new String[] { "Exclusion"
+                , "Inactive Lists" };
+        private final String[] jobsCol = new String[] { "Jobs" };
+        private String[] statCols;
+
+        private Vector<Object> mvColumns;
+        private Vector<Class> mvClasses;
+        private Vector<String> mvColProps;
+
+        public TableCreator() {
+
+            // Create all the column data---------------------------------------
+            mvColumns = new Vector<Object>(Arrays.asList(concatAll(
+                    alwaysShowCols, nickCol, genderCol, ageCol, exclCols)));
+    /*        Vector<Object> vColumns = new Vector<Object>(Arrays.asList(new String[]
+                { "Include", "Name", "Nickname", "Gender", "Age", "Exclusion"
+                          , "Inactive Lists"
+                    })); */ // , "Squad", "Squad Leader", "Strength", "Agility", "Focus"
+                    //, "Patience", "Kinesthetic Sense"
+            mvClasses = new Vector<Class>(Arrays.asList(new Class[]
+                { Boolean.class, String.class, String.class, String.class
+                    , Integer.class, String.class, String.class }));
+            mvColProps = new Vector<String>(Arrays.asList(new String[]
+                { "include", "dwarf.name", "dwarf.nickname", "dwarf.gender"
+                          , "dwarf.age", "activeexclusions"
+                          , "inactiveexclusions" }));
+
+            statCols = new String[mhtStats.size()];
+            int iCount = 0;
+            String colName;
+            for (String key : mhtStats.keySet()) {
+                colName = mhtStats.get(key).name;
+                statCols[iCount++] = colName;
+                mvColumns.add(colName);
+                mvClasses.add(Long.class);   // Stats are Longs
+                mvColProps.add("dwarf.statvalues." + key);
+            }
+            for (String key : mhtSkills.keySet()) {
+                mvColumns.add(getColumnNameForSkill(mhtSkills.get(key).name));       //  + " Potential"
+                mvClasses.add(Long.class);   // Skills are Longs
+                mvColProps.add("dwarf.skillpotentials." + key);
+
+                // Print relevant skill levels for ranged/close combat
+                // (Override dwarf.skilllevels.)
+                mvColumns.add(getColumnNameForSkillLevel(mhtSkills.get(key).name));
+                if (mhtSkills.get(key).name.equals("Ranged Combat")) {
+                    mvClasses.add(String.class);
+                    mvColProps.add("rangedcombatlevels");
+                }
+                else if (mhtSkills.get(key).name.equals("Close Combat")) {
+                    mvClasses.add(String.class);
+                    mvColProps.add("closecombatlevels");
+                }
+                else {
+                    mvClasses.add(Long.class);   // Skill levels are Longs
+                    mvColProps.add("dwarf.skilllevels." + key);
+                }
+            }
+            for (String key : mhtMetaSkills.keySet()) {
+                //System.out.println("Adding " + key);
+                mvColumns.add(getColumnNameForSkill(mhtMetaSkills.get(key).name));   //  + " Potential"
+                mvClasses.add(Long.class);
+                mvColProps.add("dwarf.skillpotentials." + key);
+            }
+            mvColumns.addAll(Arrays.asList(jobsCol)); // "Jobs"
+            mvClasses.add(String.class);
+            mvColProps.add("dwarf.jobtext");
+        }
+
+        public void createDwarfListViews() {
+            moViews = new HashMap<String, GridView>();
+
+            // TODO: Read from file?
+            // Default view-----------------------------------------------------
+            List<Object> colOrder = new ArrayList<Object>();
+            colOrder.addAll(Arrays.asList(alwaysShowCols));
+            colOrder.addAll(Arrays.asList(nickCol));
+            colOrder.addAll(Arrays.asList(genderCol));
+            colOrder.addAll(Arrays.asList(ageCol));
+            colOrder.addAll(Arrays.asList(exclCols));
+            colOrder.addAll(Arrays.asList(statCols));
+            colOrder.addAll(Arrays.asList(jobsCol));
+
+            moViews.put(DEFAULT_VIEW_NAME, new GridView(DEFAULT_VIEW_NAME, "Name"
+                    , GridView.KeyAxis.X_AXIS, false, colOrder));
+
+            // Military view----------------------------------------------------
+            String[] skills = new String[] { "Close Combat", "Ranged Combat" };
+
+            colOrder = new ArrayList<Object>();
+            colOrder.addAll(Arrays.asList(alwaysShowCols));
+            colOrder.addAll(Arrays.asList(nickCol));
+
+            // Add close/ranged combat potentials
+            for (String skillName : skills) {
+                colOrder.add(getColumnNameForSkill(skillName));
+                colOrder.add(getColumnNameForSkillLevel(skillName));
+            }
+
+            // Add the relevant stats
+            for (String skillName : skills) {
+                for (Stat stat : mhtSkills.get(skillName).getStats()) {
+                    if (! colOrder.contains(stat.name))
+                        colOrder.add(stat.name);
+                }
+            }
+
+            // Gender, exclusions
+            colOrder.addAll(Arrays.asList(genderCol));
+            colOrder.addAll(Arrays.asList(exclCols));
+
+            moViews.put("Military View", new GridView("Military View", "Name"
+                    , GridView.KeyAxis.X_AXIS, false, colOrder));
+
+            // TODO: Potential view
+        }
+
+        public MyEditableTableModel<DwarfListItem> createDwarfListModel(
+                Collection<Exclusion> vExclusions) {
+
+            MyEditableTableModel<DwarfListItem> mdlReturn;
+
+            //Create the table model--------------------------------------------
+            SortKeySwapper swapper = new SortKeySwapper();
+            mdlReturn = new MyEditableTableModel<DwarfListItem>(mvColumns
+                    , mvClasses
+                    , mvColProps, toDwarfListItems(mvDwarves, vExclusions)
+                    , swapper);
+            // (We apply exclusions to this data after the statistic monitors
+            // are created)
+
+            // Display data in a grid (JTable)
+            //moModel = new MySimpleTableModel(vColumns
+            //        , mvDwarves.size());    //  nodes.getLength()
+            mdlReturn.addEditableException(0);     // First column editable.
+            mdlReturn.addTableModelListener(new TableModelListener() {
+                @Override
+                public void tableChanged(TableModelEvent e) {
+                    if (! mbLoading)
+                        updateSelectedLabel();
+                }
+            });
+            //setModelData(moModel, vExclusions);       // , nodes
+
+            return mdlReturn;
+        }
+    }
+
     // Table cell renderer for number-formatted column with null values
     // displayed as blanks
-    static class NumberOrNullRenderer extends MyTCRStripedHighlight {
+    private static class NumberOrNullRenderer extends MyTCRStripedHighlight {
         NumberFormat formatter;
         public NumberOrNullRenderer() { super(); }
 
@@ -135,145 +384,19 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         }
     }
-    public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
-            , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta) {
-        
-        // Parent constructor---------------------------------------------------
-        super();
-
-        // Set local variables--------------------------------------------------
-        mvLabors = vLabors;
-        mhtStats = htStat;
-        mhtSkills = htSkill;
-        mhtMetaSkills = htMeta;
-
-        // Create objects-------------------------------------------------------
-        mvDwarves = new Vector<Dwarf>(); //vDwarves;
-        Collection<Exclusion> vExclusions = new Vector<Exclusion>();
-
-        mbLoading = true;
-
-        // Create table column data---------------------------------------------
-        Vector<Object> vColumns = new Vector<Object>(Arrays.asList(new String[]
-            { "Include", "Name", "Nickname", "Gender", "Age", "Exclusion"
-                      , "Inactive Lists"
-                })); // , "Squad", "Squad Leader", "Strength", "Agility", "Focus"
-                //, "Patience", "Kinesthetic Sense"
-        Vector<Class> vClasses = new Vector<Class>(Arrays.asList(new Class[]
-            { Boolean.class, String.class, String.class, String.class
-                , Integer.class, String.class, String.class }));
-        Vector<String> vColProps = new Vector<String>(Arrays.asList(new String[]
-            { "include", "dwarf.name"
-                , "dwarf.nickname", "dwarf.gender", "dwarf.age", "activeexclusions"
-                , "inactiveexclusions" }));
-        for (String key : mhtStats.keySet()) {
-            vColumns.add(mhtStats.get(key).name);
-            vClasses.add(Long.class);   // Stats are Longs
-            vColProps.add("dwarf.statvalues." + key);
+    // Concatenate any number of arrays into one
+    private static <T> T[] concatAll(T[] first, T[]... rest) {
+          int totalLength = first.length;
+        for (T[] array : rest) {
+            totalLength += array.length;
         }
-        for (String key : mhtSkills.keySet()) {
-            vColumns.add(getColumnNameForSkill(mhtSkills.get(key).name));       //  + " Potential"
-            vClasses.add(Long.class);   // Skills are Longs
-            vColProps.add("dwarf.skillpotentials." + key);
-
-            // Print relevant skill levels for ranged/close combat
-            // (Override dwarf.skilllevels.)
-            vColumns.add(getColumnNameForSkillLevel(mhtSkills.get(key).name));
-            if (mhtSkills.get(key).name.equals("Ranged Combat")) {
-                vClasses.add(String.class);
-                vColProps.add("rangedcombatlevels");
-            }
-            else if (mhtSkills.get(key).name.equals("Close Combat")) {
-                vClasses.add(String.class);
-                vColProps.add("closecombatlevels");
-            }
-            else {
-                vClasses.add(Long.class);   // Skill levels are Longs
-                vColProps.add("dwarf.skilllevels." + key);
-            }
+        T[] result = Arrays.copyOf(first, totalLength);
+        int offset = first.length;
+        for (T[] array : rest) {
+            System.arraycopy(array, 0, result, offset, array.length);
+            offset += array.length;
         }
-        for (String key : mhtMetaSkills.keySet()) {
-            vColumns.add(getColumnNameForSkill(mhtMetaSkills.get(key).name));   //  + " Potential"
-            vClasses.add(Long.class);
-            vColProps.add("dwarf.skillpotentials." + key);
-        }
-        vColumns.add("Jobs");
-        vClasses.add(String.class);
-        vColProps.add("dwarf.jobtext");
-
-        //Create the table model------------------------------------------------
-        SortKeySwapper swapper = new SortKeySwapper();
-        moModel = new MyEditableTableModel<DwarfListItem>(vColumns, vClasses
-            , vColProps, toDwarfListItems(mvDwarves, vExclusions), swapper);
-        // (We apply exclusions to this data after the statistic monitors are created)
-
-        // Display data in a grid (JTable)
-        //moModel = new MySimpleTableModel(vColumns
-        //        , mvDwarves.size());    //  nodes.getLength()
-        moModel.addEditableException(0);     // First column editable.
-        moModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                if (! mbLoading)
-                    updateSelectedLabel();
-            }
-        });
-        //setModelData(moModel, vExclusions);       // , nodes
-
-        // Create the dwarf data table------------------------------------------
-        moTable = new JTable(moModel, new HideableTableColumnModel());
-        moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
-
-        // Set column renderer for skill levels (numeric format, right-justified,
-        // nulls blank)
-        for (String key : mhtSkills.keySet()) {
-            String id = getColumnNameForSkillLevel(mhtSkills.get(key).name);
-            moTable.getColumn(id).setCellRenderer(new NumberOrNullRenderer());
-        }
-
-        moTable.setDefaultRenderer(Boolean.class, new MyTCRStripedHighlightCheckBox());
-        moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight());
-
-        mspScrollPane = new JScrollPane(moTable);
-
-        // Sort by name
-        MyHandyTable.handyTable(moTable, mspScrollPane, moModel, true, 1, true);   // this
-
-        // Create the popup menu for mass including/excluding
-        createPopup();
-
-        // Hide columns for labor groups and secondary skills by default
-        for (Labor labor : mvLabors)
-            setLaborGroupVisible(labor.groupName, false);
-        setSecondaryColumnsVisible(false);
-
-        // Show some statistics-------------------------------------------------
-        mlblPop = new JLabel("X total dwarves from XML"); // total adult
-        mlblSelected = new JLabel(getNumSelectedText(mvDwarves.size()));
-        mlblExclusions = new JLabel("X active exclusion rules/lists");
-        applyExclusions(vExclusions); // Apply exclusions to data & update labels
-
-        // Build the UI---------------------------------------------------------
-        JPanel tablePanel = new JPanel();
-        tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(mspScrollPane);
-        tablePanel.setPreferredSize(new Dimension(750, 250));
-        
-        JPanel panInfo = new JPanel();
-        panInfo.setLayout(new BorderLayout());
-        panInfo.add(mlblPop, BorderLayout.NORTH);
-        panInfo.add(mlblSelected, BorderLayout.CENTER);
-        panInfo.add(mlblExclusions, BorderLayout.SOUTH);
-
-        JPanel panDwarfList = new JPanel();
-        panDwarfList.setLayout(new BorderLayout());
-        panDwarfList.add(tablePanel, BorderLayout.CENTER);
-        panDwarfList.add(panInfo, BorderLayout.SOUTH);
-
-        this.setLayout(new BorderLayout());
-        this.add(panDwarfList); // , BorderLayout.LINE_START
-
-        mbLoading = false;
+        return result;
     }
     private Vector<DwarfListItem> toDwarfListItems(Vector<Dwarf> vDwarves
             , Collection<Exclusion> colExclusions) {
@@ -290,7 +413,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         }
 
         return vReturn;
-    }    
+    }
     public void loadData(Vector<Dwarf> vDwarves
             , Collection<Exclusion> vExclusions) { //, Hashtable<String, Stat> htStat
             //, Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta) {
@@ -353,12 +476,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     // Returns the desired menu for this panel.
     // Expected to be called by owner frame
     protected JMenuBar getMenu(Vector<LaborGroup> vLaborGroups) {
-        
+
         final String[] vitalsCols = new String[] { "Gender", "Age" };
         final String[] exclCols = new String[] { "Exclusion", "Inactive Lists" };
         final String[] nickCol = new String[] { "Nickname" };
         final String[] jobsCol = new String[] { "Jobs" };
-        
+
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Columns");
         menu.setMnemonic(KeyEvent.VK_C);
@@ -372,8 +495,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         });
         menu.add(menuItem);
-        
-        
+
         final JCheckBoxMenuItem vitalsItem = new JCheckBoxMenuItem("Some Vitals", true);
         vitalsItem.addActionListener(new ActionListener() {
             @Override
@@ -382,7 +504,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         });
         menu.add(vitalsItem);
-        
+
         final JCheckBoxMenuItem exclItem = new JCheckBoxMenuItem("Exclusion Info", true);
         exclItem.addActionListener(new ActionListener() {
             @Override
@@ -391,7 +513,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         });
         menu.add(exclItem);
-        
+
         final JCheckBoxMenuItem statItem = new JCheckBoxMenuItem("Stats", true);
         statItem.addActionListener(new ActionListener() {
             @Override
@@ -430,8 +552,34 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 setColumnsVisible(jobsCol, jobItem.isSelected());
             }
         });
-        menu.add(jobItem);        
-        
+        menu.add(jobItem);
+
+        // Views----------------------------------------------------------------
+        menu = new JMenu("View");
+        menuBar.add(menu);
+        //System.out.println("Menu count: " + menuBar.getMenuCount());
+
+        JMenuItem item;
+        ButtonGroup group = new ButtonGroup();
+        for (String key : moViews.keySet()) {
+            final GridView view = moViews.get(key);
+            item = new JRadioButtonMenuItem(view.getName());
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setView(view.getName());
+                }
+            });
+            item.setSelected(view.getName().equals(DEFAULT_VIEW_NAME));
+            group.add(item);
+            menu.add(item);
+        }
+
+        menu.add(new JSeparator());
+        item = new JMenuItem("Create a View..."); // TODO
+        item.setEnabled(false); // TODO
+        menu.add(item);
+
         return menuBar;
     }
 
@@ -528,10 +676,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             setColumnVisible(stat.name, visible);
     }
     private void setColumnsVisible(String[] cols, boolean visible) {
-        for (String col : cols) 
+        for (String col : cols)
             setColumnVisible(col, visible);
     }
-    
+
     // Sets visibility of the column with the given name in the hideable model
     private void setColumnVisible(String colName, boolean visible) {
 

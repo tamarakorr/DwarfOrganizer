@@ -237,17 +237,24 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private void updateDwarfListMenu() {
         mitlDwarfList.setJMenuBar(appendMenuBar(createDwarfListMenuBar()
-            , moDwarfListWindow.getMenu(mvLaborGroups)));        
+            , moDwarfListWindow.getMenu(mvLaborGroups)));
     }
     
     // Returns a JMenuBar made of the menus in the first menu bar, followed
     // by the menus in the second menu bar.
     private JMenuBar appendMenuBar(JMenuBar menuBar1, JMenuBar menuBar2) {
         JMenuBar jmbReturn = new JMenuBar();
-        for (int iCount = 0; iCount < menuBar1.getMenuCount(); iCount++)
-            jmbReturn.add(menuBar1.getMenu(iCount));
-        for (int iCount = 0; iCount < menuBar2.getMenuCount(); iCount++)
-            jmbReturn.add(menuBar2.getMenu(iCount));
+        int firstMenuCount = menuBar1.getMenuCount();
+        
+        // (We run the loops backwards because getMenuCount() decrements
+        // each time we add a menu to jmbReturn.)
+        for (int iCount = menuBar1.getMenuCount() - 1; iCount >= 0; iCount--)
+            jmbReturn.add(menuBar1.getMenu(iCount), 0);
+        for (int iCount = menuBar2.getMenuCount() - 1; iCount >= 0; iCount--) {
+            //System.out.println("Menu count: " + menuBar2.getMenuCount());
+            //System.out.println("Adding " + menuBar2.getMenu(iCount).getText());
+            jmbReturn.add(menuBar2.getMenu(iCount), firstMenuCount);
+        }
         return jmbReturn;
     }
     
