@@ -36,8 +36,10 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import myutils.MyArrayUtils;
 import myutils.MyHandyTable;
 import myutils.MySimpleTableModel;
 import myutils.MyTCRStripedHighlight;
@@ -153,6 +155,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moTable.setDefaultRenderer(Boolean.class, new MyTCRStripedHighlightCheckBox());
         moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight());
 
+        // For cleaner copy/paste to spreadsheets
+        moTable.setColumnSelectionAllowed(false);
+        moTable.setRowSelectionAllowed(true);
+        moTable.addKeyListener(new ClipboardKeyAdapter(moTable, true, false, false));
+        
         mspScrollPane = new JScrollPane(moTable);
 
         // Sort by name
@@ -220,7 +227,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         public TableCreator() {
 
             // Create all the column data---------------------------------------
-            mvColumns = new Vector<Object>(Arrays.asList(concatAll(
+            mvColumns = new Vector<Object>(Arrays.asList(MyArrayUtils.concatAll(
                     alwaysShowCols, nickCol, genderCol, ageCol, exclCols)));
     /*        Vector<Object> vColumns = new Vector<Object>(Arrays.asList(new String[]
                 { "Include", "Name", "Nickname", "Gender", "Age", "Exclusion"
@@ -384,20 +391,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         }
     }
-    // Concatenate any number of arrays into one
-    private static <T> T[] concatAll(T[] first, T[]... rest) {
-          int totalLength = first.length;
-        for (T[] array : rest) {
-            totalLength += array.length;
-        }
-        T[] result = Arrays.copyOf(first, totalLength);
-        int offset = first.length;
-        for (T[] array : rest) {
-            System.arraycopy(array, 0, result, offset, array.length);
-            offset += array.length;
-        }
-        return result;
-    }
     private Vector<DwarfListItem> toDwarfListItems(Vector<Dwarf> vDwarves
             , Collection<Exclusion> colExclusions) {
 
@@ -462,6 +455,21 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         });
         popUp.add(menuItem);
 
+        // ---------------------------------------------------------------------
+        popUp.add(new JSeparator());
+        
+        // Copy selected rows to clipboard in spreadsheet-friendly format-----
+        menuItem = new JMenuItem("Copy");
+        menuItem.setAccelerator(KeyStroke.getKeyStroke("ctrl C"));
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MyHandyTable.cancelEditing(moTable);
+                MyHandyTable.copyToClipboard(moTable, false);                
+            }
+        });
+        popUp.add(menuItem);
+        
         moTable.setComponentPopupMenu(popUp);
     }
 
