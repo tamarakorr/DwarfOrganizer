@@ -520,13 +520,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             for (String columnKey : alColGroupList) {
                 colOrder.addAll(Arrays.asList(mhmColGroups.get(columnKey).getColumns()));
             }
-/*            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_GENDER).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_AGE).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_EXCL).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_STATS).getColumns()));
-            colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_CUR_LABORS).getColumns())); */
             //System.out.println("colOrder has " + colOrder.size() + " entries");
 
             moViews.put(DEFAULT_VIEW_NAME, new GridView(DEFAULT_VIEW_NAME, "Name"

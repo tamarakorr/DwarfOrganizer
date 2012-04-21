@@ -413,6 +413,8 @@ public class JobListPanel extends JPanel {
     
     // Saves job settings to file
     public void save(File file) {
+        MyHandyTable.stopEditing(moTable); // Accept partial edits
+        
         File dir = getDirectory();
         FileWriter fstream;
 
@@ -449,6 +451,8 @@ public class JobListPanel extends JPanel {
     
     // Loads job settings from file
     public void load(File file) {
+        MyHandyTable.cancelEditing(moTable);    // Cancel partial edits
+        
         mbLoading = true;
         
         moIO.readJobSettings(file, mvLaborSettings, DEFAULT_REMINDER);
