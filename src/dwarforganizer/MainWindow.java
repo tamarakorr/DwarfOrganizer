@@ -215,9 +215,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             desktop.setPreferredSize(new Dimension(width, height));
             
             this.setJMenuBar(createMenu(moJobListPanel));
-            
-            // TODO: Was hoping this would help me find the problem with Alt+P
-            // and Alt+W not functioning...but it didn't
             //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
             
             this.setLayout(new BorderLayout());

@@ -750,6 +750,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Views----------------------------------------------------------------
         menu = new JMenu("View");
+        menu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(menu);
         //System.out.println("Menu count: " + menuBar.getMenuCount());
 
