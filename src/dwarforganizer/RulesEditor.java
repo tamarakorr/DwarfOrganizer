@@ -545,8 +545,20 @@ public class RulesEditor extends JPanel implements DirtyForm {
     }
 
     @Override
+    public void addDirtyListener(DirtyListener listener) {
+        moDirtyHandler.addDirtyListener(listener);
+    }
+
+    @Override
+    public boolean isDirty() {
+        return moDirtyHandler.isDirty();
+    }
+    protected void setClean() {
+        moDirtyHandler.setClean();
+    }
+/*    @Override
     public DirtyHandler getDirtyHandler() {
         return moDirtyHandler;
-    }
+    } */
 
 }

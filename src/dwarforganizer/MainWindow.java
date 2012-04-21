@@ -193,6 +193,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // Create dwarf list window
         moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
                 , mhtMetaSkill, mvLaborGroups);
+        //if (mvDwarves == null) System.out.println("mvDwarves is null");
         moDwarfListWindow.loadData(mvDwarves, mvExclusions);
         moExclusionManager.getAppliedBroadcaster().addListener(moDwarfListWindow); // Listen for exclusions applied
         
@@ -294,7 +295,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mitlExclusions.add(moExclusionManager);
         //mitlExclusions.pack();  <-Done by Window menu now
         
-        moExclusionManager.getDirtyHandler().addDirtyListener(dirtyListener);
+        moExclusionManager.addDirtyListener(dirtyListener);
         mitlExclusions.addInternalFrameListener(new InternalFrameClosingAdapter(
                 new FrameClosingFunction() {
             @Override
@@ -380,7 +381,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mitlRulesEditor.add(moRulesEditor);
         mitlRulesEditor.pack();
         
-        moRulesEditor.getDirtyHandler().addDirtyListener(dirtyListener);
+        moRulesEditor.addDirtyListener(dirtyListener);
         mitlRulesEditor.addInternalFrameListener(new InternalFrameClosingAdapter(
             new FrameClosingFunction() {
             @Override
@@ -395,7 +396,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private interface ConfirmFunction { public void doConfirm(); }
     private void doWindowClosing(MainWindow main, DirtyForm editor
             , ConfirmFunction cf, String strQuestion) {
-        if (editor.getDirtyHandler().isDirty()) {
+        if (editor.isDirty()) {
             MyHandyOptionPane optionPane = new MyHandyOptionPane();
             Object[] options = { "Yes", "No" };
             Object result = optionPane.yesNoDialog(main
@@ -429,7 +430,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private void saveRuleFile(RulesEditor rulesEditor) {
         moIO.writeRuleFile(rulesEditor.getCurrentFile());
-        rulesEditor.getDirtyHandler().setClean();
+        rulesEditor.setClean();
         
         // Recreate local blacklist structures & resend blacklist to Job Settings screen
         setBlacklistStructures();
@@ -1010,6 +1011,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
     private void setExclusionActive(int ID, boolean active) {
+        if (mvExclusions == null) {
+            System.err.println("Could not set active exclusion: exclusion list is null");
+            return;
+        }
+        
         for (Exclusion excl : mvExclusions) {
             if (excl.getID() == ID) {
                 excl.setActive(active);

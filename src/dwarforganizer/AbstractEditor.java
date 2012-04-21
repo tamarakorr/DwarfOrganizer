@@ -116,12 +116,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     public abstract boolean validateInput();
     public abstract T createRowData(boolean isNew); // Create row data from input control contents // Vector<Object>
     public abstract boolean rowDataToInput(T rowData); // int modelRow
-    
-    @Override
-    public DirtyHandler getDirtyHandler() {
-        return moDirtyHandler;
-    }
-    
+        
     protected int getCurrentEditedRow() {
         return mintCurrentEditedRow;
     }
@@ -248,5 +243,16 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
                 break;
         }
         meEditState = newState;        
+    }
+    @Override
+    public void addDirtyListener(DirtyListener listener) {
+        moDirtyHandler.addDirtyListener(listener);
+    }
+    @Override
+    public boolean isDirty() {
+        return moDirtyHandler.isDirty();
+    }
+    protected DirtyHandler getDirtyHandler() {
+        return moDirtyHandler;
     }
 }

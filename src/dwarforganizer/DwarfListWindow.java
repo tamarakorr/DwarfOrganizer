@@ -419,6 +419,15 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             String[] asStatCols;
             Vector<String> vsSecondaryCols;
 
+            if (mhtStats == null) {
+                System.err.println("Failed to create column groups: stat table is null");
+                return new HashMap<String, ColumnGroup>();
+            }
+            else if (mhtSkills == null) {
+                System.err.println("Failed to create column groups: skill table is null");
+                return new HashMap<String, ColumnGroup>();                
+            }
+            
             // Stat columns
             asStatCols = new String[mhtStats.size()];
             int iCount = 0;

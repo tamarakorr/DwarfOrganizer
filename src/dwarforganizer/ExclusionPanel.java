@@ -165,9 +165,9 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         moListCitizen = new DeletableCitizenList();
 
         moRuleTable = new RuleExclusionTable(moRuleCitizen);
-        moRuleTable.getDirtyHandler().addDirtyListener(this);
+        moRuleTable.addDirtyListener(this);
         moListTable = new ListExclusionTable(moListCitizen);
-        moListTable.getDirtyHandler().addDirtyListener(this);
+        moListTable.addDirtyListener(this);
         moListCitizen.setEditor(moListTable);
         
         final ExclusionActionButton cmdAddRule = new ExclusionActionButton("Add New"
@@ -1418,10 +1418,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         return btnReturn;
     }
 
-    @Override
+/*    @Override
     public DirtyHandler getDirtyHandler() {
         return moMasterDirtyHandler;
-    }
+    } */
 
     // If children are dirty, consider the whole form to be dirty
     @Override
@@ -1442,5 +1442,15 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 
     private void setMessage(String newMessage) {
         mlblMessage.setText(newMessage);
+    }
+
+    @Override
+    public void addDirtyListener(DirtyListener listener) {
+        moMasterDirtyHandler.addDirtyListener(listener);
+    }
+
+    @Override
+    public boolean isDirty() {
+        return moMasterDirtyHandler.isDirty();
     }
 }

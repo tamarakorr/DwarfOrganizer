@@ -315,7 +315,10 @@ public class DwarfOrganizerIO {
             return mhtStats;
         }
         
-        public void readDwarves(String filePath) throws Exception { // NodeList
+        public void readDwarves(String filePath) { //throws Exception { // NodeList
+            
+            mvDwarves = new Vector<Dwarf>(); // Initialize before reading anything
+            
             try {
                 
                 // Skills
@@ -326,12 +329,13 @@ public class DwarfOrganizerIO {
                 
                 // Dwarves.xml
                 myXMLReader xmlFileReader = new myXMLReader(filePath);
-                NodeList nodes = xmlFileReader.getDocument().getElementsByTagName("Creature");
-                System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");        
+                NodeList nodes = xmlFileReader.getDocument().getElementsByTagName(
+                        "Creature");
+                System.out.println("Dwarves.xml contains " + nodes.getLength()
+                        + " creatures.");        
                 parseDwarves(nodes);
             } catch (Exception e) {
-                System.err.println("Failed to read dwarves.XML");
-                throw e;
+                System.err.println(e.getMessage() + " Failed to read dwarves.XML");
             }
         }
         
@@ -584,7 +588,7 @@ public class DwarfOrganizerIO {
         
         // Translates XML data to dwarf objects
         private void parseDwarves(NodeList nodes) {
-            mvDwarves = new Vector<Dwarf>();
+            //mvDwarves = new Vector<Dwarf>();
             
             for (int iCount = 0; iCount < nodes.getLength(); iCount++) {
 

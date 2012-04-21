@@ -10,6 +10,7 @@ package dwarforganizer;
  * @author Tamara Orr
  */
 public interface DirtyForm {
-    public DirtyHandler getDirtyHandler();  // TODO Really we should be getting a dirty handler adapter
-                                            // or better yet, just providing AddListener methods
+    // These are just the DirtyHandler methods we want to expose to clients
+    public void addDirtyListener(DirtyListener listener);
+    public boolean isDirty();
 }
