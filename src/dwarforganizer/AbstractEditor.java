@@ -11,6 +11,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import myutils.MyHandyTable;
 
 /**
@@ -109,6 +111,19 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
                 }
             });
         //}
+        
+        // Revert to EditingState.NEW if we're updating and the selection changes
+        moTable.getSelectionModel().addListSelectionListener(
+            new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (! e.getValueIsAdjusting()) {
+                    if (meEditState.equals(EditingState.EDIT))
+                        setEditingState(EditingState.NEW);
+                }
+            }
+        });
+        
         this.setEditingState(EditingState.NEW); // Default editing state
     }
     
