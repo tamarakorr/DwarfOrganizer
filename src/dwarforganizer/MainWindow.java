@@ -11,7 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,7 +40,9 @@ import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
+import myutils.Adapters.WindowClosingAdapter;
 import myutils.MyHandyOptionPane;
+import myutils.MyHandyWindow;
 import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
@@ -148,29 +149,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         //this.getContentPane().add(desktop);
         
         loadPreferences();
-        this.addWindowListener(new WindowListener() {
-            @Override
-            public void windowOpened(WindowEvent e) {
-            }
+        this.addWindowListener(new WindowClosingAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                // Prompts to save changes
+                MyHandyWindow.clickClose(mitlRulesEditor);
+                MyHandyWindow.clickClose(mitlExclusions);
+                
+                // Destroy "about" screen
                 moAboutScreen.dispose();
+                
+                // Save preferences
                 savePreferences();
-            }
-            @Override
-            public void windowClosed(WindowEvent e) {
-            }
-            @Override
-            public void windowIconified(WindowEvent e) {
-            }
-            @Override
-            public void windowDeiconified(WindowEvent e) {
-            }
-            @Override
-            public void windowActivated(WindowEvent e) {
-            }
-            @Override
-            public void windowDeactivated(WindowEvent e) {
             }
         });
         
@@ -395,14 +385,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private interface ConfirmFunction { public void doConfirm(); }
     private void doWindowClosing(MainWindow main, DirtyForm editor
-            , ConfirmFunction cf, String strQuestion) {
+            , ConfirmFunction cf, String strMessageTitle, String strQuestion) {
         if (editor.isDirty()) {
             MyHandyOptionPane optionPane = new MyHandyOptionPane();
             Object[] options = { "Yes", "No" };
             Object result = optionPane.yesNoDialog(main
                     , options, "Yes", ""
                     , strQuestion
-                    , "Save changes?");
+                    , strMessageTitle);
             if ("Yes".equals(result.toString()))
                 cf.doConfirm();
         }            
@@ -413,7 +403,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             public void doConfirm() {
                 saveRuleFile(rulesEditor);
             }
-        }, "Would you like to save your changes?");
+        }, "Save rules?", "Would you like to save your changes?");
     }
     private void doExclWindowClosing(MainWindow main, final ExclusionPanel exclMgr) {
         doWindowClosing(main, exclMgr, new ConfirmFunction() {
@@ -421,7 +411,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             public void doConfirm() {
                 saveExclusions(exclMgr);
             }
-        }, "Would you like to save and apply your changes?");
+        }, "Save exclusions?", "Would you like to save and apply your changes?");
     }
     private void saveExclusions(ExclusionPanel exclMgr) {
         exclMgr.saveExclusions();       // Also notifies Dwarf List, and sets clean
