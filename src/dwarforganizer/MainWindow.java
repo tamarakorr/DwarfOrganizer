@@ -28,6 +28,7 @@ import javax.swing.JButton;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -52,6 +53,8 @@ import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
  */
 public class MainWindow extends JFrame implements BroadcastListener { // implements DirtyListener
 
+    private static final String VERSION = "1.20";
+    
     private static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one    
     //private static final String DEFAULT_DWARVES_XML
     //        = "C://DwarfFortress//DwarfGuidanceCounselor//0.0.6//Dwarves.xml";
@@ -114,6 +117,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private class AboutScreen extends JFrame {
         public AboutScreen(MainWindow main) {
+            JLabel lblVersion = new JLabel("Dwarf Organizer version " + VERSION);
+            
             JTextArea txtLicense = new JTextArea(moIO.getLicense());
             txtLicense.setEditable(false);
             txtLicense.setLineWrap(true);
@@ -125,7 +130,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             this.setLayout(new BorderLayout());
             this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
             
-            this.add(sp);
+            this.add(lblVersion, BorderLayout.NORTH);
+            this.add(sp, BorderLayout.CENTER);
             this.pack();
             
             this.setLocationRelativeTo(main);

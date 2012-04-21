@@ -182,8 +182,66 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moViewHandler.createDwarfListViews();
         moMenuBar = createMenu();   // Must be done after creating views
         setView(DEFAULT_VIEW_NAME);    // // "Military View"
-        //FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane); TODO
+        
+/*        // Experimental---------------------------------------------------------
+        FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane);   // TODO
+        frozen.getFixedTable().setDefaultRenderer(Boolean.class, moTable.getDefaultRenderer(Boolean.class));
+        frozen.getFixedTable().setDefaultRenderer(Object.class, moTable.getDefaultRenderer(Object.class));
+        //MyHandyTable.autoResizeTableColumns(frozen.getFixedTable(), mspScrollPane); // Doesn't work
+        //mspScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED); // Doesn't scroll row header
+        frozen.getFixedTable().setRowSorter(moTable.getRowSorter());
+        //new JTableRowHeaderResizer(mspScrollPane).setEnabled(true); Doesn't work
+        
+        // Increasingly experimental--------------------------------------------
+        MouseAdapter ma = new MouseAdapter() {
 
+            TableColumn column;
+            int columnWidth;
+            int pressedX;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getComponent();
+                TableColumnModel tcm = header.getColumnModel();
+                int columnIndex = tcm.getColumnIndexAtX(e.getX());
+                Cursor cursor = header.getCursor();
+
+                if (columnIndex == tcm.getColumnCount() - 1 && cursor == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)) {
+                    column = tcm.getColumn(columnIndex);
+                    columnWidth = column.getWidth();
+                    pressedX = e.getX();
+                    header.addMouseMotionListener(this);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                JTableHeader header = (JTableHeader) e.getComponent();
+                header.removeMouseMotionListener(this);
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int width = columnWidth - pressedX + e.getX();
+                column.setPreferredWidth(width);
+                JTableHeader header = (JTableHeader) e.getComponent();
+                JTable table = header.getTable();
+                table.setPreferredScrollableViewportSize(table.getPreferredSize());
+                JScrollPane scrollPane = (JScrollPane) table.getParent().getParent();
+                scrollPane.revalidate();
+            }
+        };
+        
+        // TODO Compare this with MyTableWidthAdjuster and see if we can combine
+        // functionality for a better result
+        // TODO Adjust the column width and fixed table size to a reasonable
+        // value *without making the user drag it*
+        JTable fixed = frozen.getFixedTable();
+        fixed.getTableHeader().addMouseListener(ma);    
+        //fixed.getTableHeader().addMouseListener(new MyTableWidthAdjuster(fixed));
+        
+        // End experimental-----------------------------------------------------
+        */
         // Show some statistics-------------------------------------------------
         mlblPop = new JLabel("X total dwarves from XML"); // total adult
         mlblSelected = new JLabel(getNumSelectedText(mvDwarves.size()));
@@ -711,6 +769,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         menu.add(new JSeparator());
         item = new JMenuItem("Manage Views..."); // TODO
+        item.setToolTipText("Coming soon"); // TODO
         item.setEnabled(false); // TODO
         menu.add(item);
 
