@@ -65,9 +65,36 @@ public class DwarfOrganizerIO {
             + " which can be found in labor-list.txt. Comments can be added after the last"
             + " column.";        
     
+    private static final int LABOR_RULE_INDEX_TYPE = 0;
+    private static final int LABOR_RULE_INDEX_FIRST_LABOR = 1;
+    private static final int LABOR_RULE_INDEX_SECOND_LABOR = 2;
+    private static final int LABOR_RULE_INDEX_COMMENT = 3;
+    private static final int LABOR_RULE_MIN_COLS = 3;
+    private static final int LABOR_RULE_MAX_COLS = 4;
+    
+    private enum RuleFileColIndex {
+        LABOR_RULE_TYPE (0)
+        , LABOR_RULE_FIRST_LABOR (1)
+        , LABOR_RULE_SECOND_LABOR (2)
+        , LABOR_RULE_COMMENT (3);
+        
+        private final int index;
+        
+        RuleFileColIndex(int index) {
+            this.index = index;
+        }
+        public int getIndex() { return index; }
+    };
+    
+/*    private static final int LABOR_RULE_INDEX_TYPE = 0;
+    private static final int LABOR_RULE_INDEX_FIRST_LABOR = 1;
+    private static final int LABOR_RULE_INDEX_SECOND_LABOR = 2;
+    private static final int LABOR_RULE_INDEX_COMMENT = 3; */
+    
     private JobBlacklist moBlacklist;
     private JobList moWhitelist;
-    private Vector<String[]> mvRuleFile;
+    //private Vector<String[]> mvRuleFile;
+    private Vector<LaborRule> mvRuleFile;
     
     private Integer mintMaxExclID = 0;
     
@@ -132,10 +159,12 @@ public class DwarfOrganizerIO {
     // Raw file data is stored in mvRuleFile
     protected void readRuleFile() throws Exception {
         String line;
-        String strComment = "";
+        String strCommentFix = "";
+        String[] jobs = new String[LABOR_RULE_MAX_COLS]; // 4
         moBlacklist = new JobBlacklist();
         moWhitelist = new JobList();
-        mvRuleFile = new Vector<String[]>();
+        //mvRuleFile = new Vector<String[]>();
+        mvRuleFile = new Vector<LaborRule>();
         
         try {
             // Open the file
@@ -146,29 +175,48 @@ public class DwarfOrganizerIO {
             br.readLine();
             
             while ((line = br.readLine()) != null) {
-                String[] jobs = line.split("\t");
+                jobs = line.split("\t");
                 
                 // Convert old "COMMENT" entries to end-of-line comments
                 // COMMENT entries at the very end of the file are handled out of loop
-                if (jobs[0].equals("COMMENT")) {
-                    strComment += jobs[1];
+                if (jobs[LABOR_RULE_INDEX_TYPE].equals("COMMENT")) {
+                    strCommentFix += jobs[1]; // Old comment index on comment lines
                 }
-                else if (! strComment.equals("")) {
-                    jobs = fixOldStyleComment(jobs, strComment);
-                    strComment = "";
+                else if (! strCommentFix.equals("")) {
+                    jobs = fixOldStyleComment(jobs, strCommentFix);
+                    strCommentFix = "";
                 }
 
-                if (! jobs[0].equals("COMMENT")) {
+                if (! jobs[LABOR_RULE_INDEX_TYPE].equals("COMMENT")) {
                     //System.out.println(jobs.length);
-                    mvRuleFile.add(jobs);
+                    //mvRuleFile.add(jobs);
+                    if (jobs.length < LABOR_RULE_MIN_COLS)
+                        System.err.println("Warning: A line in "
+                                + RULE_FILE_NAME + " is improperly formatted.");
+                    else {
+                        
+                        // Use an empty string for the comment if there is no
+                        // "Comment" column
+                        String strComment = "";
+                        if (jobs.length > LABOR_RULE_MIN_COLS)
+                            strComment = jobs[LABOR_RULE_INDEX_COMMENT];
+                        
+                        mvRuleFile.add(new LaborRule(jobs[LABOR_RULE_INDEX_TYPE]
+                                , jobs[LABOR_RULE_INDEX_FIRST_LABOR]
+                                , jobs[LABOR_RULE_INDEX_SECOND_LABOR]
+                                , strComment));
+                    }
                 }
             }
             
             // Comments from the end of the file - append to last non-COMMENT entry
-            if (! strComment.equals("")) {
+            if (! strCommentFix.equals("")) {
                 int lastIndex = mvRuleFile.size() - 1;
-                mvRuleFile.set(lastIndex
-                        , fixOldStyleComment(mvRuleFile.get(lastIndex), strComment));
+                //mvRuleFile.set(lastIndex
+                //        , fixOldStyleComment(mvRuleFile.get(lastIndex), strComment));
+                String[] newData = fixOldStyleComment(jobs, strCommentFix);
+                mvRuleFile.get(lastIndex).setComment(
+                        newData[LABOR_RULE_INDEX_COMMENT]);
             }
             
             br.close();
@@ -188,13 +236,14 @@ public class DwarfOrganizerIO {
     }
     protected JobBlacklist getBlacklist() { return moBlacklist; }
     protected JobList getWhitelist() { return moWhitelist; }
-    protected Vector<String[]> getRuleFileContents() { return mvRuleFile; }
+    //protected Vector<String[]> getRuleFileContents() { return mvRuleFile; }
+    protected Vector<LaborRule> getRuleFileContents() { return mvRuleFile; }
     
     // Appends old COMMENT entries (comment) to the given non-comment line (jobs)
     private String[] fixOldStyleComment(String[] jobs, String comment) {
         // Append comment to existing comment
         if (jobs.length > 3)
-            jobs[3] = jobs[3] + "; " + comment;
+            jobs[3] += "; " + comment;
         // Create comment on next non-COMMENT line
         else {
             String[] clone = (String[]) jobs.clone();
@@ -207,25 +256,33 @@ public class DwarfOrganizerIO {
     }
     
     // Creates moBlacklist and moWhitelist from the given file data
-    private void createRuleStructures(Vector<String[]> vData) {
-        for (String[] fields : vData) {
-            if (fields[0].equals("BLACKLIST")) {
-                moBlacklist.addOneWayEntry(fields[1], fields[2]);
-                moBlacklist.addOneWayEntry(fields[2], fields[1]);
+    private void createRuleStructures(Vector<LaborRule> vData) { // String[]
+        //for (String[] fields : vData) {
+        for (LaborRule laborRule : vData) {
+            if (laborRule.getType().equals("BLACKLIST")) { // fields[0]
+                moBlacklist.addOneWayEntry(laborRule.getFirstLabor()
+                        , laborRule.getSecondLabor()); //fields[1], fields[2]);
+                moBlacklist.addOneWayEntry(laborRule.getSecondLabor()
+                        , laborRule.getFirstLabor()); //fields[2], fields[1]);
                 //System.out.println("RULE: Blacklist: One dwarf may not do " + fields[1]
                 //    + " and " + fields[2] + " simultaneously.");                        
             }
-            else  { // fields[0].equals("WHITELIST")
-                moWhitelist.addOneWayEntry(fields[1], fields[2]);
+            else if (laborRule.getType().equals("WHITELIST")) { // fields[0].equals("WHITELIST")
+                moWhitelist.addOneWayEntry(laborRule.getFirstLabor()
+                        , laborRule.getSecondLabor()); //fields[1], fields[2]);
                 //System.out.println("RULE: Whitelist: " + fields[1] + " may do " 
                 //    + fields[2]);
+            }
+            else {
+                System.err.println("Warning: Unknown labor rule type "
+                        + laborRule.getType());
             }
         }
     }
     
     // Writes the given data to the rule file.
     // Recreates the whitelist and blacklist data structures.
-    protected void writeRuleFile(Vector<String[]> vData) {
+    protected void writeRuleFile(Vector<LaborRule> vData) { // String[]
 
         moBlacklist = new JobBlacklist();
         moWhitelist = new JobList();
@@ -242,15 +299,18 @@ public class DwarfOrganizerIO {
             out.flush();
             
             // Write all subsequent lines
-            for (String[] line : vData) {
-                boolean bFirst = true;
-                for (String field : line) {
-                    if (field != null) {
-                        if (! bFirst) out.write("\t");
-                        out.write(field);
-                        bFirst = false;
-                    }
-                }
+            //for (String[] line : vData) {
+            for (LaborRule line : vData) {
+//                boolean bFirst = true;
+                out.write(line.getType() + "\t" + line.getFirstLabor() + "\t"
+                        + line.getSecondLabor() + "\t" + line.getComment());
+//                for (String field : line) {
+//                    if (field != null) {
+//                        if (! bFirst) out.write("\t");
+//                        out.write(field);
+//                        bFirst = false;
+//                    }
+//                }
                 out.newLine();
                 out.flush();
             }

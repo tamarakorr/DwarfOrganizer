@@ -38,9 +38,6 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     private int mintCurrentEditedRow = -1;  // Model index. The currently edited row, if any. Only valid while EditingState is EDIT
     private boolean mbClearAfterAdd = true;
     private boolean mbClearAfterEdit = true;
-    //private boolean mbDirty = false;    // True if any data has been changed.
-                                        // Use setDirty() to set this variable so that listeners are notified.
-    //private Vector<DirtyListener> mvDirtyListener = new Vector<DirtyListener>();
     
     private DirtyHandler moDirtyHandler;
     

@@ -31,7 +31,6 @@ import myutils.Adapters.KeyTypedAdapter;
 import myutils.Adapters.MouseClickedAdapter;
 import myutils.DefaultFocus;
 import myutils.MyHandyTable;
-import myutils.MySimpleTableModel;
 
 /**
  * A screen for editing rules.txt (the blacklist and whitelist)
@@ -41,10 +40,10 @@ import myutils.MySimpleTableModel;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class RulesEditor extends JPanel implements DirtyForm {
+public class RulesEditorUI extends JPanel implements DirtyForm {
 
-    private static final Vector<String> mvHeadings = new Vector<String>(
-            Arrays.asList(new String[]
+    private static final Vector<Object> mvHeadings = new Vector<Object>(
+            Arrays.asList(new Object[]
             { "Entry Type", "First Labor", "Second Labor", "Comment"}));
     private static final int COLUMN_COUNT = mvHeadings.size();
 
@@ -63,8 +62,9 @@ public class RulesEditor extends JPanel implements DirtyForm {
     private JButton mbtnStopEditing;
 
     private JTable mtblRules;
-    private MySimpleTableModel mmdlRules;
-
+    //private MySimpleTableModel mmdlRules;
+    private MyTableModel<LaborRule> mmdlRules;
+    
     private JComboBox mcboType;
     private JComboBox mcboFirstLabor;
     private JComboBox mcboSecondLabor;
@@ -99,7 +99,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
         }
     } */
 
-    public RulesEditor(Vector<Labor> vLabors) { // Vector<String[]> ruleFileContents
+    public RulesEditorUI(Vector<Labor> vLabors) { // Vector<String[]> ruleFileContents
         
         // Super constructor----------------------------------------------------
         super();
@@ -114,11 +114,18 @@ public class RulesEditor extends JPanel implements DirtyForm {
         vLaborNames.add(0, DEFAULT_LABOR);
 
         // Dummy data vector
-        Vector<String[]> ruleFileContents = new Vector<String[]>();
+        //Vector<String[]> ruleFileContents = new Vector<String[]>();
         
         // Create model---------------------------------------------------------
-        mmdlRules = new MySimpleTableModel();
-        mmdlRules.setDataVector(stringArrayToVVO(ruleFileContents), mvHeadings);
+        //mmdlRules = new MySimpleTableModel();
+        Class[] aColClasses = new Class[] { String.class, String.class
+                , String.class, String.class };
+        String[] aColProps = new String[] { "type", "firstlabor", "secondlabor"
+                , "comment" };
+        SortKeySwapper swapper = new SortKeySwapper();
+        mmdlRules = new MyTableModel<LaborRule>(mvHeadings, aColClasses
+                , aColProps, new Vector<LaborRule>(), swapper);
+        //mmdlRules.setDataVector(stringArrayToVVO(ruleFileContents), mvHeadings);
         //mdlRules.addEditableException(3);   // Comment editable
 
         // Create table---------------------------------------------------------
@@ -147,7 +154,8 @@ public class RulesEditor extends JPanel implements DirtyForm {
                     deleteRow();
             }
         });
-
+        swapper.setTable(mtblRules);
+        
         // Not editing in JTable anymore
         // Edit Entry Type, First Labor, and Second Labor using a combo box
         //tblRules.getColumn("Entry Type").setCellEditor(new LaborCellEditor(
@@ -259,12 +267,51 @@ public class RulesEditor extends JPanel implements DirtyForm {
         this.add(panCommentOnTop, BorderLayout.SOUTH);
 
     }
-    public void loadData(Vector<String[]> ruleFileContents) {
+    
+    // Experimental-------------------------------------------------------------
+    private class RulesEditor extends AbstractEditor<LaborRule> {
+
+        @Override
+        public void clearInput() {
+            mcboType.setSelectedItem(DEFAULT_TYPE);
+            mcboFirstLabor.setSelectedItem(DEFAULT_LABOR);
+            mcboSecondLabor.setSelectedItem(DEFAULT_LABOR);
+            mtxtComment.setText(DEFAULT_COMMENT);            
+        }
+
+        @Override
+        public boolean validateInput() {
+            if (mcboType.getSelectedItem().toString().equals(DEFAULT_TYPE)
+                    || mcboFirstLabor.getSelectedItem().toString().equals(DEFAULT_LABOR)
+                    || mcboSecondLabor.getSelectedItem().toString().equals(DEFAULT_LABOR)) {
+
+                //System.out.println("Invalid input");
+                return false;
+            }
+            else
+                return true;
+        }
+
+        @Override
+        public LaborRule createRowData(boolean isNew) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean rowDataToInput(LaborRule rowData) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    }
+    // End experimental---------------------------------------------------------
+    
+    public void loadData(Vector<LaborRule> ruleFileContents) { // String[]
         // Clear input----------------------------------------------------------
         clearInput();
         
         // Set data-------------------------------------------------------------
-        mmdlRules.setDataVector(stringArrayToVVO(ruleFileContents), mvHeadings);
+        //mmdlRules.setDataVector(stringArrayToVVO(ruleFileContents), mvHeadings);
+        mmdlRules.setRowData(ruleFileContents);
         
         // Adjust components----------------------------------------------------
         // Resize the table columns
@@ -306,9 +353,10 @@ public class RulesEditor extends JPanel implements DirtyForm {
         return vReturn;
     }
 
-    // Gets the current file data in Vector<String[]> format
-    protected Vector<String[]> getCurrentFile() {
-        return VVOToStringArray(mmdlRules.getDataVector());
+    // Gets the current file data in Vector<LaborRule> format
+    protected Vector<LaborRule> getCurrentFile() { // String[]
+        //return VVOToStringArray(mmdlRules.getDataVector());
+        return mmdlRules.getRowData();
     }
 
     // Converts Vector<Labor> into Vector<String> (.name property)
@@ -411,7 +459,7 @@ public class RulesEditor extends JPanel implements DirtyForm {
 
     // Copies the data in the input controls to a new table row (inserted at end)
     private void inputToNewRow() throws InvalidInputException {
-        mmdlRules.addRow(inputToVector());
+        mmdlRules.addRow(inputToLaborRule()); //inputToVector()
         moDirtyHandler.setDirty(true);
         MyHandyTable.ensureIndexIsVisible(mtblRules, mmdlRules.getRowCount() - 1);
     }
@@ -429,7 +477,14 @@ public class RulesEditor extends JPanel implements DirtyForm {
         }
         return vReturn;
     }
-
+    private LaborRule inputToLaborRule() throws InvalidInputException {
+        validateInput();
+        return new LaborRule(mcboType.getSelectedItem().toString()
+                , mcboFirstLabor.getSelectedItem().toString()
+                , mcboSecondLabor.getSelectedItem().toString()
+                , mtxtComment.getText());        
+    }
+    
     // Clears the input controls
     private void clearInput() {
         mcboType.setSelectedItem(DEFAULT_TYPE);

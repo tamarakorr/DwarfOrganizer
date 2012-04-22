@@ -23,13 +23,9 @@ public class MyTableModel<T extends MyPropertyGetter>
         extends AbstractTableModel {
 
     private Object[] maoColumnHeadings;
-    //private Class[] maColumnClass;
     private Vector<Class> mvColumnClass;
-    //protected String[] masColumnPropertyNames;
     protected Vector<String> mvColumnPropertyNames;
     protected Vector<T> mvRowData;
-    //private Vector<Integer> mvEditableExceptionCols;
-    //private boolean mbEditable;
     private SortKeySwapper moSortKeySwapper;    // For preventing API bug with fireTableRowsInserted() on sorted table
     
     public MyTableModel(Object[] cols, Class[] colClasses, String[] colProps

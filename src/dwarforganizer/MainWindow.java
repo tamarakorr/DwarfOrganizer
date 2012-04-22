@@ -69,7 +69,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
-    private RulesEditor moRulesEditor;
+    private RulesEditorUI moRulesEditor;
     //private Vector<KeyStroke> mvJobListAccelerators;
     
     protected static enum JobListMenuAccelerator {
@@ -343,7 +343,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void createRulesEditorScreen(JDesktopPane desktop) {
 
         final MainWindow main = this;
-        moRulesEditor = new RulesEditor(mvLabors);
+        moRulesEditor = new RulesEditorUI(mvLabors);
         
         // Update title of Rules Editor when dirty state changes
         DirtyListener dirtyListener = createDirtyListener(
@@ -394,7 +394,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 cf.doConfirm();
         }            
     }
-    private void doRulesWindowClosing(MainWindow main, final RulesEditor rulesEditor) {
+    private void doRulesWindowClosing(MainWindow main, final RulesEditorUI rulesEditor) {
         doWindowClosing(main, rulesEditor, new ConfirmFunction() {
             @Override
             public void doConfirm() {
@@ -415,7 +415,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         //exclMgr.getDirtyHandler().setClean();
     }
     
-    private void saveRuleFile(RulesEditor rulesEditor) {
+    private void saveRuleFile(RulesEditorUI rulesEditor) {
         moIO.writeRuleFile(rulesEditor.getCurrentFile());
         rulesEditor.setClean();
         
@@ -423,7 +423,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         setBlacklistStructures();
         moJobListPanel.setBlacklist(moJobBlacklist);
     }
-    private JMenuBar createRulesEditorMenu(final RulesEditor rulesEditor) {
+    private JMenuBar createRulesEditorMenu(final RulesEditorUI rulesEditor) {
         final MainWindow main = this;
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
@@ -455,7 +455,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return menuBar;
     }
 
-    private void closeRules(RulesEditor rulesEditor) {
+    private void closeRules(RulesEditorUI rulesEditor) {
         doRulesWindowClosing(this, rulesEditor);
         mitlRulesEditor.setVisible(false);
     }
