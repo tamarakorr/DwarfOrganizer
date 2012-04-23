@@ -138,12 +138,14 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             if (inputToNewRow()) {                
                 setEditingState(EditingState.EDIT);
                 if (mbClearAfterAdd) clearInput();
+                return true;
             }
+            else
+                return false;
         } catch (Exception e) {
             System.err.println(e.getMessage() + " Failed to add or update row.");
             return false;            
         }
-        return true;
     }
     public boolean updateRecord() {
         try {
@@ -180,7 +182,8 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
         return true;
     }
 
-    // Copies the first selected row
+    // Doesn't make sense anymore:
+/*    // Copies the first selected row
     protected void copyRow() {
         int row = moTable.getSelectedRow();
         if (row != -1) {
@@ -188,7 +191,8 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             setEditingState(EditingState.EDIT);
             rowDataToInput((T) moModel.getRowData().get(mintCurrentEditedRow)); // row
         }
-    }
+    } */
+    
     // Deletes the first selected row
     protected boolean deleteRow() {
         int row = moTable.getSelectedRow();

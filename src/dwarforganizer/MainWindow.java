@@ -48,106 +48,106 @@ import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 /**
  *
  * @author Tamara Orr
- * 
+ *
  * This software is provided under the MIT license.
  * See the included license.txt for details.
  */
 public class MainWindow extends JFrame implements BroadcastListener { // implements DirtyListener
 
     private static final String VERSION = "1.20";
-    
-    private static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one    
+
+    private static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one
     //private static final String DEFAULT_DWARVES_XML
     //        = "C://DwarfFortress//DwarfGuidanceCounselor//0.0.6//Dwarves.xml";
     private static final String DEFAULT_DWARVES_XML = "samples/dwarves/sample-7-dwarves.xml";
     private static final String TUTORIAL_FILE = "tutorial/ReadmeSlashTutorial.html";
-    
+
     private JInternalFrame mitlJobList;
     private JInternalFrame mitlDwarfList;
     private JInternalFrame mitlRulesEditor;
     private JInternalFrame mitlExclusions;
-    
+
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
     private RulesEditorUI moRulesEditor;
     //private Vector<KeyStroke> mvJobListAccelerators;
-    
+
     protected static enum JobListMenuAccelerator {
         SAVE(KeyStroke.getKeyStroke("control S"))
             , SAVE_AS(KeyStroke.getKeyStroke("control shift S"))
             , OPEN(KeyStroke.getKeyStroke("control O"))
             , RESET(KeyStroke.getKeyStroke("control R"));
-        
+
         private final KeyStroke keyStroke;
         private JobListMenuAccelerator(KeyStroke keyStroke) {
             this.keyStroke = keyStroke;
         }
         public KeyStroke getKeyStroke() { return keyStroke; }
     }
-    
+
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
     private File mfilLastFile;
     private MyFileChooser mjfcSave; //= new JFileChooser(); JFileChooser
     private MyFileChooser mjfcOpen; //= new JFileChooser();
     private MyFileChooser mjfcDwarves;
-    
+
     private Vector<Labor> mvLabors;
     private Vector<LaborGroup> mvLaborGroups;
-    
+
     private static final String RULES_EDITOR_TITLE_CLEAN = "Edit Rules";
     private static final String RULES_EDITOR_TITLE_DIRTY = "Edit Rules (Unsaved Changes)";
     private JobBlacklist moJobBlacklist = new JobBlacklist();
-    private JobList moJobWhitelist = new JobList();    
+    private JobList moJobWhitelist = new JobList();
     //private DirtyListener moRuleDirtyListener;
-    
+
     private DwarfOrganizerIO moIO = new DwarfOrganizerIO();
     private Vector<Dwarf> mvDwarves;
     private DeepCloneableVector<Exclusion> mvExclusions;
     private Hashtable<Integer, Boolean> mhtActiveExclusions;
-    
+
     private JFrame moAboutScreen = new AboutScreen(this);
-    
+
     private static final String EXCLUSIONS_TITLE = "Manage Exclusions";
     private static final String EXCLUSIONS_TITLE_DIRTY = EXCLUSIONS_TITLE + " (Unsaved Changes)";
-    
+
     private ExclusionPanel moExclusionManager;
-    
+
     private Hashtable<String, Stat> mhtStat;
     private Hashtable<String, Skill> mhtSkill;
     private Hashtable<String, MetaSkill> mhtMetaSkill;
-    
+
     private class AboutScreen extends JFrame {
         public AboutScreen(MainWindow main) {
             JLabel lblVersion = new JLabel("Dwarf Organizer version " + VERSION);
-            
+
             JTextArea txtLicense = new JTextArea(moIO.getLicense());
             txtLicense.setEditable(false);
             txtLicense.setLineWrap(true);
             txtLicense.setWrapStyleWord(true);
             JScrollPane sp = new JScrollPane(txtLicense);
-            
+
             this.setTitle("Dwarf Organizer License");
             this.setPreferredSize(new Dimension(500, 400));
             this.setLayout(new BorderLayout());
             this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-            
+
             this.add(lblVersion, BorderLayout.NORTH);
             this.add(sp, BorderLayout.CENTER);
             this.pack();
-            
+
             this.setLocationRelativeTo(main);
         }
     }
-    
+
     public MainWindow() {
         super();
-        
+
         mvLabors = new Vector<Labor>();
         mvLaborGroups = new Vector<LaborGroup>();
-        
+
         JDesktopPane desktop = new JDesktopPane();
         //this.getContentPane().add(desktop);
-        
+
         loadPreferences();
         this.addWindowListener(new WindowClosingAdapter() {
             @Override
@@ -155,38 +155,38 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 // Prompts to save changes
                 MyHandyWindow.clickClose(mitlRulesEditor);
                 MyHandyWindow.clickClose(mitlExclusions);
-                
+
                 // Destroy "about" screen
                 moAboutScreen.dispose();
-                
+
                 // Save preferences
                 savePreferences();
             }
         });
-        
+
         try {
             readFiles();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Failed to read at least one critical file.");
         }
-        
+
         // Combine exclusions from preferences with data from file
-        setExclusionsActive();  
-        
+        setExclusionsActive();
+
         // Create rules editor (hidden until shown)
         createRulesEditorScreen(desktop);
 
         // Create exclusions manager (hidden until shown)
         createExclusionScreen(desktop);
-        
+
         // Create dwarf list window
         moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
                 , mhtMetaSkill, mvLaborGroups);
         //if (mvDwarves == null) System.out.println("mvDwarves is null");
         moDwarfListWindow.loadData(mvDwarves, mvExclusions);
         moExclusionManager.getAppliedBroadcaster().addListener(moDwarfListWindow); // Listen for exclusions applied
-        
+
         try {
             // Display a grid of the dwarves
             mitlDwarfList = new JInternalFrame("Dwarf List", true
@@ -194,11 +194,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             mitlDwarfList.setLayout(new BorderLayout());
             mitlDwarfList.add(moDwarfListWindow);
             updateDwarfListMenu();
-            
+
             mitlDwarfList.pack();
             mitlDwarfList.setVisible(true);
             desktop.add(mitlDwarfList);
-            
+
             // Display a grid of the jobs to assign
             moJobListPanel = new JobListPanel(mvLabors
                     , mvLaborGroups, moJobBlacklist, moIO);   // final JobListPanel jobListPanel
@@ -213,34 +213,34 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             int width = (int) (moJobListPanel.getPreferredSize().getWidth() * 1.2);
             int height = (int) (moJobListPanel.getPreferredSize().getHeight() * 1.42);
             desktop.setPreferredSize(new Dimension(width, height));
-            
+
             this.setJMenuBar(createMenu(moJobListPanel));
             //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
-            
+
             this.setLayout(new BorderLayout());
             this.add(desktop);
-            
+
             this.setTitle("Dwarf Organizer");
             this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             this.pack();
             this.setVisible(true);
-            
+
         } catch (Exception ex) {
             ex.printStackTrace();
-        }            
+        }
     }
-    
+
     private void updateDwarfListMenu() {
         mitlDwarfList.setJMenuBar(appendMenuBar(createDwarfListMenuBar()
             , moDwarfListWindow.getMenu())); // mvLaborGroups
     }
-    
+
     // Returns a JMenuBar made of the menus in the first menu bar, followed
     // by the menus in the second menu bar.
     private JMenuBar appendMenuBar(JMenuBar menuBar1, JMenuBar menuBar2) {
         JMenuBar jmbReturn = new JMenuBar();
         int firstMenuCount = menuBar1.getMenuCount();
-        
+
         // (We run the loops backwards because getMenuCount() decrements
         // each time we add a menu to jmbReturn.)
         for (int iCount = menuBar1.getMenuCount() - 1; iCount >= 0; iCount--)
@@ -252,11 +252,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         return jmbReturn;
     }
-    
+
     private void createExclusionScreen(JDesktopPane desktop) {
-        
+
         final MainWindow main = this;
-        
+
         // Update title of Rules Editor when dirty state changes
         DirtyListener dirtyListener = createDirtyListener(
                 EXCLUSIONS_TITLE_DIRTY, EXCLUSIONS_TITLE
@@ -264,24 +264,24 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             @Override
             public void setFrameTitle(String title) {
                 if (! title.equals(mitlExclusions.getTitle()))
-                    mitlExclusions.setTitle(title);                
+                    mitlExclusions.setTitle(title);
             }
         });
-        
+
         moExclusionManager = new ExclusionPanel(moIO); // moDwarfListWindow.getDwarves() // mvExclusions, mvDwarves, moIO, mhtActiveExclusions
-        
+
         moExclusionManager.getDefaultButtonBroadcaster().addListener(this);
         //moExclusionManager.getExclusionActiveBroadcaster().addListener(this);
         moExclusionManager.getCloseBroadcaster().addListener(this);
         moExclusionManager.getAppliedBroadcaster().addListener(this);
-        
+
         mitlExclusions = new JInternalFrame(EXCLUSIONS_TITLE, true, true, true, true);
         mitlExclusions.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         mitlExclusions.setJMenuBar(createExclusionMgrMenu());
         mitlExclusions.setLayout(new BorderLayout());
         mitlExclusions.add(moExclusionManager);
         //mitlExclusions.pack();  <-Done by Window menu now
-        
+
         moExclusionManager.addDirtyListener(dirtyListener);
         mitlExclusions.addInternalFrameListener(new InternalFrameClosingAdapter(
                 new FrameClosingFunction() {
@@ -292,7 +292,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }));
         desktop.add(mitlExclusions);
     }
-    
+
     private interface FrameClosingFunction {
         public void doFrameClosing(InternalFrameEvent e);
     }
@@ -318,7 +318,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         @Override
         public void internalFrameDeactivated(InternalFrameEvent e) {}
     }
-    
+
     private interface FrameTitleSetter {
         public void setFrameTitle(String title);
     }
@@ -339,12 +339,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         };
     }
-    
+
     private void createRulesEditorScreen(JDesktopPane desktop) {
 
         final MainWindow main = this;
         moRulesEditor = new RulesEditorUI(mvLabors);
-        
+        moRulesEditor.getDefaultButtonBroadcaster().addListener(this);
         // Update title of Rules Editor when dirty state changes
         DirtyListener dirtyListener = createDirtyListener(
                 RULES_EDITOR_TITLE_DIRTY, RULES_EDITOR_TITLE_CLEAN
@@ -355,19 +355,19 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 if (! title.equals(mitlRulesEditor.getTitle()))
                     mitlRulesEditor.setTitle(title);
             }
-        });        
-        
+        });
+
         mitlRulesEditor = new JInternalFrame(RULES_EDITOR_TITLE_CLEAN, true, true, true
                 , true);
         mitlRulesEditor.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         mitlRulesEditor.setJMenuBar(createRulesEditorMenu(moRulesEditor));
         //DefaultFocus.alwaysFocusOnActivate(mitlRulesEditor
         //        , moRulesEditor.getDefaultFocusComp());
-        
+
         mitlRulesEditor.setLayout(new BorderLayout());
         mitlRulesEditor.add(moRulesEditor);
         mitlRulesEditor.pack();
-        
+
         moRulesEditor.addDirtyListener(dirtyListener);
         mitlRulesEditor.addInternalFrameListener(new InternalFrameClosingAdapter(
             new FrameClosingFunction() {
@@ -376,10 +376,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 doRulesWindowClosing(main, moRulesEditor);
             }
         }));
-        
+
         desktop.add(mitlRulesEditor);
     }
-    
+
     private interface ConfirmFunction { public void doConfirm(); }
     private void doWindowClosing(MainWindow main, DirtyForm editor
             , ConfirmFunction cf, String strMessageTitle, String strQuestion) {
@@ -392,7 +392,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     , strMessageTitle);
             if ("Yes".equals(result.toString()))
                 cf.doConfirm();
-        }            
+        }
     }
     private void doRulesWindowClosing(MainWindow main, final RulesEditorUI rulesEditor) {
         doWindowClosing(main, rulesEditor, new ConfirmFunction() {
@@ -414,11 +414,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         exclMgr.saveExclusions();       // Also notifies Dwarf List, and sets clean
         //exclMgr.getDirtyHandler().setClean();
     }
-    
+
     private void saveRuleFile(RulesEditorUI rulesEditor) {
         moIO.writeRuleFile(rulesEditor.getCurrentFile());
         rulesEditor.setClean();
-        
+
         // Recreate local blacklist structures & resend blacklist to Job Settings screen
         setBlacklistStructures();
         moJobListPanel.setBlacklist(moJobBlacklist);
@@ -428,7 +428,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("File");
         menuBar.add(menu);
-        
+
         JMenuItem menuItem = new JMenuItem("Save", KeyEvent.VK_S);
         menuItem.setAccelerator(KeyStroke.getKeyStroke("control S"));
         menuItem.addActionListener(new ActionListener() {
@@ -438,10 +438,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         // ----------------------------------
         menu.add(new JSeparator());
-        
+
         // ----------------------------------
         menuItem = new JMenuItem("Close", KeyEvent.VK_C);
         menuItem.addActionListener(new ActionListener() {
@@ -451,7 +451,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         return menuBar;
     }
 
@@ -459,16 +459,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         doRulesWindowClosing(this, rulesEditor);
         mitlRulesEditor.setVisible(false);
     }
-    
+
     private JMenuBar createExclusionMgrMenu() {
         final MainWindow main = this;
-        
+
         JMenuBar menuBar = new JMenuBar();
-        
+
         JMenu menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
-        
+
         JMenuItem menuItem = new JMenuItem("Save and Apply");
         menuItem.setMnemonic(KeyEvent.VK_S);
         menuItem.setAccelerator(KeyStroke.getKeyStroke("control S"));
@@ -479,9 +479,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         menu.add(new JSeparator());
-        
+
         menuItem = new JMenuItem("Close");
         menuItem.setMnemonic(KeyEvent.VK_C);
         menuItem.addActionListener(new ActionListener() {
@@ -492,21 +492,21 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         return menuBar;
     }
     private void closeExclusions() {
         doExclWindowClosing(this, moExclusionManager);
         mitlExclusions.setVisible(false);
     }
-    
+
     private JMenuBar createDwarfListMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        
+
         JMenu menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
-        
+
         JMenuItem menuItem = new JMenuItem("Set Location of Dwarves.xml..."
                 , KeyEvent.VK_L);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
@@ -520,14 +520,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         menu.add(menuItem);
         return menuBar;
     }
-    
+
     private JMenuBar createJobListMenu(final JobListPanel jobListPanel) {
         JMenuBar menuBar = new JMenuBar();
-        
+
         JMenu menu = new JMenu("File");
         menu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(menu);
-        
+
         JMenuItem menuItem = new JMenuItem("Open...", KeyEvent.VK_O);
         menuItem.setAccelerator(JobListMenuAccelerator.OPEN.getKeyStroke()); //  KeyStroke.getKeyStroke(
             //KeyEvent.VK_O, ActionEvent.CTRL_MASK)
@@ -538,9 +538,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         menu.addSeparator();
-        
+
         menuItem = new JMenuItem("Save", KeyEvent.VK_S);
         menuItem.setAccelerator(JobListMenuAccelerator.SAVE.getKeyStroke()); // KeyStroke.getKeyStroke(
                 //KeyEvent.VK_S, ActionEvent.CTRL_MASK));
@@ -550,8 +550,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 saveJobSettingsAs(jobListPanel, true);
             }
         });
-        menu.add(menuItem);        
-        
+        menu.add(menuItem);
+
         menuItem = new JMenuItem("Save As...", KeyEvent.VK_A);
         menuItem.setAccelerator(JobListMenuAccelerator.SAVE_AS.getKeyStroke()); // KeyStroke.getKeyStroke(
                 //KeyEvent.VK_A, ActionEvent.ALT_MASK));
@@ -562,9 +562,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         menu.addSeparator();
-        
+
         menuItem = new JMenuItem("Reset to My Defaults", KeyEvent.VK_R);
         //menuItem.setAccelerator(JobListMenuAccelerator.RESET.getKeyStroke()); // KeyStroke.getKeyStroke(
                 //KeyEvent.VK_R, ActionEvent.CTRL_MASK));
@@ -580,13 +580,13 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         menu = new JMenu("Edit");
         menu.setMnemonic(KeyEvent.VK_E);
         menuBar.add(menu);
-        
+
         jobListPanel.createEditMenu(menu);
-        
+
         return menuBar;
-        
+
     }
-    
+
     // Creates file choosers for save and load operations. This is a time-consuming
     // operation and only needs to be done once.
     private void createChoosers() {
@@ -608,19 +608,19 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mjfcSave.setAcceptAllFileFilterUsed(true);
         mjfcSave.setFileFilter(ffText);
         mjfcSave.setCurrentDirectory(moJobListPanel.getDirectory());
-        
+
         //System.out.println(mjfcSave.getFocusTraversalPolicy().getFirstComponent(mjfcSave.getFocusCycleRootAncestor()).getName());
 //        System.out.println(mjfcSave.getFocusTraversalPolicy().getInitialComponent(this));
         //new MyFileChooser(this, mjfcSave);
         //MyFileChooser fc = new MyFileChooser();
         //fc.focusFileNameWhenShown(this, mjfcSave);
-        
+
         // File chooser for Job Settings->Open...
         mjfcOpen = new MyFileChooser(this);
         mjfcOpen.setDialogTitle("Load Job Settings");
         mjfcOpen.setDialogType(MyFileChooser.OPEN_DIALOG);
         mjfcOpen.setCurrentDirectory(moJobListPanel.getDirectory());
-        
+
         // File chooser for Dwarves.xml
         File file = new File(mstrDwarvesXML);
         mjfcDwarves = new MyFileChooser(this);
@@ -629,7 +629,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mjfcDwarves.setSelectedFile(file);
 
     }
-    
+
     private void readFiles() throws Exception {
         // Try to read group-list.txt, labor-list.txt, rules.txt, Dwarves.xml,
         // and exclusions
@@ -639,14 +639,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
             moIO.readRuleFile();
             setBlacklistStructures();
-            
+
             readDwarves();
-            
+
             mvExclusions = moIO.readExclusions(mvDwarves); // mhtActiveExclusions
-            
+
         } catch (Exception e) {
             throw e;
-        }   
+        }
     }
     private void setBlacklistStructures() {
         moJobBlacklist = moIO.getBlacklist();
@@ -657,11 +657,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private JMenuBar createMenu(final JobListPanel jobListPanel) {
         JMenuBar menuBar = new JMenuBar();
-                
+
         JMenu menu = new JMenu("Process");
         menu.setMnemonic(KeyEvent.VK_P);
         menuBar.add(menu);
-        
+
         final JMenuItem optimizeItem = new JMenuItem("Optimize Now!", KeyEvent.VK_O);
         optimizeItem.addActionListener(new ActionListener() {
             @Override
@@ -688,10 +688,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 worker.execute();
 
                 optimizeItem.setEnabled(true);            }
-            
+
         });
         menu.add(optimizeItem);
-        
+
         menu.addSeparator();
         JMenuItem menuItem = new JMenuItem("Exit", KeyEvent.VK_X);
         menuItem.addActionListener(new ActionListener() {
@@ -702,12 +702,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         // -------------------------------
         menu = new JMenu("Window");
         menu.setMnemonic(KeyEvent.VK_W);
         menuBar.add(menu);
-        
+
         // -------------------------------
         menuItem = new JMenuItem("Dwarf List", KeyEvent.VK_D);
         menuItem.addActionListener(new ActionListener() {
@@ -721,7 +721,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         // -------------------------------
         menuItem = new JMenuItem("Job Settings", KeyEvent.VK_J);
         menuItem.addActionListener(new ActionListener() {
@@ -735,32 +735,49 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         // -------------------------------
         menuItem = new JMenuItem("Rules Editor", KeyEvent.VK_R);
+        final DataLoader rulesLoader = new DataLoader() {
+                    @Override
+                    public void loadData() {
+                        // Use a clone for the table model. Otherwise
+                        // unsaved changes will persist when window is closed
+                        // and reopened.
+                        DeepCloneableVector<LaborRule> vRulesClone
+                                = (DeepCloneableVector<LaborRule>)
+                                new DeepCloneableVector<LaborRule>(
+                                moIO.getRuleFileContents()).deepClone();
+                        moRulesEditor.loadData(vRulesClone);
+                    }
+                };
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (mitlRulesEditor.isVisible() == false) {
-                    moRulesEditor.loadData(moIO.getRuleFileContents());
-                    mitlRulesEditor.pack();
-                }
-                mitlRulesEditor.setVisible(true);
-                try {
-                    mitlRulesEditor.setSelected(true);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                showOrLoad(mitlRulesEditor, rulesLoader);
             }
         });
         menu.add(menuItem);
-        
+
         menuItem = new JMenuItem("Exclusion Manager", KeyEvent.VK_E);
+        // (We need to deep-clone mvExclusions
+        // and loadData on that, not on mvExclusions directly.
+        // Otherwise the "active" checkbox states will carry over
+        // between sessions)
+        final DataLoader exclLoader = new DataLoader() {
+                    @Override
+                    public void loadData() {
+                        DeepCloneableVector<Exclusion> exclDeepClone
+                                = (DeepCloneableVector<Exclusion>)
+                                mvExclusions.deepClone();
+                        moExclusionManager.loadData(exclDeepClone, mvDwarves);
+                    }
+                };
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                
-                // Reload if invisible. We need to deep-clone mvExclusions
+
+/*                // Reload if invisible. We need to deep-clone mvExclusions
                 // and loadData on that, not on mvExclusions directly.
                 // Otherwise the "active" checkbox states will carry over between sessions
                 if (mitlExclusions.isVisible() == false) {
@@ -769,22 +786,24 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     moExclusionManager.loadData(exclDeepClone, mvDwarves);
                     mitlExclusions.pack();
                 }
-                
+
                 mitlExclusions.setVisible(true);
                 try {
                     mitlExclusions.setSelected(true);
                 } catch (PropertyVetoException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                } */
+
+                showOrLoad(mitlExclusions, exclLoader);
             }
         });
         menu.add(menuItem);
-        
+
         // -------------------------------
         menu = new JMenu("Help");
         menu.setMnemonic(KeyEvent.VK_H);
         menuBar.add(menu);
-        
+
         menuItem = new JMenuItem("Tutorial", KeyEvent.VK_T);
         menuItem.addActionListener(new ActionListener() {
 
@@ -805,9 +824,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         });
         menu.add(menuItem);
-        
+
         menu.addSeparator();
-        
+
         menuItem = new JMenuItem("About", KeyEvent.VK_A);
         menuItem.addActionListener(new ActionListener() {
 
@@ -815,13 +834,33 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             public void actionPerformed(ActionEvent e) {
                 moAboutScreen.setVisible(true);
             }
-            
+
         });
         menu.add(menuItem);
-        
+
         return menuBar;
     }
+
+    private interface DataLoader {
+        public void loadData();
+    }
     
+    // Reload if invisible; show if visible.
+    private void showOrLoad(JInternalFrame frame, DataLoader loader) {    
+        if (frame.isVisible() == false) {
+            loader.loadData();
+            frame.pack();
+        }
+
+        frame.setVisible(true);
+        try {
+            frame.setSelected(true);
+        } catch (PropertyVetoException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null
+                    , ex);
+        }
+    }
+
     // More non-functional internet garbage (slow and only works for Serializable objects)
     private Object deepClone(Object source) {
         try {
@@ -839,10 +878,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         } catch (ClassNotFoundException e) {
             System.err.println(e.getMessage() + " [MainWindow] Failed to deepClone object");
             e.printStackTrace();
-            return null;            
+            return null;
         }
     }
-    
+
     // Set dwarves.xml location & read it
     private void setDwarves() {
         int response = setDwarvesLocation();
@@ -858,22 +897,22 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             moDwarfListWindow.setVisible(true);
         }
     }
-    
+
     // Reset job settings to user defaults
     private void resetJobSettings(JobListPanel jobPanel) {
         jobPanel.load(new File(JobListPanel.MY_DEFAULT_SETTINGS_FILE));
     }
-    
+
     private void loadJobSettings(JobListPanel jobListPanel) {
         int input = mjfcOpen.showOpenDialog(this);
-        
+
         if (input == MyFileChooser.APPROVE_OPTION) {
             File file = mjfcOpen.getSelectedFile();
             jobListPanel.load(file);
             updateCurrentJobSettings(file);
         }
     }
-    
+
     // If saving as "DEFAULT SETTINGS", change name to "MY DEFAULT SETTINGS"
     // (That logic is now unused since .txt is added to file names, and we don't load from
     // default settings in this way anymore)
@@ -886,7 +925,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mfilLastFile = file;
         mitlJobList.setTitle(fileName.replace(".txt", "") + " Job Settings");
     }
-    
+
     // Returns the text after (not including) the dot if the given file name
     // has an extension.
     // Returns the whole file name if there is no dot.
@@ -894,17 +933,17 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         int dot = fileName.lastIndexOf(".");
         return fileName.substring(dot + 1);
     }
-    
+
     private void saveJobSettingsAs(JobListPanel jobListPanel, boolean quickSave) {
-        
+
         boolean bConfirm = false;
         File file = mfilLastFile;
-        
+
         if (quickSave && (mfilLastFile != null)) {
             bConfirm = true;
         }
         else {
-            
+
             int input = mjfcSave.showSaveDialog(this);
 
             if (input == MyFileChooser.APPROVE_OPTION) {
@@ -924,25 +963,25 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 }
             }
         }
-        
+
         if (bConfirm) {
             jobListPanel.save(file);
             updateCurrentJobSettings(file);
         }
     }
-    
+
     private boolean fileHasExtension(File file) {
         String strName = file.getName();
         //System.out.println("Extension is " + getExtension(file.getName()));
         //System.out.println(getExtension(strName).length() + " ?= " + strName.length());
         return (getExtension(strName).length() != strName.length());
     }
-    
+
     private File addExtension(File file, String ext) {
         String strNewName = file.getName() + ext;
         return new File(file.getParentFile(), strNewName);
     }
-    
+
     // Returns the user's input to the file dialog
     private int setDwarvesLocation() {
         int input = mjfcDwarves.showOpenDialog(this);
@@ -957,11 +996,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         return input;
     }
-    
+
     private void loadPreferences() {
         Preferences prefs = Preferences.userNodeForPackage(this.getClass());
         mstrDwarvesXML = prefs.get("DwarvesXML", DEFAULT_DWARVES_XML);
-        
+
         // Exclusions active
         int maxID = prefs.getInt("MaxExclusionID", 0);
         mhtActiveExclusions = new Hashtable<Integer, Boolean>();
@@ -969,7 +1008,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             //System.out.println("ExclusionsActive_" + iCount + ", " + DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE);
             // (.active in the mvExclusions object is set later, after exclusions are read)
             boolean value = prefs.getBoolean("ExclusionsActive_" + iCount
-                    , DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE); 
+                    , DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE);
             //setExclusionActive(iCount, value);
             mhtActiveExclusions.put(iCount, value);
         }
@@ -978,7 +1017,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         //System.out.println("Saving preferences...");
         Preferences prefs = Preferences.userNodeForPackage(this.getClass());
         prefs.put("DwarvesXML", mstrDwarvesXML);
-        
+
         // Exclusions active
         prefs.putInt("MaxExclusionID", moIO.getMaxUsedExclusionID());
         for (Integer key : mhtActiveExclusions.keySet()) {
@@ -988,7 +1027,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         //System.out.println("    Done saving preferences.");
     }
-    
+
     // Updates the initial active state of the exclusions from mhtActiveExclusions
     // Must be called after loadPreferences() and after readFiles()
     private void setExclusionsActive() {
@@ -1002,7 +1041,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             System.err.println("Could not set active exclusion: exclusion list is null");
             return;
         }
-        
+
         for (Exclusion excl : mvExclusions) {
             if (excl.getID() == ID) {
                 excl.setActive(active);
@@ -1011,31 +1050,31 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         // (Do nothing if there is no exclusion with this ID)
     }
-    
+
     private void readDwarves() throws Exception {
         //NodeList nodes = null;
         mvDwarves = new Vector<Dwarf>();
         try {
-            
+
             DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
             dwarfIO.readDwarves(mstrDwarvesXML);
             mvDwarves = dwarfIO.getDwarves();
             mhtStat = dwarfIO.getStats();
             mhtSkill = dwarfIO.getSkills();
             mhtMetaSkill = dwarfIO.getMetaSkills();
-            
+
             //nodes = moIO.readDwarves(mstrDwarvesXML);
-            
+
             /*myXMLReader xmlFileReader = new myXMLReader(mstrDwarvesXML);
             NodeList nodes = xmlFileReader.getDocument().getElementsByTagName("Creature"); */
-            //System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");            
+            //System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");
         } catch (Exception e) {
             System.err.println("DwarfIO failed to read dwarves.xml");
             throw e;
         }
-        
+
     }
-    
+
     private Vector<Dwarf> getDwarves() {
         // Get included dwarves and reset all dwarf.time
         // TODO clone() probably isn't doing what it's supposed to
@@ -1045,12 +1084,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         return vIncluded;
     }
-    
+
     // Note that balanced potentials are keyed by job name, not skill name.
     private void setBalancedPotentials(Vector<Dwarf> vDwarves, Vector<Job> vJobs) {
         for (Dwarf dwarf : vDwarves) {
             for (Job job : vJobs) {
-                
+
                 double dblCurrentSkillPct = ((double) job.currentSkillWeight) / 100.0d;
                 double dblPotentialPct = 1.0d - dblCurrentSkillPct;
                 long skillLevel = 0l;
@@ -1061,21 +1100,21 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                         * skillLevelToPercent(skillLevel))
                         + (dblPotentialPct
                         * ((double) dwarf.skillPotentials.get(job.skillName)));
-                
+
                 dwarf.balancedPotentials.put(job.name
                         , Math.round(dblBalancedPotential));
             }
         }
     }
     private double skillLevelToPercent(long skillLevel) {
-        
+
         if (skillLevel >= MAX_SKILL_LEVEL)
             return 100.0d;
         else
             return ((double) skillLevel) * 100.0d / ((double) MAX_SKILL_LEVEL);
-        
+
     }
-    
+
     private void addWhitelistToBlacklist(JobBlacklist blacklist
             , JobList whitelist, Vector<Labor> labors) {
         for (String wlJobName : whitelist.keySet()) {
@@ -1094,18 +1133,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     public void broadcast(BroadcastMessage message) {
         //System.out.println("Broadcast message received");
         if (message.getSource().equals("ExclusionPanelDefaultButton")) {
-            // Set default button
-            try {
-                if (message.getTarget() == null)
-                    mitlExclusions.getRootPane().setDefaultButton(null);
-                else {                
-                    JButton btn = (JButton) message.getTarget();
-                    if (! btn.equals(mitlExclusions.getRootPane().getDefaultButton()))
-                        mitlExclusions.getRootPane().setDefaultButton(btn);
-                }
-            } catch (Exception e) {
-                System.err.println(e.getMessage() + " Failed to set default button");
-            }
+            setDefaultButton(message, mitlExclusions);
+        }
+        else if (message.getSource().equals("RulesEditorDefaultButton")) {
+            setDefaultButton(message, mitlRulesEditor);
         }
         else if (message.getSource().equals("ExclusionPanelActiveExclusions")) {
             try {
@@ -1124,6 +1155,25 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         else
             System.out.println("[MainWindow] Unknown broadcast message received");
+    }
+
+    // Attempts to set the default button in the given internal frame
+    // to the JButton object in the message target.
+    private void setDefaultButton(BroadcastMessage message
+            , JInternalFrame frame) {
+
+        // Set default button
+        try {
+            if (message.getTarget() == null)
+                frame.getRootPane().setDefaultButton(null);
+            else {
+                JButton btn = (JButton) message.getTarget();
+                if (! btn.equals(frame.getRootPane().getDefaultButton()))
+                    frame.getRootPane().setDefaultButton(btn);
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage() + " Failed to set default button");
+        }
     }
     private void updateActiveExclusions(DeepCloneableVector<Exclusion> colExclusion) {
         // Rebuild mhtActiveExclusions

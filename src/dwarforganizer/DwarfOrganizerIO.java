@@ -72,7 +72,7 @@ public class DwarfOrganizerIO {
     private static final int LABOR_RULE_MIN_COLS = 3;
     private static final int LABOR_RULE_MAX_COLS = 4;
     
-    private enum RuleFileColIndex {
+/*    private enum RuleFileColIndex {
         LABOR_RULE_TYPE (0)
         , LABOR_RULE_FIRST_LABOR (1)
         , LABOR_RULE_SECOND_LABOR (2)
@@ -84,13 +84,8 @@ public class DwarfOrganizerIO {
             this.index = index;
         }
         public int getIndex() { return index; }
-    };
-    
-/*    private static final int LABOR_RULE_INDEX_TYPE = 0;
-    private static final int LABOR_RULE_INDEX_FIRST_LABOR = 1;
-    private static final int LABOR_RULE_INDEX_SECOND_LABOR = 2;
-    private static final int LABOR_RULE_INDEX_COMMENT = 3; */
-    
+    }; */
+        
     private JobBlacklist moBlacklist;
     private JobList moWhitelist;
     //private Vector<String[]> mvRuleFile;

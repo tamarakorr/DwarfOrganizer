@@ -38,15 +38,21 @@ public class SortKeySwapper {
     
     // Swap the current table sort keys for null sort keys, or vice versa
     protected void swapSortKeys() {
-        try {
-            // Don't mess with unsorted tables
+        // Don't mess with unsorted tables
+        if (null != moTable.getRowSorter()) {
             if (null != moTable.getRowSorter().getSortKeys()) {
-                List<SortKey> temp = moKeyHolder;
-                moKeyHolder = (List<SortKey>) moTable.getRowSorter().getSortKeys();
-                moTable.getRowSorter().setSortKeys(temp);
+
+                try {
+                    List<SortKey> temp = moKeyHolder;
+                    moKeyHolder = (List<SortKey>) moTable.getRowSorter().getSortKeys();
+                    moTable.getRowSorter().setSortKeys(temp);
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                    System.err.println("Failed to swap sort keys. Did you"
+                            + " remember to do SortKeySwapper.setTable() before"
+                            + " adding any rows?");
+                }
             }
-        } catch (NullPointerException e) {
-            System.err.println("Failed to swap sort keys. Did you remember to do SortKeySwapper.setTable() before adding any rows?");
         }
     }
     

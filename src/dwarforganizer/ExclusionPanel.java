@@ -624,61 +624,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         return table;
     }
 
-/*    // Skip the given table in focus traversal policy whenever it has no rows,
-    // and use normal focus traversal keys
-    private JTable createSmarterFocusTable(final JTable table) {
-        table.addFocusListener(new FocusListener() {
-
-            @Override
-            public void focusGained(FocusEvent e) {
-                Container cycleRoot = table.getFocusCycleRootAncestor();
-                FocusTraversalPolicy policy = table.getFocusTraversalPolicy();
-                if (policy == null && cycleRoot != null) {
-                    policy = cycleRoot.getFocusTraversalPolicy();
-                }
-
-                if (table.getRowCount() == 0 && policy != null) {
-                    Component target = policy.getComponentAfter(cycleRoot, table);
-                    if (target != null && target == e.getOppositeComponent()) {
-                        target = policy.getComponentBefore(cycleRoot, table);
-                    }
-                    if (target != null) target.requestFocusInWindow();
-                }
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-            }
-        });
-
-        // Now remap the focus keys so that Tab and Shift+Tab continue normal
-        // focus traversal
-
-        // Does nothing:
-        //table.getInputMap().remove(KeyStroke.getKeyStroke("TAB"));
-
-        // Does nothing:
-        //exclTable.getActionMap().remove("selectNextColumnCell");
-        //exclTable.getActionMap().put("selectNextColumnCell", exclTable.getActionMap().get("focusOutForward"));  //selectNextFrame
-
-        // Wrong way to do it: We can't tab out of the JTable:
-        //exclTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-        //  KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), "none");
-        //exclTable.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
-        //  KeyStroke.getKeyStroke(KeyEvent.VK_TAB, InputEvent.SHIFT_DOWN_MASK), "none");
-
-        // Tab and Shift+Tab continue normal focus traversal instead of
-        // locking the user into cell traversal
-        table.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
-            KeyboardFocusManager.getCurrentKeyboardFocusManager()
-            .getDefaultFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS));
-        table.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-            KeyboardFocusManager.getCurrentKeyboardFocusManager()
-            .getDefaultFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS));
-
-        return table;
-    } */
-
     private abstract class AbstractExclusionEditor<T extends Exclusion>
             extends AbstractEditor<TableItem> {
 

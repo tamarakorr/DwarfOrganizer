@@ -9,7 +9,7 @@ package dwarforganizer;
  *
  * @author Tamara Orr
  */
-public class LaborRule implements MyPropertyGetter {
+public class LaborRule implements MyPropertyGetter, DeepCloneable {
     private String type;
     private String firstLabor;
     private String secondLabor;
@@ -79,6 +79,11 @@ public class LaborRule implements MyPropertyGetter {
     @Override
     public long getKey() {
         return 0; // TODO
+    }
+
+    @Override
+    public Object deepClone() {
+        return new LaborRule(type, firstLabor, secondLabor, comment);
     }
     
 }
