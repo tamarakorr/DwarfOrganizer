@@ -13,4 +13,5 @@ public interface DirtyForm {
     // These are just the DirtyHandler methods we want to expose to clients
     public void addDirtyListener(DirtyListener listener);
     public boolean isDirty();
+    public void setClean();
 }

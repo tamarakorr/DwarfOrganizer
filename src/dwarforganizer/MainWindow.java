@@ -392,6 +392,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     , strMessageTitle);
             if ("Yes".equals(result.toString()))
                 cf.doConfirm();
+            else    // "No"
+                // TODO this makes me uncomfortable. The form has dirty data on
+                // it.
+                // But if we don't set it to clean here, then the user could be
+                // asked again on app shutdown whether to save.
+                editor.setClean();
         }
     }
     private void doRulesWindowClosing(MainWindow main, final RulesEditorUI rulesEditor) {
@@ -412,7 +418,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private void saveExclusions(ExclusionPanel exclMgr) {
         exclMgr.saveExclusions();       // Also notifies Dwarf List, and sets clean
-        //exclMgr.getDirtyHandler().setClean();
     }
 
     private void saveRuleFile(RulesEditorUI rulesEditor) {
@@ -776,24 +781,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-/*                // Reload if invisible. We need to deep-clone mvExclusions
-                // and loadData on that, not on mvExclusions directly.
-                // Otherwise the "active" checkbox states will carry over between sessions
-                if (mitlExclusions.isVisible() == false) {
-                    DeepCloneableVector<Exclusion> exclDeepClone
-                            = (DeepCloneableVector<Exclusion>) mvExclusions.deepClone();
-                    moExclusionManager.loadData(exclDeepClone, mvDwarves);
-                    mitlExclusions.pack();
-                }
-
-                mitlExclusions.setVisible(true);
-                try {
-                    mitlExclusions.setSelected(true);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                } */
-
                 showOrLoad(mitlExclusions, exclLoader);
             }
         });

@@ -13,7 +13,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,14 +23,10 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
 import myutils.DefaultFocus;
 import myutils.MyHandyTable;
 
@@ -128,7 +123,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
         // Create table---------------------------------------------------------
         mtblRules = MyHandyTable.createSmarterFocusTable(new JTable(mmdlRules));
-        mtblRules.setComponentPopupMenu(createPopUpMenu());
+        //mtblRules.setComponentPopupMenu(createPopUpMenu());
 
         mspScrollPane = new JScrollPane(mtblRules);
         mspScrollPane.setPreferredSize(new Dimension(750, 350));
@@ -192,7 +187,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         
         // Post-initialize controls---------------------------------------------
         moRulesEditor.initialize(mtblRules, mmdlRules, mbtnUpdate
-                , false, false, true);
+                , false, false, true, true, true, true, true);
         
         // Set up default buttons
         Map<JComponent, JButton> hmDefaultButtons = new HashMap<JComponent
@@ -366,39 +361,6 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         return vReturn;
     }
 
-    // Creates the right-click context popup menu for the rules table
-    private JPopupMenu createPopUpMenu() {
-        JPopupMenu popUp = new JPopupMenu();
-
-        JMenuItem menuItem = new JMenuItem("Edit", KeyEvent.VK_E);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke("control ENTER"));
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moRulesEditor.editRow();
-            }
-        });
-        popUp.add(menuItem);
-
-        // ---------------------------------------
-        popUp.add(new JSeparator());
-
-        // ---------------------------------------
-        menuItem = new JMenuItem("Delete", KeyEvent.VK_D);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke("DELETE"));
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moRulesEditor.deleteRow();
-            }
-        });
-        popUp.add(menuItem);
-
-        return popUp;
-    }
-
     // Updates the text description of the current contents of the input controls
     private void updateMeaning() {
 
@@ -435,7 +397,8 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     public boolean isDirty() {
         return moRulesEditor.getDirtyHandler().isDirty();
     }
-    protected void setClean() {
+    @Override
+    public void setClean() {
         moRulesEditor.getDirtyHandler().setClean();
     }
 

@@ -772,7 +772,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             MyHandyTable.autoSortTable(exclTable, exclModel);
 
             super.initialize(exclTable, exclModel, btnUpdate, false, false
-                    , true); //, new int[] { KeyEvent.VK_ENTER }
+                    , true, true, true, true, true); //, new int[] { KeyEvent.VK_ENTER }
                     //, new int[] { KeyEvent.VK_DELETE });
 
             bCreating = false;
@@ -985,7 +985,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             ExclusionList excl = (ExclusionList) tableItem.getExclusion();
             getCitizenList().setList(excl.getCitizenList());
         }
-
     }
 
     private Vector<String> vDwarfToVString(Vector<Dwarf> vDwarf) {
@@ -1397,5 +1396,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     @Override
     public boolean isDirty() {
         return moMasterDirtyHandler.isDirty();
+    }
+
+    @Override
+    public void setClean() {
+        moMasterDirtyHandler.setClean();
     }
 }

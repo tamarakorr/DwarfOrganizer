@@ -5,14 +5,19 @@
 
 package dwarforganizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import myutils.Adapters.KeyTypedAdapter;
 import myutils.MyHandyTable;
 
 /**
@@ -49,7 +54,9 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     
     protected void initialize(JTable table, MyTableModel model
             , JButton btnUpdate, boolean clearAfterAdd
-            , boolean clearAfterEdit, boolean editOnDoubleClick) {
+            , boolean clearAfterEdit, boolean editOnDoubleClick
+            , boolean ctrlEnterToEdit, boolean deleteKeyToDelete
+            , boolean createPopUpEdit, boolean createPopUpDelete) {
             //, final int[] editKeys, final int[] deleteKeys) { // DefaultTableModel
         
         moTable = table;
@@ -83,31 +90,48 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             });
         }
         
-        // Keys are hard coded because I couldn't find a way to pass them in
-        // as integers using modifier masks (example: control enter to edit)
-        //if (editKeys.length > 0 || deleteKeys.length > 0) {
-            //Arrays.sort(editKeys);      // Arrays must be sorted before binarySearch
-            //Arrays.sort(deleteKeys);
-            moTable.addKeyListener(new KeyListener() {
-
+        if (ctrlEnterToEdit) {
+            moTable.addKeyListener(new KeyTypedAdapter() {
                 @Override
                 public void keyTyped(KeyEvent e) {
-                    //if (Arrays.binarySearch(editKeys, e.getKeyChar()) >= 0)
                     if (e.isControlDown() && (e.getKeyChar() == KeyEvent.VK_ENTER))
                         editRow();
-                    else if (e.getKeyChar() == KeyEvent.VK_DELETE)
-                        deleteRow();
-                    //else
-                    //    System.out.println("Key typed: " + e.getKeyChar());
-                }
-                @Override
-                public void keyPressed(KeyEvent e) { // Do nothing
-                }
-                @Override
-                public void keyReleased(KeyEvent e) { // Do nothing
                 }
             });
-        //}
+        }
+        if (deleteKeyToDelete) {
+            moTable.addKeyListener(new KeyTypedAdapter() {
+                @Override
+                public void keyTyped(KeyEvent e) {
+                    if (e.getKeyChar() == KeyEvent.VK_DELETE)
+                        deleteRow();
+                }
+            });
+        }
+        if (createPopUpEdit || createPopUpDelete) {
+            moTable.setComponentPopupMenu(createPopUpMenu(createPopUpEdit
+                    , createPopUpDelete, ctrlEnterToEdit, deleteKeyToDelete));
+        }
+        
+/*        moTable.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped(KeyEvent e) {
+                //if (Arrays.binarySearch(editKeys, e.getKeyChar()) >= 0)
+                if (e.isControlDown() && (e.getKeyChar() == KeyEvent.VK_ENTER))
+                    editRow();
+                else if (e.getKeyChar() == KeyEvent.VK_DELETE)
+                    deleteRow();
+                //else
+                //    System.out.println("Key typed: " + e.getKeyChar());
+            }
+            @Override
+            public void keyPressed(KeyEvent e) { // Do nothing
+            }
+            @Override
+            public void keyReleased(KeyEvent e) { // Do nothing
+            }
+        }); */
         
         // Revert to EditingState.NEW if we're updating and the selection changes
         moTable.getSelectionModel().addListSelectionListener(
@@ -268,7 +292,54 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     public boolean isDirty() {
         return moDirtyHandler.isDirty();
     }
+    @Override
+    public void setClean() {
+        moDirtyHandler.setClean();
+    }
     protected DirtyHandler getDirtyHandler() {
         return moDirtyHandler;
     }
+    // Creates the right-click context popup menu for the table
+    private JPopupMenu createPopUpMenu(boolean allowEdit, boolean allowDelete
+            , boolean ctrlEnterToEdit, boolean deleteKeyToDelete) {
+        JPopupMenu popUp = new JPopupMenu();
+        JMenuItem menuItem;
+        
+        if (allowEdit) {
+            menuItem = new JMenuItem("Edit", KeyEvent.VK_E);
+            if (ctrlEnterToEdit)
+                menuItem.setAccelerator(
+                        KeyStroke.getKeyStroke("control ENTER"));
+            menuItem.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    editRow();
+                }
+            });
+            popUp.add(menuItem);
+        }
+        
+/*        // ---------------------------------------
+        if (allowEdit && allowDelete) {
+            popUp.add(new JSeparator());
+        } */
+        
+        // ---------------------------------------
+        if (allowDelete) {
+            menuItem = new JMenuItem("Delete", KeyEvent.VK_D);
+            if (deleteKeyToDelete)
+                menuItem.setAccelerator(KeyStroke.getKeyStroke("DELETE"));
+            menuItem.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    deleteRow();
+                }
+            });
+            popUp.add(menuItem);
+        }
+        
+        return popUp;
+    }    
 }
