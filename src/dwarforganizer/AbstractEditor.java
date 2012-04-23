@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -18,6 +17,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import myutils.Adapters.KeyTypedAdapter;
+import myutils.Adapters.MouseClickedAdapter;
 import myutils.MyHandyTable;
 
 /**
@@ -46,6 +46,9 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     
     private DirtyHandler moDirtyHandler;
     
+    private JMenuItem mmuEditMenu;
+    private JMenuItem mmuDeleteMenu;
+    
     public AbstractEditor() {
         super();
         
@@ -66,26 +69,14 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
         mbClearAfterEdit = clearAfterEdit;
         
         if (editOnDoubleClick) {
-            moTable.addMouseListener(new MouseListener() {
-
+            moTable.addMouseListener(new MouseClickedAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     // Double click to edit row
-                    if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+                    if (e.getButton() == MouseEvent.BUTTON1
+                            && e.getClickCount() == 2) {
                         startEditingRow(moTable.rowAtPoint(e.getPoint()));
                     }   
-                }
-                @Override
-                public void mousePressed(MouseEvent e) { //Do nothing
-                }
-                @Override
-                public void mouseReleased(MouseEvent e) { // Do nothing
-                }
-                @Override
-                public void mouseEntered(MouseEvent e) { // Do nothing
-                }
-                @Override
-                public void mouseExited(MouseEvent e) { // Do nothing
                 }
             });
         }
@@ -112,28 +103,11 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             moTable.setComponentPopupMenu(createPopUpMenu(createPopUpEdit
                     , createPopUpDelete, ctrlEnterToEdit, deleteKeyToDelete));
         }
-        
-/*        moTable.addKeyListener(new KeyListener() {
-
-            @Override
-            public void keyTyped(KeyEvent e) {
-                //if (Arrays.binarySearch(editKeys, e.getKeyChar()) >= 0)
-                if (e.isControlDown() && (e.getKeyChar() == KeyEvent.VK_ENTER))
-                    editRow();
-                else if (e.getKeyChar() == KeyEvent.VK_DELETE)
-                    deleteRow();
-                //else
-                //    System.out.println("Key typed: " + e.getKeyChar());
-            }
-            @Override
-            public void keyPressed(KeyEvent e) { // Do nothing
-            }
-            @Override
-            public void keyReleased(KeyEvent e) { // Do nothing
-            }
-        }); */
-        
-        // Revert to EditingState.NEW if we're updating and the selection changes
+                
+        // Revert to EditingState.NEW if we're updating and the selection
+        // changes.
+        // Only enable popup menu items that will do something to the current
+        // selection.
         moTable.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
             @Override
@@ -141,11 +115,26 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
                 if (! e.getValueIsAdjusting()) {
                     if (meEditState.equals(EditingState.EDIT))
                         setEditingState(EditingState.NEW);
+                    
+                    updatePopupsEnabled();
                 }
             }
         });
+        // Initialize enabled popup menus state
+        updatePopupsEnabled();
         
         this.setEditingState(EditingState.NEW); // Default editing state
+    }
+    // Enable the menus if anything is selected.
+    private void updatePopupsEnabled() {
+        JMenuItem[] menuItemList = new JMenuItem[] {
+            mmuEditMenu, mmuDeleteMenu };
+        
+        for (JMenuItem menuItem : menuItemList) {
+            if (null != menuItem) { // It may not exist
+                menuItem.setEnabled(moTable.getSelectedRowCount() > 0);
+            }
+        }
     }
     
     public abstract void clearInput();
@@ -302,6 +291,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
     // Creates the right-click context popup menu for the table
     private JPopupMenu createPopUpMenu(boolean allowEdit, boolean allowDelete
             , boolean ctrlEnterToEdit, boolean deleteKeyToDelete) {
+        
         JPopupMenu popUp = new JPopupMenu();
         JMenuItem menuItem;
         
@@ -311,12 +301,12 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
                 menuItem.setAccelerator(
                         KeyStroke.getKeyStroke("control ENTER"));
             menuItem.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     editRow();
                 }
             });
+            mmuEditMenu = menuItem;
             popUp.add(menuItem);
         }
         
@@ -331,12 +321,12 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
             if (deleteKeyToDelete)
                 menuItem.setAccelerator(KeyStroke.getKeyStroke("DELETE"));
             menuItem.addActionListener(new ActionListener() {
-
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     deleteRow();
                 }
             });
+            mmuDeleteMenu = menuItem;
             popUp.add(menuItem);
         }
         

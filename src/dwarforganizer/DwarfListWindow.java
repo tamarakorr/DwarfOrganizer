@@ -37,6 +37,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import myutils.MyArrayUtils;
@@ -662,9 +664,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void createPopup() {
         JPopupMenu popUp = new JPopupMenu();
         JMenuItem menuItem;
-
+        final JMenuItem[] selectionNeededItems = new JMenuItem[2];
+        
         // Include selected
         menuItem = new JMenuItem("Include Selected");
+        menuItem.setMnemonic(KeyEvent.VK_I);
         menuItem.addActionListener(new ActionListener() {
 
             @Override
@@ -672,9 +676,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 setIncluded(true);
             }
         });
+        selectionNeededItems[0] = menuItem;
         popUp.add(menuItem);
 
-        menuItem = new JMenuItem("Un-include Selected");
+        menuItem = new JMenuItem("Exclude Selected");
+        menuItem.setMnemonic(KeyEvent.VK_U);
         menuItem.addActionListener(new ActionListener() {
 
             @Override
@@ -682,6 +688,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 setIncluded(false);
             }
         });
+        selectionNeededItems[1] = menuItem;
         popUp.add(menuItem);
 
         // ---------------------------------------------------------------------
@@ -689,6 +696,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Copy selected rows to clipboard in spreadsheet-friendly format-----
         menuItem = new JMenuItem("Copy");
+        menuItem.setMnemonic(KeyEvent.VK_C);
         menuItem.setAccelerator(KeyStroke.getKeyStroke("ctrl C"));
         menuItem.addActionListener(new ActionListener() {
             @Override
@@ -699,9 +707,26 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         });
         popUp.add(menuItem);
 
+        // ---------------------------------------------------------------------
         moTable.setComponentPopupMenu(popUp);
+        moTable.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+            
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (! e.getValueIsAdjusting())
+                    setMenusEnabledBySelection(selectionNeededItems);
+            }
+        });
+        setMenusEnabledBySelection(selectionNeededItems); // Initialize
     }
-
+    private void setMenusEnabledBySelection(JMenuItem[] menuItems) {
+        boolean bAnySelected = moTable.getSelectedRowCount() > 0;
+        for (JMenuItem menuItem : menuItems) {
+            menuItem.setEnabled(bAnySelected);
+        }
+    }
+    
     // Sets whether selected table rows are Included
     private void setIncluded(boolean included) {
         for (int row = 0; row < moTable.getRowCount(); row++)

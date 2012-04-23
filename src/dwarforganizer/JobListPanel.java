@@ -116,7 +116,7 @@ public class JobListPanel extends JPanel {
     }
     
     // A JTable that uses SelectingEditors for column edits
-    class SelectingTable extends MyJTable {
+    class SelectingTable extends CopyCutPastingTable {
         public SelectingTable(TableModel oModel) {
             super(oModel);
             TableColumnModel model = super.getColumnModel();
