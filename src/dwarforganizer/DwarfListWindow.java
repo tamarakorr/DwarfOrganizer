@@ -43,7 +43,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import myutils.MyArrayUtils;
 import myutils.MyHandyTable;
-import myutils.MySimpleTableModel;
 import myutils.MyTCRStripedHighlight;
 import myutils.MyTCRStripedHighlightCheckBox;
 
@@ -101,10 +100,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private Vector<Dwarf> mvDwarves;
     private Hashtable<String, MetaSkill> mhtMetaSkills;
 
-    //JobListPanel moOptimizerSettings;
-
     private JTable moTable;
-    //private MySimpleTableModel moModel;
     private MyEditableTableModel<DwarfListItem> moModel;
     private JLabel mlblSelected;
     private JLabel mlblExclusions;
@@ -335,11 +331,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     , mhmColGroups.get(COL_GROUP_GENDER).getColumns()
                     , mhmColGroups.get(COL_GROUP_AGE).getColumns()
                     , mhmColGroups.get(COL_GROUP_EXCL).getColumns())));
-    /*        Vector<Object> vColumns = new Vector<Object>(Arrays.asList(new String[]
-                { "Include", "Name", "Nickname", "Gender", "Age", "Exclusion"
-                          , "Inactive Lists"
-                    })); */ // , "Squad", "Squad Leader", "Strength", "Agility", "Focus"
-                    //, "Patience", "Kinesthetic Sense"
             mvClasses = new Vector<Class>(Arrays.asList(new Class[]
                 { Boolean.class, String.class, String.class, String.class
                     , Integer.class, String.class, String.class }));
@@ -349,8 +340,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                           , "inactiveexclusions" }));
 
             // Stats
-            //msaStatCols = new String[mhtStats.size()];
-            //int statCount = 0;
             String colName;
             for (String key : mhtStats.keySet()) {
                 colName = mhtStats.get(key).getName();
@@ -361,11 +350,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
 
             // Skills
-            //mvSecondaryCols = new Vector<String>();
             for (String key : mhtSkills.keySet()) {
                 colName = getColumnNameForSkill(mhtSkills.get(key).getName());
-                //if (mhtSkills.get(key) instanceof SecondarySkill)
-                //    mvSecondaryCols.add(colName);
                 mvColumns.add(colName);       //  + " Potential"
                 mvClasses.add(Long.class);   // Skills are Longs
                 mvColProps.add("dwarf.skillpotentials." + key);
@@ -373,8 +359,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 // Print relevant skill levels for ranged/close combat
                 // (Override dwarf.skilllevels.)
                 colName = getColumnNameForSkillLevel(mhtSkills.get(key).getName());
-                //if (mhtSkills.get(key) instanceof SecondarySkill)
-                //    mvSecondaryCols.add(colName);
                 mvColumns.add(colName);
                 if (mhtSkills.get(key).getName().equals("Ranged Combat")) {
                     mvClasses.add(String.class);
@@ -578,8 +562,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             // are created)
 
             // Display data in a grid (JTable)
-            //moModel = new MySimpleTableModel(vColumns
-            //        , mvDwarves.size());    //  nodes.getLength()
             mdlReturn.addEditableException(0);     // First column editable.
             mdlReturn.addTableModelListener(new TableModelListener() {
                 @Override
@@ -742,11 +724,47 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     }
     private JMenuBar createMenu() {
 
+        JMenu menu;
+        JMenuItem item;
+        
         JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("Columns");
+        
+        // Columns--------------------------------------------------------------
+        menu = new JMenu("Columns");
         menu.setMnemonic(KeyEvent.VK_C);
         menuBar.add(menu);
 
+        
+        item = new JMenuItem("Show All");
+        item.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (String key : moColMenus.keySet()) {
+                    JCheckBoxMenuItem menuItem = moColMenus.get(key);
+                    if (! menuItem.isSelected())
+                        menuItem.doClick();                    
+                }
+            }
+        });
+        menu.add(item);
+        
+        item = new JMenuItem("Hide All");
+        item.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for (String key : moColMenus.keySet()) {
+                    JCheckBoxMenuItem menuItem = moColMenus.get(key);
+                    if (menuItem.isSelected())
+                        menuItem.doClick();
+                }
+            }
+        });
+        menu.add(item);        
+        
+        menu.add(new JSeparator());
+        
         ArrayList<ColumnGroup> alColGroups = moViewHandler.getColumnGroups();
         moColMenus = new HashMap<String, JCheckBoxMenuItem>(alColGroups.size());
         for (ColumnGroup group : alColGroups) {
@@ -773,13 +791,18 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         }
 
+        // Formats--------------------------------------------------------------
+        menu = new JMenu("Format");
+        menu.setMnemonic(KeyEvent.VK_F);
+        //menuBar.add(menu);
+        
+        
         // Views----------------------------------------------------------------
         menu = new JMenu("View");
         menu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(menu);
         //System.out.println("Menu count: " + menuBar.getMenuCount());
 
-        JMenuItem item;
         ButtonGroup group = new ButtonGroup();
         for (String key : moViews.keySet()) {
             final GridView view = moViews.get(key);
@@ -1214,87 +1237,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         }
     }
 
-    // Loads the big JTable o' dwarves (Dwarf List)
-    private void setModelData(MySimpleTableModel oModel
-            , Collection<Exclusion> vExclusions) {
-        // , NodeList nodes
-
-        int iCount = 0; // row count
-
-        for (Dwarf oDwarf : mvDwarves) {
-
-            // Default Include for now (exclusions are post-processed)
-            oModel.setValueAt(DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE
-                    , iCount, 0);  // "Include"
-
-            oModel.setValueAt(oDwarf.getName(), iCount, 1);   //getTagValue(thisCreature, "Name")
-            oModel.setValueAt(oDwarf.getNickname(), iCount, 2); // getTagValue(thisCreature, "Nickname")
-            //oModel.setValueAt("Unknown", iCount, 2);
-            oModel.setValueAt(oDwarf.getGender(), iCount, 3); //getTagValue(thisCreature, "Sex")
-            //oModel.setValueAt(formatJuvenile(oDwarf), iCount, 4); //  strJuvenile
-            oModel.setValueAt(oDwarf.getAge(), iCount, 4);
-
-            // Too bad these aren't in exported dwarves.XML...
-            //oModel.setValueAt("Unknown", iCount, 5);  // Squad
-            //oModel.setValueAt("Unknown", iCount, 6);  // Squad leader
-
-            // Exclusion lists
-            oModel.setValueAt(formatExclusions(oDwarf, true, vExclusions)
-                    , iCount, 5);       // Active exclusion lists
-            oModel.setValueAt(formatExclusions(oDwarf, false, vExclusions)
-                    , iCount, 6);  // Inactive exclusion lists
-
-            // Stats
-            int columnIndex = 7;  // 6; 5; 7;
-            for (Stat stat : mhtStats.values()) {
-                oModel.setValueAt(oDwarf.statValues.get(stat.getName())
-                        , iCount, columnIndex);
-                columnIndex++;
-            }
-
-            // Job potentials: simple jobs
-            for (String key : mhtSkills.keySet()) {
-                // Skill potential
-                oModel.setValueAt(oDwarf.skillPotentials.get(key)   // getPotential(oDwarf, oSkill)
-                        , iCount, columnIndex);
-                columnIndex++;
-
-                // Skill level for ranged and close combat
-                if (key.equals("Ranged Combat"))
-                    oModel.setValueAt(listCombatLevels("Ranged", oDwarf.skillLevels)
-                            , iCount, columnIndex);
-                else if (key.equals("Close Combat"))
-                    oModel.setValueAt(listCombatLevels("Close", oDwarf.skillLevels)
-                            , iCount, columnIndex);
-                else
-                    oModel.setValueAt(oDwarf.skillLevels.get(key), iCount, columnIndex);
-
-                columnIndex++;
-            }
-
-            // Job potentials: meta jobs
-            for (String key : mhtMetaSkills.keySet()) {
-                oModel.setValueAt(oDwarf.skillPotentials.get(key), iCount, columnIndex);
-
-                /*MetaSkill meta = mhtMetaSkills.get(key);
-                Vector<Skill> vSkills = meta.vSkills;
-                double numSkills = (double) vSkills.size();
-
-                double dblSum = 0.0d;
-                for (Skill oSkill : vSkills)
-                    dblSum += oDwarf.jobPotentials.get(oSkill.name);
-
-                oModel.setValueAt(Math.round(dblSum / numSkills), iCount, columnIndex); */
-                columnIndex++;
-            }
-
-            // Jobs
-            oModel.setValueAt(oDwarf.getJobText() //getTagList(thisCreature, "Labours")   // , "Labour"
-                , iCount, columnIndex);
-
-            iCount++;
-        }
-    }
     private String formatJuvenile(Dwarf citizen) {
         if (citizen.getAge() < 1)
             return "Baby";
