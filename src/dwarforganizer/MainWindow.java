@@ -54,7 +54,7 @@ import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
  */
 public class MainWindow extends JFrame implements BroadcastListener { // implements DirtyListener
 
-    private static final String VERSION = "1.20";
+    private static final String VERSION = "1.21";
 
     protected static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one
     //private static final String DEFAULT_DWARVES_XML
