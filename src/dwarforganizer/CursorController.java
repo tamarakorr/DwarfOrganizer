@@ -8,6 +8,8 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *
@@ -15,28 +17,36 @@ import java.awt.event.ActionListener;
  */
 public final class CursorController {
 
-    public static final Cursor BUSY_CURSOR = Cursor.getPredefinedCursor(
-            Cursor.WAIT_CURSOR);
-    public static final Cursor DEFAULT_CURSOR = Cursor.getDefaultCursor();
+    public static final Cursor busyCursor = new Cursor(Cursor.WAIT_CURSOR);
+    public static final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
+    public static final int delay = 500; // in milliseconds
 
-    private CursorController() {
-    }
-
+    private CursorController() {}
+    
     public static ActionListener createListener(final Component component
             , final ActionListener mainActionListener) {
         ActionListener actionListener = new ActionListener() {
-
             @Override
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    component.setCursor(BUSY_CURSOR);
+            public void actionPerformed(final ActionEvent ae) {
+                
+                TimerTask timerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        component.setCursor(busyCursor);
+                    }
+                };
+                Timer timer = new Timer(); 
+                
+                try {   
+                    timer.schedule(timerTask, delay);
                     mainActionListener.actionPerformed(ae);
                 } finally {
-                    component.setCursor(DEFAULT_CURSOR);
+                    timer.cancel();
+                    component.setCursor(defaultCursor);
                 }
             }
-
         };
         return actionListener;
     }
+
 }
