@@ -26,11 +26,11 @@ public class Stat {
     }
     
     private String name;
-    protected long[] range;
+    private int[] range;
     private String xmlName;
     protected Vector<StatHint> vStatHints;
     
-    public Stat(String name, long[] range) {
+    public Stat(String name, int[] range) {
         this.name = name;
         this.range = range;
         
@@ -50,6 +50,10 @@ public class Stat {
 
     public void setXmlName(String xmlName) {
         this.xmlName = xmlName;
+    }
+
+    public int[] getRange() {
+        return range;
     }
     
 }

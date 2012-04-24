@@ -25,8 +25,8 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
     private String nickname;
     private String gender;
     private int age;
-    protected Hashtable<String, Long> statValues;
-    protected Hashtable<String, Long> statPercents;
+    protected Hashtable<String, Integer> statValues;
+    protected Hashtable<String, Integer> statPercents;
     private int time;
     protected Hashtable<String, Long> skillPotentials;
     protected Hashtable<String, Long> skillLevels;
@@ -42,9 +42,11 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
         labors = new Vector<String>();
     }
     public Dwarf(String name, String nickname, String gender, int age
-            , Hashtable<String, Long> statValues, Hashtable<String, Long> statPercents
+            , Hashtable<String, Integer> statValues
+            , Hashtable<String, Integer> statPercents
             , int time, Hashtable<String, Long> skillPotentials
-            , Hashtable<String, Long> skillLevels, Hashtable<String, Long> balancedPotentials
+            , Hashtable<String, Long> skillLevels
+            , Hashtable<String, Long> balancedPotentials
             , String jobText, Vector<String> labors) {
         super();
         this.name = name;

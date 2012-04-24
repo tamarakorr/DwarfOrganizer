@@ -56,7 +56,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     private static final String VERSION = "1.20";
 
-    private static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one
+    protected static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one
     //private static final String DEFAULT_DWARVES_XML
     //        = "C://DwarfFortress//DwarfGuidanceCounselor//0.0.6//Dwarves.xml";
     private static final String DEFAULT_DWARVES_XML = "samples/dwarves/sample-7-dwarves.xml";

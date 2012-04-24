@@ -12,18 +12,13 @@ import java.util.Vector;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class Skill {
-    protected Vector<Stat> mvStats;
-    private String name;
+public class Skill extends GenericSkill implements NamedThing {
+    private Vector<Stat> mvStats;
 
     public Skill(String name, Vector<Stat> stats) {
-        this.name = name;
+        super(name);
         mvStats = stats;
     }
     public Vector<Stat> getStats() { return mvStats; }
-
-    public String getName() {
-        return name;
-    }
 
 }

@@ -333,15 +333,18 @@ public class DwarfOrganizerIO {
         private static final int MAX_DWARF_TIME = 100;
         private Pattern SKILL_LEVEL_PATTERN; // Set by constructor
         
-        private final long[] plusplusRange = { 700, 1200, 1400, 1500, 1600, 1800, 2500 };
-        private final long[] plusRange = { 450, 950, 1150, 1250, 1350, 1550, 2250 };
-        private final long[] avgRange = { 200, 750, 900, 1000, 1100, 1300, 2000 };
-        private final long[] minusRange = { 150, 600, 800, 900, 1000, 1100, 1500 };
-        private final long[] socialRange = { 0, 10, 25, 61, 76, 91, 100 };        
+        private final int[] plusplusRange = { 700, 1200, 1400, 1500, 1600, 1800, 2500 };
+        private final int[] plusRange = { 450, 950, 1150, 1250, 1350, 1550, 2250 };
+        private final int[] avgRange = { 200, 750, 900, 1000, 1100, 1300, 2000 };
+        private final int[] minusRange = { 150, 600, 800, 900, 1000, 1100, 1500 };
+
+        // Fixed to include the neutral range  4/23/12
+        //private final long[] socialRange = { 0, 10, 25, 61, 76, 91, 100 };
+        private final int[] socialRange = { 0, 10, 25, 40, 61, 76, 91 }; 
         
         private final String[] SOCIAL_TRAITS = { "Friendliness"
                 , "Self_consciousness", "Straightforwardness", "Cooperation"
-                , "Assertiveness" };
+                , "Assertiveness", "Altruism" };
         
         private Hashtable<String, Stat> mhtStats;
         private Hashtable<String, Skill> mhtSkills;
@@ -439,7 +442,7 @@ public class DwarfOrganizerIO {
                 , "Creativity", "Patience", "Memory" };
             String[] avgStats = { "Endurance", "Disease Resistance", "Recuperation"
                     , "Intuition", "Willpower", "Kinesthetic Sense", "Linguistic Ability"
-                    , "Musicality", "Empathy", "Social Awareness", "Altruism" };
+                    , "Musicality", "Empathy", "Social Awareness", }; // "Altruism"
             String[] minusStats = { "Agility" };
 
             createStats(plusplusStats, plusplusRange);
@@ -477,7 +480,7 @@ public class DwarfOrganizerIO {
             //mhtStats.get("Assertiveness").xmlName = 
         }
 
-        private void createStats(String[] statName, long[] statRange) {
+        private void createStats(String[] statName, int[] statRange) {
             for (int iCount = 0; iCount < statName.length; iCount++)
                 mhtStats.put(statName[iCount], new Stat(statName[iCount], statRange));
         }
@@ -656,14 +659,14 @@ public class DwarfOrganizerIO {
                 //if (! isJuvenile(age)) {
 
                 // Read stat values and get percentiles.
-                Hashtable<String, Long> statValues = new Hashtable<String, Long>();
-                Hashtable<String, Long> htPercents = new Hashtable<String, Long>();
+                Hashtable<String, Integer> statValues = new Hashtable<String, Integer>();
+                Hashtable<String, Integer> htPercents = new Hashtable<String, Integer>();
                 for (String key : mhtStats.keySet()) {
                     //System.out.println("Getting " + mhtStats.get(key).name);
 
-                    long value;
+                    Integer value;
                     if (mhtStats.get(key).getXmlName() != null)
-                        value = Long.parseLong(getTagValue(thisCreature
+                        value = Integer.parseInt(getTagValue(thisCreature
                             , mhtStats.get(key).getXmlName(), "0"));
 
                     else {  // Look under Traits if there is no attribute XML name
@@ -674,14 +677,14 @@ public class DwarfOrganizerIO {
                         // then get the value
                         Element traits = (Element) thisCreature.getElementsByTagName(
                                 "Traits").item(0);
-                        value = Long.parseLong(getXMLValueByKey(traits, "Trait"
+                        value = Integer.parseInt(getXMLValueByKey(traits, "Trait"
                                 , "name", mhtStats.get(key).getName(), "value"
                                 , "-1"));   // DEFAULT_TRAIT_VALUE
 
                         // If we could not get the exact trait value, perhaps
                         // this is a Runesmith XML file. Check for trait hints.
                         if (value == -1) {
-                            value = Long.parseLong(DEFAULT_TRAIT_VALUE);
+                            value = Integer.parseInt(DEFAULT_TRAIT_VALUE);
                             for (StatHint hint : mhtStats.get(key).vStatHints) {
                                 //if (traits contains hint)
                                 if (getTagList(thisCreature, "Traits").contains(hint.hintText)) {
@@ -694,8 +697,8 @@ public class DwarfOrganizerIO {
                     }
                     //System.out.println("Value: " + value);
                     statValues.put(key, value);
-                    htPercents.put(key, Math.round(
-                            getPlusPlusPercent(mhtStats.get(key).range, value)));
+                    htPercents.put(key, (int) Math.round(
+                            getPlusPlusPercent(mhtStats.get(key).getRange(), value)));
                     //System.out.println(key + htPercents.get(key));
                 }
 
@@ -772,7 +775,7 @@ public class DwarfOrganizerIO {
                     for (Skill oSkill : meta.vSkills)
                         dblSum += oDwarf.skillPotentials.get(oSkill.getName());
 
-                    oDwarf.skillPotentials.put(meta.name
+                    oDwarf.skillPotentials.put(meta.getName()
                             , Math.round(dblSum / meta.vSkills.size()));
                 }
                 mvDwarves.add(oDwarf);
@@ -814,7 +817,7 @@ public class DwarfOrganizerIO {
 
             return 0;
         }    
-        private double getPlusPlusPercent(long[] range, long attribute) {
+        private double getPlusPlusPercent(int[] range, int attribute) {
             double chanceToBeInBracket = 1.0d / (range.length - 1);
             int bracket = getPlusPlusBracket(range, attribute);
 
@@ -830,7 +833,7 @@ public class DwarfOrganizerIO {
                 return 100.0d;
 
         }
-        private int getPlusPlusBracket(long[] range, long attribute) {
+        private int getPlusPlusBracket(int[] range, int attribute) {
             long minValue = range[0];
             for (int iCount = 1; iCount < range.length; iCount++)
                 if (attribute <= range[iCount])

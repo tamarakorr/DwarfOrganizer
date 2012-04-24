@@ -45,6 +45,7 @@ import myutils.MyArrayUtils;
 import myutils.MyHandyTable;
 import myutils.MyTCRStripedHighlight;
 import myutils.MyTCRStripedHighlightCheckBox;
+import myutils.MyTableWidthAdjuster;
 
 /**
  *
@@ -94,6 +95,21 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         , "2 really poor", "1 absolute inability", "0 ERROR" }; */
     //private String[] plusplusDesc = { "ERROR", "1 Very Poor", "2 Poor"
     //        , "3 Below Average", "4 Above Average", "5 Good", "6 Very Good" };
+    private String[] masAttributeDesc = { "ERROR: Impossibly Low", "Very Poor"
+            , "Poor", "Below Average", "Average", "Good", "Great"
+            , "Extraordinary" };
+
+    private String[] masPotentialDesc = { "Horrible", "Very Poor"
+            , "Poor", "Below Average", "Above Average", "Good", "Very Good"
+            , "Superb" };
+    private int[] maiPotentialBracket = { 9, 24, 39, 49, 60, 75, 90 };
+
+    private String[] masSkillLevelDesc = { "", "Dabbling", "Novice", "Adequate"
+        , "Competent", "Skilled", "Proficient", "Talented", "Adept", "Expert"
+        , "Professional", "Accomplished", "Great", "Master", "High Master"
+        , "Grand Master", "Legendary", "Legendary +1", "Legendary +2"
+        , "Legendary +3", "Legendary +4", "Legendary +5" };
+    private int[] maiSkillLevelBracket = MyArrayUtils.createCountingArray(21); // (int) MainWindow.MAX_SKILL_LEVEL + 1
 
     private Hashtable<String, Stat> mhtStats;
     private Hashtable<String, Skill> mhtSkills;
@@ -122,6 +138,30 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private JMenuBar moMenuBar;
     private Map<String, JCheckBoxMenuItem> moColMenus;
 
+    private VisibilityHandler moTableVis;
+    
+    private enum ValueAndTextFormat {
+        NUMBER ("Value"),
+        TEXT ("Text"),
+        NUMBER_AND_TEXT ("Value and Text");
+
+        private String humanText;
+        //private JMenuItem menuItem;
+
+        ValueAndTextFormat(String humanText) {
+            this.humanText = humanText;
+        }
+        public String getHumanText() { return humanText; }
+    };
+    private ValueAndTextFormat currentStatFormat;
+    private Map<ValueAndTextFormat, JMenuItem> mmStatFormatMenus;
+
+    private ValueAndTextFormat currentPotFormat;
+    private Map<ValueAndTextFormat, JMenuItem> mmPotFormatMenus;
+
+    private ValueAndTextFormat currentLevelFormat;
+    private Map<ValueAndTextFormat, JMenuItem> mmLevelFormatMenus;
+
     public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
             , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta
             , Vector<LaborGroup> vLaborGroups) {
@@ -136,9 +176,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mhtMetaSkills = htMeta;
 
         // Create objects-------------------------------------------------------
+        Map[] skillMaps = { mhtSkills, mhtMetaSkills };
+        
         mvDwarves = new Vector<Dwarf>(); //vDwarves;
         Collection<Exclusion> vExclusions = new Vector<Exclusion>();
-
+        
         mbLoading = true;
 
         // Create view data-----------------------------------------------------
@@ -151,10 +193,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Set column renderer for skill levels (numeric format, right-justified,
         // nulls blank)
-        for (String key : mhtSkills.keySet()) {
+/*        for (String key : mhtSkills.keySet()) {
             String id = getColumnNameForSkillLevel(mhtSkills.get(key).getName());
             moTable.getColumn(id).setCellRenderer(new NumberOrNullRenderer());
-        }
+        } */
 
         moTable.setDefaultRenderer(Boolean.class, new MyTCRStripedHighlightCheckBox());
         moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight());
@@ -168,7 +210,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Sort by name
         MyHandyTable.handyTable(moTable, mspScrollPane, moModel, true, 1, true);   // this
-
+        moTableVis = new VisibilityHandler(moTable);
+        
         // Create the popup menu for mass including/excluding
         createPopup();
 
@@ -179,8 +222,60 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 */
         moViewHandler.createDwarfListViews();
         moMenuBar = createMenu();   // Must be done after creating views
-        setView(DEFAULT_VIEW_NAME);    // // "Military View"
+
+        // Must be done after creating menu but before setting views------------
+        // Set column renderer for stats
+        //StatFormat.NUMBER.getMenuItem().doClick(0);
+        mmStatFormatMenus.get(ValueAndTextFormat.NUMBER).doClick(0);
+        for (String key : mhtStats.keySet()) {
+            moTable.getColumn(key).setCellRenderer(new ValueAndTextRenderer(
+               mhtStats.get(key).getRange(), masAttributeDesc
+               , new CurrentFormatGetter() {
+
+                @Override
+                public ValueAndTextFormat getCurrentFormat() {
+                    return currentStatFormat;
+                }
+            }));
+        }
+
+        // Set column renderer for potentials
+        mmPotFormatMenus.get(ValueAndTextFormat.NUMBER).doClick(0);
+        for (Map map : skillMaps) {
+            Map<String, GenericSkill> ht = (Map<String, GenericSkill>) map;
+            for (String key : ht.keySet()) {
+                String id = getColumnNameForSkill(ht.get(key).getName());
+                moTable.getColumn(id).setCellRenderer(new ValueAndTextRenderer(
+                        maiPotentialBracket, masPotentialDesc
+                        , new CurrentFormatGetter() {
+                    @Override
+                    public ValueAndTextFormat getCurrentFormat() {
+                        return currentPotFormat;
+                    }
+                }));
+            }
+        }
         
+        mmLevelFormatMenus.get(ValueAndTextFormat.NUMBER).doClick(0);
+        for (Map map : new Map[] { mhtSkills }) {
+            Map<String, GenericSkill> ht = (Map<String, GenericSkill>) map;
+            for (String key : ht.keySet()) {
+                String id = getColumnNameForSkillLevel(ht.get(key).getName());
+                moTable.getColumn(id).setCellRenderer(new ValueAndTextRenderer(
+                        maiSkillLevelBracket, masSkillLevelDesc
+                        , new CurrentFormatGetter() {
+                    @Override
+                    public ValueAndTextFormat getCurrentFormat() {
+                        return currentLevelFormat;
+                    }
+
+                }));
+            }
+        }
+        // ---------------------------------------------------------------------
+
+        setView(DEFAULT_VIEW_NAME);    // // "Military View"
+
 /*        // Experimental---------------------------------------------------------
         FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane);   // TODO
         frozen.getFixedTable().setDefaultRenderer(Boolean.class, moTable.getDefaultRenderer(Boolean.class));
@@ -189,7 +284,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         //mspScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED); // Doesn't scroll row header
         frozen.getFixedTable().setRowSorter(moTable.getRowSorter());
         //new JTableRowHeaderResizer(mspScrollPane).setEnabled(true); Doesn't work
-        
+
         // Increasingly experimental--------------------------------------------
         MouseAdapter ma = new MouseAdapter() {
 
@@ -229,15 +324,15 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 scrollPane.revalidate();
             }
         };
-        
+
         // TODO Compare this with MyTableWidthAdjuster and see if we can combine
         // functionality for a better result
         // TODO Adjust the column width and fixed table size to a reasonable
         // value *without making the user drag it*
         JTable fixed = frozen.getFixedTable();
-        fixed.getTableHeader().addMouseListener(ma);    
+        fixed.getTableHeader().addMouseListener(ma);
         //fixed.getTableHeader().addMouseListener(new MyTableWidthAdjuster(fixed));
-        
+
         // End experimental-----------------------------------------------------
         */
         // Show some statistics-------------------------------------------------
@@ -271,7 +366,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void setView(String viewName) {
         // Set the table columns/view
         moViews.get(viewName).applyToTable(moTable);
-        
+
         // Set the selected column groups in the menu
         for (String columnKey : moColMenus.keySet()) {
             moColMenus.get(columnKey).setSelected(
@@ -375,7 +470,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
             for (String key : mhtMetaSkills.keySet()) {
                 //System.out.println("Adding " + key);
-                mvColumns.add(getColumnNameForSkill(mhtMetaSkills.get(key).name));   //  + " Potential"
+                mvColumns.add(getColumnNameForSkill(mhtMetaSkills.get(key).getName()));   //  + " Potential"
                 mvClasses.add(Long.class);
                 mvColProps.add("dwarf.skillpotentials." + key);
             }
@@ -387,6 +482,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         protected ArrayList<ColumnGroup> getColumnGroups() {
             return malColOrder;
+        }
+        protected Map<String, ColumnGroup> getColumnGroupMap() {
+            return mhmColGroups;
         }
 
         private Map<String, ColumnGroup> createColumnGroups(
@@ -411,9 +509,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
             else if (mhtSkills == null) {
                 System.err.println("Failed to create column groups: skill table is null");
-                return new HashMap<String, ColumnGroup>();                
+                return new HashMap<String, ColumnGroup>();
             }
-            
+
             // Stat columns
             asStatCols = new String[mhtStats.size()];
             int iCount = 0;
@@ -451,7 +549,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     new String[vsSecondaryCols.size()]), false));
             for (LaborGroup group : vLaborGroups) {
                 Vector<String> vCols = getLaborColsForGroup(group.getName());
-                String strName = "Job Group: " + group.getName();
+                String strName = getJobGroupKey(group.getName());
                 hmReturn.put(strName, new ColumnGroup(strName
                         , vCols.toArray(new String[vCols.size()]), false));
             }
@@ -472,7 +570,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             alReturn.add(mhmColGroups.get(COL_GROUP_STATS));
             alReturn.add(mhmColGroups.get(COL_GROUP_SECONDARY));
             for (LaborGroup group : vLaborGroups) {
-                alReturn.add(mhmColGroups.get("Job Group: " + group.getName()));
+                alReturn.add(mhmColGroups.get(getJobGroupKey(group.getName())));
             }
             alReturn.add(mhmColGroups.get(COL_GROUP_CUR_LABORS));
             return alReturn;
@@ -483,7 +581,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             for (Labor labor : mvLabors) {
                 if (labor.getGroupName().equals(groupName)) {
                     vReturn.add(getColumnNameForSkill(labor.getSkillName()));
-                    vReturn.add(getColumnNameForSkillLevel(labor.getSkillName()));
+                    
+                    // Meta skills don't have skill levels
+                    if (! mhtMetaSkills.containsKey(labor.getSkillName()))
+                        vReturn.add(getColumnNameForSkillLevel(labor.getSkillName()));
                 }
             }
             return vReturn;
@@ -491,13 +592,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         public void createDwarfListViews() {
             ArrayList<String> alColGroupList;
-            
+
             moViews = new HashMap<String, GridView>();
             moViewColumnGroups = new HashMap<String, List<String>>();
 
             // TODO: Read from file?
             // Default view-----------------------------------------------------
-            alColGroupList = new ArrayList<String>(Arrays.asList(new String[] { 
+            alColGroupList = new ArrayList<String>(Arrays.asList(new String[] {
                 COL_GROUP_ALWAYS_SHOW, COL_GROUP_NICKNAME, COL_GROUP_GENDER
                         , COL_GROUP_AGE, COL_GROUP_EXCL, COL_GROUP_STATS
                         , COL_GROUP_CUR_LABORS
@@ -511,10 +612,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             moViews.put(DEFAULT_VIEW_NAME, new GridView(DEFAULT_VIEW_NAME, "Name"
                     , GridView.KeyAxis.X_AXIS, false, colOrder));
             moViewColumnGroups.put(DEFAULT_VIEW_NAME, alColGroupList);
-            
+
             // Military view----------------------------------------------------
             String[] skills = new String[] { "Close Combat", "Ranged Combat" };
-            
+
             colOrder = new ArrayList<Object>();
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_ALWAYS_SHOW).getColumns()));
             colOrder.addAll(Arrays.asList(mhmColGroups.get(COL_GROUP_NICKNAME).getColumns()));
@@ -543,7 +644,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 Arrays.asList(new String[] { COL_GROUP_ALWAYS_SHOW
                         , COL_GROUP_NICKNAME, COL_GROUP_GENDER, COL_GROUP_EXCL
             })));
-            
+
             // TODO: Potential view
         }
 
@@ -575,6 +676,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             return mdlReturn;
         }
     }
+    private String getJobGroupKey(String groupName) {
+        return "Job Group: " + groupName;
+    }
 
     // Table cell renderer for number-formatted column with null values
     // displayed as blanks
@@ -603,6 +707,58 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 return false;
             }
         }
+    }
+    private class ValueAndTextRenderer extends MyTCRStripedHighlight {
+        private int[] range;
+        private NumberFormat formatter;
+        private String[] rangeDesc;
+        private CurrentFormatGetter formatGetter;
+
+        public ValueAndTextRenderer(int[] range, String[] rangeDesc
+                , CurrentFormatGetter formatGetter) {
+            super();
+
+            formatter = NumberFormat.getIntegerInstance();
+
+            this.range = range;
+            this.rangeDesc = rangeDesc;
+            this.formatGetter = formatGetter;
+        }
+
+        @Override
+        public void setValue(Object value) {
+
+            if (value == null)                  // Nulls
+                setText("");
+            else if (! isInteger(value))        // Non-integers
+                setText(value.toString());
+            else if (formatGetter.getCurrentFormat().equals(ValueAndTextFormat.NUMBER))
+                setText(formatter.format(value));
+            else {
+                String desc = describeAttribute(rangeDesc, range
+                        , Integer.parseInt(value.toString()));
+
+                if (formatGetter.getCurrentFormat().equals(ValueAndTextFormat.TEXT))
+                    setText(desc);
+                else if (formatGetter.getCurrentFormat().equals(
+                        ValueAndTextFormat.NUMBER_AND_TEXT))
+                    setText(desc + " (" + formatter.format(value) + ")");
+                else
+                    setText("???");
+            }
+        }
+        private boolean isInteger(Object value) {
+            try {
+                Integer.parseInt(value.toString());
+                return true;
+            }
+            catch (Exception e) {
+                return false;
+            }
+        }
+    }
+    private interface CurrentFormatGetter {
+        public ValueAndTextFormat getCurrentFormat();
     }
     private Vector<DwarfListItem> toDwarfListItems(Vector<Dwarf> vDwarves
             , Collection<Exclusion> colExclusions) {
@@ -647,7 +803,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         JPopupMenu popUp = new JPopupMenu();
         JMenuItem menuItem;
         final JMenuItem[] selectionNeededItems = new JMenuItem[2];
-        
+
         // Include selected
         menuItem = new JMenuItem("Include Selected");
         menuItem.setMnemonic(KeyEvent.VK_I);
@@ -693,7 +849,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moTable.setComponentPopupMenu(popUp);
         moTable.getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
-            
+
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (! e.getValueIsAdjusting())
@@ -708,7 +864,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             menuItem.setEnabled(bAnySelected);
         }
     }
-    
+
     // Sets whether selected table rows are Included
     private void setIncluded(boolean included) {
         for (int row = 0; row < moTable.getRowCount(); row++)
@@ -716,7 +872,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 moModel.setValueAt(included, moTable.convertRowIndexToModel(row)
                         , moTable.convertColumnIndexToModel(INCLUDE_COLUMN));
     }
-
+    
     // Returns the desired menu for this panel.
     // Expected to be called by owner frame
     protected JMenuBar getMenu() {
@@ -725,63 +881,80 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private JMenuBar createMenu() {
 
         JMenu menu;
+        JMenu subMenu;
         JMenuItem item;
-        
+        ButtonGroup group;
+
         JMenuBar menuBar = new JMenuBar();
-        
+
         // Columns--------------------------------------------------------------
+        ArrayList<ColumnGroup> alColGroups = moViewHandler.getColumnGroups();
+        moColMenus = new HashMap<String, JCheckBoxMenuItem>(alColGroups.size());
+
         menu = new JMenu("Columns");
         menu.setMnemonic(KeyEvent.VK_C);
         menuBar.add(menu);
 
-        
         item = new JMenuItem("Show All");
-        item.addActionListener(new ActionListener() {
-
+        item.setMnemonic(KeyEvent.VK_S);
+        ActionListener al = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (String key : moColMenus.keySet()) {
-                    JCheckBoxMenuItem menuItem = moColMenus.get(key);
-                    if (! menuItem.isSelected())
-                        menuItem.doClick();                    
+                if (moColMenus != null) {
+                    moTableVis.incrementHidden();
+                    for (String key : moColMenus.keySet()) {
+                        JCheckBoxMenuItem menuItem = moColMenus.get(key);
+                        if (! menuItem.isSelected())
+                            menuItem.doClick(0);
+                    }
+                    moTableVis.incrementShown();
                 }
             }
-        });
+        };
+        item.addActionListener(CursorController.createListener(this, al));  // Hourglass
         menu.add(item);
-        
-        item = new JMenuItem("Hide All");
-        item.addActionListener(new ActionListener() {
 
+        item = new JMenuItem("Hide All");
+        item.setMnemonic(KeyEvent.VK_I);
+        al = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for (String key : moColMenus.keySet()) {
-                    JCheckBoxMenuItem menuItem = moColMenus.get(key);
-                    if (menuItem.isSelected())
-                        menuItem.doClick();
+                if (moColMenus != null) {
+                    moTableVis.incrementHidden();
+                    for (String key : moColMenus.keySet()) {
+                        JCheckBoxMenuItem menuItem = moColMenus.get(key);
+                        if (menuItem.isSelected()) {
+                            menuItem.doClick(0);
+                        }
+                    }
+                    moTableVis.incrementShown();
                 }
             }
-        });
-        menu.add(item);        
-        
+        };
+        item.addActionListener(CursorController.createListener(this, al));  // Hourglass
+        menu.add(item);
+
+        // -------------------------------
         menu.add(new JSeparator());
         
-        ArrayList<ColumnGroup> alColGroups = moViewHandler.getColumnGroups();
-        moColMenus = new HashMap<String, JCheckBoxMenuItem>(alColGroups.size());
-        for (ColumnGroup group : alColGroups) {
-            if (! group.getName().equals("Always Show")) {
+        final HideableTableColumnModel hideableModel
+                = (HideableTableColumnModel) moTable.getColumnModel();
+        for (ColumnGroup colGroup : alColGroups) {
+            if (! colGroup.getName().equals("Always Show")) {
                 //ColumnGroup columnGroup = hmColGroups.get(key);
-                final String[] arrColumns = group.getColumns();
+                final String[] arrColumns = colGroup.getColumns();
                 final JCheckBoxMenuItem menuItem = new JCheckBoxMenuItem(
-                        group.getName(), group.isShownByDefault());
+                        colGroup.getName(), colGroup.isShownByDefault());
                 menuItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        setColumnsVisible(arrColumns, menuItem.isSelected());
+                        setColumnsVisible(arrColumns, menuItem.isSelected()
+                                , hideableModel);
                     }
                 });
-                
+
                 // Store a reference to the menu item, keyed by group name
-                moColMenus.put(group.getName(), menuItem);
+                moColMenus.put(colGroup.getName(), menuItem);
 
                 /*if (arrColumns.length > 1) {
                     System.out.println("Submenu needed for " + group.getName());
@@ -793,17 +966,40 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Formats--------------------------------------------------------------
         menu = new JMenu("Format");
-        menu.setMnemonic(KeyEvent.VK_F);
-        //menuBar.add(menu);
-        
-        
+        menu.setMnemonic(KeyEvent.VK_O);
+        menuBar.add(menu);
+
+        subMenu = new JMenu("Stats");
+        subMenu.setMnemonic(KeyEvent.VK_S);
+        menu.add(subMenu);
+
+        mmStatFormatMenus = new HashMap<ValueAndTextFormat, JMenuItem>(
+                ValueAndTextFormat.values().length);
+        createFormatSubMenu(subMenu, "Stat", mmStatFormatMenus);
+
+        subMenu = new JMenu("Potentials");
+        subMenu.setMnemonic(KeyEvent.VK_T);
+        menu.add(subMenu);
+
+        mmPotFormatMenus = new HashMap<ValueAndTextFormat, JMenuItem>(
+                ValueAndTextFormat.values().length);
+        createFormatSubMenu(subMenu, "Potential", mmPotFormatMenus);
+
+        subMenu = new JMenu("Skill Levels");
+        subMenu.setMnemonic(KeyEvent.VK_K);
+        menu.add(subMenu);
+
+        mmLevelFormatMenus = new HashMap<ValueAndTextFormat, JMenuItem>(
+                ValueAndTextFormat.values().length);
+        createFormatSubMenu(subMenu, "Skill Level", mmLevelFormatMenus);
+
         // Views----------------------------------------------------------------
         menu = new JMenu("View");
         menu.setMnemonic(KeyEvent.VK_V);
         menuBar.add(menu);
         //System.out.println("Menu count: " + menuBar.getMenuCount());
 
-        ButtonGroup group = new ButtonGroup();
+        group = new ButtonGroup();
         for (String key : moViews.keySet()) {
             final GridView view = moViews.get(key);
             item = new JRadioButtonMenuItem(view.getName());
@@ -827,6 +1023,108 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         return menuBar;
     }
 
+    private void createFormatSubMenu(JMenu subMenu, final String which
+            , Map<ValueAndTextFormat, JMenuItem> map) {
+        JMenuItem item;
+
+        ButtonGroup group = new ButtonGroup();
+        for (final ValueAndTextFormat statFormat : ValueAndTextFormat.values()) {
+            String humanText = statFormat.getHumanText();
+            item = new JRadioButtonMenuItem(humanText);
+            item.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setValueAndTextFormat(which, statFormat);
+                }
+            });
+            //statFormat.setMenuItem(item);
+            map.put(statFormat, item);
+            group.add(item);
+            subMenu.add(item);
+        }
+    }
+
+    private void setValueAndTextFormat(String which, ValueAndTextFormat newFormat) {
+        
+        moTableVis.incrementHidden();
+        
+        if (which.equals("Stat")) {
+            currentStatFormat = newFormat;
+        }
+        else if (which.equals("Potential")) {
+            currentPotFormat = newFormat;
+        }
+        else if (which.equals("Skill Level")) {
+            currentLevelFormat = newFormat;
+        }
+        else {
+            System.err.println("Unknown format option: " + which);
+        }
+        resizeColumns(which);   // Resize relevant columns
+        
+        moTableVis.incrementShown();
+    }
+    
+    // Auto-resizes the proper columns
+    private void resizeColumns(String which) {
+        Map<String, ColumnGroup> colMap = moViewHandler.getColumnGroupMap();
+        
+        if (which.equals("Stat")) {
+            try {
+                MyHandyTable.autoResizeTableColumns(moTable
+                    , colMap.get(ViewHandler.COL_GROUP_STATS).getColumns());
+            } catch (IllegalArgumentException ignore) {
+                // (We cannot resize "hidden" columns)
+            }
+        }
+        else if (which.equals("Potential") || which.equals("Skill Level")) {
+            ColumnNameGetter cng;
+            MyTableWidthAdjuster adjuster = new MyTableWidthAdjuster(moTable);
+            Map[] skillMaps;
+            
+            if (which.equals("Potential")) {
+                skillMaps = new Map[] { mhtSkills, mhtMetaSkills };
+                cng = new ColumnNameGetter() {
+                    @Override
+                    public String getColumnName(String key) {
+                        return getColumnNameForSkill(key);
+                    }
+                };
+            }
+            else { // if (which.equals("Skill Level"))
+                skillMaps = new Map[] { mhtSkills };    // Metaskills have no skill levels
+                cng = new ColumnNameGetter() {
+                    @Override
+                    public String getColumnName(String key) {
+                        return getColumnNameForSkillLevel(key);
+                    }
+                };
+            }
+            
+            for (Map map : skillMaps) {
+                Map<String, GenericSkill> skillMap
+                        = (Map<String, GenericSkill>) map;
+                for (String key : skillMap.keySet()) {
+                    try {
+                        int colIndex = moTable.getColumnModel().getColumnIndex(
+                            cng.getColumnName(key));
+                        MyHandyTable.autoResizeTableColumn(colIndex, adjuster);
+                    } catch (IllegalArgumentException ignore) {
+                        // (Column is "hidden" in hideableTableColumnModel --
+                        // we can't resize it since there is no cell renderer
+                        // for it
+                    }
+                    
+                }
+            }
+        }
+        else
+            System.err.println("Unknown format option: " + which);
+    }
+    private interface ColumnNameGetter {
+        public String getColumnName(String key);
+    }
+    
     // Sets the display for number of included dwarves
     private void updateSelectedLabel() {
         int sum = 0;
@@ -893,7 +1191,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     }
 
-    // Sets the visibility of the columns associated with the given labor group
+/*    // Sets the visibility of the columns associated with the given labor group
     private void setLaborGroupVisible(String group, boolean visible) {
         for (Labor labor : mvLabors) {
             if (labor.getGroupName().equals(group)) {
@@ -918,13 +1216,24 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void setStatColumnsVisible(boolean visible) {
         for (Stat stat : mhtStats.values())
             setColumnVisible(stat.getName(), visible);
-    }
-    private void setColumnsVisible(String[] cols, boolean visible) {
+    } */
+    private void setColumnsVisible(String[] cols, boolean visible
+            , HideableTableColumnModel hideableModel) {
+        
+        moTableVis.incrementHidden();       
+        
         for (String col : cols)
-            setColumnVisible(col, visible);
+            hideableModel.setColumnVisible(col, visible);
+        
+        // Resize the columns on visible=true, in case the format was
+        // changed while hidden
+        if (visible)
+            MyHandyTable.autoResizeTableColumns(moTable, cols);
+        
+        moTableVis.incrementShown();
     }
 
-    // Sets visibility of the column with the given name in the hideable model
+/*    // Sets visibility of the column with the given name in the hideable model
     private void setColumnVisible(String colName, boolean visible) {
 
         HideableTableColumnModel hideableModel
@@ -932,17 +1241,17 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         hideableModel.setColumnVisible(colName, visible);
 
-/*        for (int iCount = hideableModel.getColumnCount(false) - 1; iCount >= 0; iCount--) {
-            //System.out.println("Number of columns: " + hideableModel.getColumnCount(false));
-            Object oThisIdentifier = hideableModel.getColumn(iCount, false).getIdentifier();
-            //System.out.println("Checking " + oThisIdentifier + " for " + colIdentifier);
-            if (oThisIdentifier.equals(colName)) {
-                //System.out.println("Match!");
-                hideableModel.setColumnVisible(hideableModel.getColumn(iCount, false)
-                        , visible);
-            }
-        }                */
-    }
+//        for (int iCount = hideableModel.getColumnCount(false) - 1; iCount >= 0; iCount--) {
+//            //System.out.println("Number of columns: " + hideableModel.getColumnCount(false));
+//            Object oThisIdentifier = hideableModel.getColumn(iCount, false).getIdentifier();
+//            //System.out.println("Checking " + oThisIdentifier + " for " + colIdentifier);
+//            if (oThisIdentifier.equals(colName)) {
+//                //System.out.println("Match!");
+//                hideableModel.setColumnVisible(hideableModel.getColumn(iCount, false)
+//                        , visible);
+//            }
+//        }                
+    } */
 
     // Returns the column title for potential in the given skill
     private String getColumnNameForSkill(String skillName) {
@@ -1293,7 +1602,17 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             , int attribute) {
         return descriptions[getAttributeBracket(values, attribute)];
     }
+    private int getAttributeBracket(int[] values, int attribute) {
+        for (int iCount = values.length - 1; iCount >= 0; iCount--)
+            if (attribute >= values[iCount])
+                return iCount + 1;
+        return 0;
+    }
 
+/*    private String describeAttribute(String[] descriptions, int[] values
+            , int attribute) {
+        return descriptions[getAttributeBracket(values, attribute)];
+    }
     private int getAttributeBracket(int[] values, int attribute) {
         for (int iCount = 0; iCount < values.length; iCount++)
             if (attribute >= values[iCount])
@@ -1302,7 +1621,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     }
     private int getBracket(int[] values, int attribute) {
         return values.length - 1 - getAttributeBracket(values, attribute);
-    }
+    } */
 
     private String getPlusPlusDesc(String[] desc, int bracket) {
         return desc[bracket];

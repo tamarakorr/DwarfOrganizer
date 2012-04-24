@@ -307,7 +307,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
             if (rowData.getComment() != null)
                 mtxtComment.setText(rowData.getComment());
 
-            updateMeaning();    // TODO does this need to be here?
+            //updateMeaning();  Unnecessary
             
             return true;
         }

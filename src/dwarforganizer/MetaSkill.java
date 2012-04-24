@@ -12,11 +12,10 @@ import java.util.Vector;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class MetaSkill {
-    protected String name;
+public class MetaSkill extends GenericSkill implements NamedThing {
     protected Vector<Skill> vSkills;
     public MetaSkill(String name, Vector<Skill> skills) {
-        this.name = name;
+        super(name);
         this.vSkills = skills;
     }
 }
