@@ -1068,18 +1068,23 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     // Auto-resizes the proper columns
     private void resizeColumns(String which) {
         Map<String, ColumnGroup> colMap = moViewHandler.getColumnGroupMap();
+        MyTableWidthAdjuster adjuster = new MyTableWidthAdjuster(moTable);
         
         if (which.equals("Stat")) {
-            try {
-                MyHandyTable.autoResizeTableColumns(moTable
-                    , colMap.get(ViewHandler.COL_GROUP_STATS).getColumns());
-            } catch (IllegalArgumentException ignore) {
-                // (We cannot resize "hidden" columns)
+            // Don't resize all stats - some might be hidden by View
+            //MyHandyTable.autoResizeTableColumns(moTable
+            //    , colMap.get(ViewHandler.COL_GROUP_STATS).getColumns());
+            for (String id : colMap.get(ViewHandler.COL_GROUP_STATS).getColumns()) {
+                try {
+                    int colIndex = moTable.getColumnModel().getColumnIndex(id);
+                    MyHandyTable.autoResizeTableColumn(colIndex, adjuster);
+                } catch (IllegalArgumentException ignore) {
+                    // (We cannot resize "hidden" columns)
+                }
             }
         }
         else if (which.equals("Potential") || which.equals("Skill Level")) {
             ColumnNameGetter cng;
-            MyTableWidthAdjuster adjuster = new MyTableWidthAdjuster(moTable);
             Map[] skillMaps;
             
             if (which.equals("Potential")) {
