@@ -205,7 +205,7 @@ public class ResultsView implements ActionListener {
         setNicknameVisible(DEFAULT_NICKNAME_VIS);
         
         JScrollPane oSP = new JScrollPane(moTable);
-        MyHandyTable.handyTable(moTable, oSP, oModel, true, true);
+        MyHandyTable.handyTable(moTable, oModel, true, true);
         MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
         MyHandyTable.setPrefWidthToColWidth(moTable);
         

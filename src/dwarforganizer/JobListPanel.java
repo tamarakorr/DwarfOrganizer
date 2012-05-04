@@ -277,7 +277,7 @@ public class JobListPanel extends JPanel {
         } */
         
         JScrollPane oSP = new JScrollPane(moTable);
-        MyHandyTable.handyTable(moTable, oSP, oModel, false, true);
+        MyHandyTable.handyTable(moTable, oModel, false, true);
         MyHandyTable.setPrefWidthToColWidth(moTable);
         
         // Create panel

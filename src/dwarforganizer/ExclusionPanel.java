@@ -420,8 +420,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
                 
         // Resize components----------------------------------------------------
         // Resize table columns
-        MyHandyTable.autoResizeTableColumns(moRuleTable.getTable(), mspRule);
-        MyHandyTable.autoResizeTableColumns(moListTable.getTable(), mspList);
+        MyHandyTable.autoResizeTableColumns(moRuleTable.getTable());
+        MyHandyTable.autoResizeTableColumns(moListTable.getTable());
         
         // Do layout for other components
         this.validate();
@@ -768,8 +768,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             JScrollPane spReturn = new JScrollPane(exclTable);
             spReturn.setPreferredSize(new Dimension(prefWidth, prefHeight)); // w, h
 
-            MyHandyTable.autoResizeTableColumns(exclTable, spReturn);
-            MyHandyTable.autoSortTable(exclTable, exclModel);
+            MyHandyTable.autoResizeTableColumns(exclTable);
+            MyHandyTable.autoSortTable(exclTable);
 
             super.initialize(exclTable, exclModel, btnUpdate, false, false
                     , true, true, true, true, true); //, new int[] { KeyEvent.VK_ENTER }
@@ -1193,7 +1193,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             model = new MySimpleTableModel(columns, 0);
             table = MyHandyTable.createSmarterFocusTable(new JTable(model));
             table.setDefaultRenderer(Object.class, new MyTCRStripedHighlight(2));
-            MyHandyTable.sortByCol(table, model, 0, SortOrder.ASCENDING);   // Works for empty tables
+            MyHandyTable.sortByCol(table, 0, SortOrder.ASCENDING);   // Works for empty tables
             //swapper.setTable(table);
 
             JScrollPane spReturn = new JScrollPane(table);
@@ -1203,7 +1203,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         public void setList(Vector<String> list) {
             //model.setRowData(list);
             model.setDataVector(toVVO(list), columns);  // Seems to eat sorting
-            MyHandyTable.sortByCol(table, model, 0, SortOrder.ASCENDING);   // setDataVector ate our sortkeys
+            MyHandyTable.sortByCol(table, 0, SortOrder.ASCENDING);   // setDataVector ate our sortkeys
         }
         private Vector<Vector<Object>> toVVO(Vector<String> list) {
             Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(list.size());

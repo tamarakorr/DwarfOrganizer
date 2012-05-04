@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -37,15 +38,16 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableModel;
 import myutils.MyArrayUtils;
 import myutils.MyHandyTable;
 import myutils.MyTCRStripedHighlight;
 import myutils.MyTCRStripedHighlightCheckBox;
-import myutils.MyTableWidthAdjuster;
 
 /**
  *
@@ -116,7 +118,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private Vector<Dwarf> mvDwarves;
     private Hashtable<String, MetaSkill> mhtMetaSkills;
 
-    private JTable moTable;
+    private CompositeTable moTable; // JTable
     private MyEditableTableModel<DwarfListItem> moModel;
     private JLabel mlblSelected;
     private JLabel mlblExclusions;
@@ -139,7 +141,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private Map<String, JCheckBoxMenuItem> moColMenus;
 
     private VisibilityHandler moTableVis;
-    
+
+    private ColumnFreezingTable moFreezer;
+    private HideableTableColumnModel moFreezerColModel;
+
     private enum ValueAndTextFormat {
         NUMBER ("Value"),
         TEXT ("Text"),
@@ -177,10 +182,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Create objects-------------------------------------------------------
         Map[] skillMaps = { mhtSkills, mhtMetaSkills };
-        
+
         mvDwarves = new Vector<Dwarf>(); //vDwarves;
         Collection<Exclusion> vExclusions = new Vector<Exclusion>();
-        
+
         mbLoading = true;
 
         // Create view data-----------------------------------------------------
@@ -188,44 +193,33 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moModel = moViewHandler.createDwarfListModel(vExclusions);
 
         // Create the dwarf data table------------------------------------------
-        moTable = new JTable(moModel, new HideableTableColumnModel());
-        moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
-
-        // Set column renderer for skill levels (numeric format, right-justified,
-        // nulls blank)
-/*        for (String key : mhtSkills.keySet()) {
-            String id = getColumnNameForSkillLevel(mhtSkills.get(key).getName());
-            moTable.getColumn(id).setCellRenderer(new NumberOrNullRenderer());
-        } */
-
-        moTable.setDefaultRenderer(Boolean.class, new MyTCRStripedHighlightCheckBox());
-        moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight());
-
-        // For cleaner copy/paste to spreadsheets
-        moTable.setColumnSelectionAllowed(false);
-        moTable.setRowSelectionAllowed(true);
-        moTable.addKeyListener(new ClipboardKeyAdapter(moTable, true, false, false));
-
-        mspScrollPane = new JScrollPane(moTable);
+        JTable mainTable = createDwarfDataTable(moModel); // moTable
+        mspScrollPane = new JScrollPane(mainTable);       // moTable
+        mspScrollPane.setHorizontalScrollBarPolicy(
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);  // For freeze
 
         // Sort by name
-        MyHandyTable.handyTable(moTable, mspScrollPane, moModel, true, 1, true);   // this
-        moTableVis = new VisibilityHandler(moTable);
-        
-        // Create the popup menu for mass including/excluding
+        MyHandyTable.handyTable(mainTable, moModel, true, 1, true);   // this
+        moTableVis = new VisibilityHandler(mainTable);
+        moTableVis.initialize();
+
+        moViewHandler.createDwarfListViews();
+
+        // Create the column freeze pane----------------------------------------
+        // Should be done after setting up renderers and table
+        moFreezerColModel = new HideableTableColumnModel();
+        moFreezer = new ColumnFreezingTable(mspScrollPane, moFreezerColModel); // TODO: make sure all changes to columns are applied to this model
+        //moFreezer.getFixedTable().setColumnModel(new HideableTableColumnModel());
+        moTable = new CompositeTable(new JTable[]
+            { mainTable, moFreezer.getFixedTable() });
+        // Create the popup menu for mass including/excluding.
+        // Must be done after composite table is created.
         createPopup();
 
-/*        // Hide columns for labor groups and secondary skills by default
-        for (Labor labor : mvLabors)
-            setLaborGroupVisible(labor.groupName, false);
-        setSecondaryColumnsVisible(false);
-*/
-        moViewHandler.createDwarfListViews();
-        moMenuBar = createMenu();   // Must be done after creating views
+        moMenuBar = createMenu();   // Must be done after creating views & composite table
 
         // Must be done after creating menu but before setting views------------
         // Set column renderer for stats
-        //StatFormat.NUMBER.getMenuItem().doClick(0);
         mmStatFormatMenus.get(ValueAndTextFormat.NUMBER).doClick(0);
         for (String key : mhtStats.keySet()) {
             moTable.getColumn(key).setCellRenderer(new ValueAndTextRenderer(
@@ -255,7 +249,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 }));
             }
         }
-        
+
         mmLevelFormatMenus.get(ValueAndTextFormat.NUMBER).doClick(0);
         for (Map map : new Map[] { mhtSkills }) {
             Map<String, GenericSkill> ht = (Map<String, GenericSkill>) map;
@@ -268,7 +262,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     public ValueAndTextFormat getCurrentFormat() {
                         return currentLevelFormat;
                     }
-
                 }));
             }
         }
@@ -276,65 +269,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         setView(DEFAULT_VIEW_NAME);    // // "Military View"
 
-/*        // Experimental---------------------------------------------------------
-        FixedColumnTable frozen = new FixedColumnTable(2, mspScrollPane);   // TODO
-        frozen.getFixedTable().setDefaultRenderer(Boolean.class, moTable.getDefaultRenderer(Boolean.class));
-        frozen.getFixedTable().setDefaultRenderer(Object.class, moTable.getDefaultRenderer(Object.class));
-        //MyHandyTable.autoResizeTableColumns(frozen.getFixedTable(), mspScrollPane); // Doesn't work
-        //mspScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED); // Doesn't scroll row header
-        frozen.getFixedTable().setRowSorter(moTable.getRowSorter());
-        //new JTableRowHeaderResizer(mspScrollPane).setEnabled(true); Doesn't work
-
-        // Increasingly experimental--------------------------------------------
-        MouseAdapter ma = new MouseAdapter() {
-
-            TableColumn column;
-            int columnWidth;
-            int pressedX;
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                JTableHeader header = (JTableHeader) e.getComponent();
-                TableColumnModel tcm = header.getColumnModel();
-                int columnIndex = tcm.getColumnIndexAtX(e.getX());
-                Cursor cursor = header.getCursor();
-
-                if (columnIndex == tcm.getColumnCount() - 1 && cursor == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)) {
-                    column = tcm.getColumn(columnIndex);
-                    columnWidth = column.getWidth();
-                    pressedX = e.getX();
-                    header.addMouseMotionListener(this);
-                }
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                JTableHeader header = (JTableHeader) e.getComponent();
-                header.removeMouseMotionListener(this);
-            }
-
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                int width = columnWidth - pressedX + e.getX();
-                column.setPreferredWidth(width);
-                JTableHeader header = (JTableHeader) e.getComponent();
-                JTable table = header.getTable();
-                table.setPreferredScrollableViewportSize(table.getPreferredSize());
-                JScrollPane scrollPane = (JScrollPane) table.getParent().getParent();
-                scrollPane.revalidate();
-            }
-        };
-
-        // TODO Compare this with MyTableWidthAdjuster and see if we can combine
-        // functionality for a better result
-        // TODO Adjust the column width and fixed table size to a reasonable
-        // value *without making the user drag it*
-        JTable fixed = frozen.getFixedTable();
-        fixed.getTableHeader().addMouseListener(ma);
-        //fixed.getTableHeader().addMouseListener(new MyTableWidthAdjuster(fixed));
-
-        // End experimental-----------------------------------------------------
-        */
         // Show some statistics-------------------------------------------------
         mlblPop = new JLabel("X total dwarves from XML"); // total adult
         mlblSelected = new JLabel(getNumSelectedText(mvDwarves.size()));
@@ -344,7 +278,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // Build the UI---------------------------------------------------------
         JPanel tablePanel = new JPanel();
         tablePanel.setLayout(new BorderLayout());
-        tablePanel.add(mspScrollPane);
+        tablePanel.add(moFreezer.getSplitPane()); // mspScrollPane
         tablePanel.setPreferredSize(new Dimension(750, 250));
 
         JPanel panInfo = new JPanel();
@@ -363,9 +297,60 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         mbLoading = false;
     }
+    private class VisibilityHandler extends StateIncrementHandler {
+        private JComponent comp;
+        private ThresholdFunctions tf;
+
+        public VisibilityHandler(JComponent comp) {
+            super(StateIncrementHandler.DefaultState.POSITIVE_STATE);
+
+            this.comp = comp;
+        }
+        public void initialize() {
+            tf = new ThresholdFunctions() {
+                @Override
+                public void doAtNegativeThreshold() {
+                    comp.setVisible(false);
+                }
+                @Override
+                public void doAtPositiveThreshold() {
+                    comp.setVisible(true);
+                }
+            };
+            super.initialize(tf);
+        }
+        public void incrementShown() {
+            super.increment();
+        }
+        public void incrementHidden() {
+            super.decrement();
+        }
+    }
+    private JTable createDwarfDataTable(TableModel model) {
+        JTable tblReturn;
+
+        tblReturn = new JTable(model, new HideableTableColumnModel());
+        // Necessary when using HideableTableColumnModel:
+        tblReturn.createDefaultColumnsFromModel();
+
+        tblReturn.setDefaultRenderer(Boolean.class
+                , new MyTCRStripedHighlightCheckBox());
+        tblReturn.setDefaultRenderer(Object.class, new MyTCRStripedHighlight());
+
+        // For cleaner copy/paste to spreadsheets
+        tblReturn.setColumnSelectionAllowed(false);
+        tblReturn.setRowSelectionAllowed(true);
+        tblReturn.addKeyListener(new ClipboardKeyAdapter(tblReturn, true, false
+                , false));
+
+        tblReturn.setUpdateSelectionOnSort(false); // For freezing columns
+
+        return tblReturn;
+    }
     private void setView(String viewName) {
         // Set the table columns/view
-        moViews.get(viewName).applyToTable(moTable);
+        moViews.get(viewName).applyToTable(moTable
+                , moFreezer.getAllColumnsModel());
 
         // Set the selected column groups in the menu
         for (String columnKey : moColMenus.keySet()) {
@@ -396,14 +381,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private class ViewHandler {
 
         // Define column group keys
-        private static final String COL_GROUP_ALWAYS_SHOW = "Always Show";
-        private static final String COL_GROUP_NICKNAME = "Nickname";
-        private static final String COL_GROUP_GENDER = "Gender";
-        private static final String COL_GROUP_AGE = "Age";
-        private static final String COL_GROUP_EXCL = "Exclusion Info";
-        private static final String COL_GROUP_STATS = "Stats";
-        private static final String COL_GROUP_SECONDARY = "Secondary Skills";
-        private static final String COL_GROUP_CUR_LABORS = "Current Labors";
+        public static final String COL_GROUP_ALWAYS_SHOW = "Always Show";
+        public static final String COL_GROUP_NICKNAME = "Nickname";
+        public static final String COL_GROUP_GENDER = "Gender";
+        public static final String COL_GROUP_AGE = "Age";
+        public static final String COL_GROUP_EXCL = "Exclusion Info";
+        public static final String COL_GROUP_STATS = "Stats";
+        public static final String COL_GROUP_SECONDARY = "Secondary Skills";
+        public static final String COL_GROUP_CUR_LABORS = "Current Labors";
 
         private Map<String, ColumnGroup> mhmColGroups;
         private ArrayList<ColumnGroup> malColOrder;
@@ -581,7 +566,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             for (Labor labor : mvLabors) {
                 if (labor.getGroupName().equals(groupName)) {
                     vReturn.add(getColumnNameForSkill(labor.getSkillName()));
-                    
+
                     // Meta skills don't have skill levels
                     if (! mhtMetaSkills.containsKey(labor.getSkillName()))
                         vReturn.add(getColumnNameForSkillLevel(labor.getSkillName()));
@@ -674,6 +659,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             //setModelData(moModel, vExclusions);       // , nodes
 
             return mdlReturn;
+        }
+        public Vector<Object> getAllColumns() {
+            return mvColumns;
         }
     }
     private String getJobGroupKey(String groupName) {
@@ -787,7 +775,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Set table contents---------------------------------------------------
         moModel.setRowData(toDwarfListItems(mvDwarves, vExclusions));
-        MyHandyTable.autoResizeTableColumns(moTable, mspScrollPane);
+        //MyHandyTable.autoResizeTableColumns(moTable.getTables());
+        moFreezer.autoResizeTableColumns();
 
         // Update labels--------------------------------------------------------
         applyExclusions(vExclusions);
@@ -839,15 +828,16 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MyHandyTable.cancelEditing(moTable);
-                MyHandyTable.copyToClipboard(moTable, false);
+                MyHandyTable.cancelEditing(moTable.getMainTable());
+                MyHandyTable.copyToClipboard(moTable.getTables(), false);
             }
         });
         popUp.add(menuItem);
 
         // ---------------------------------------------------------------------
-        moTable.setComponentPopupMenu(popUp);
-        moTable.getSelectionModel().addListSelectionListener(
+        for (JTable table : moTable.getTables())
+            table.setComponentPopupMenu(popUp); // moTable
+        moTable.getMainTable().getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
 
             @Override
@@ -859,7 +849,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         setMenusEnabledBySelection(selectionNeededItems); // Initialize
     }
     private void setMenusEnabledBySelection(JMenuItem[] menuItems) {
-        boolean bAnySelected = moTable.getSelectedRowCount() > 0;
+        boolean bAnySelected = moTable.getMainTable().getSelectedRowCount() > 0;
         for (JMenuItem menuItem : menuItems) {
             menuItem.setEnabled(bAnySelected);
         }
@@ -867,12 +857,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     // Sets whether selected table rows are Included
     private void setIncluded(boolean included) {
-        for (int row = 0; row < moTable.getRowCount(); row++)
-            if (moTable.isRowSelected(row))
-                moModel.setValueAt(included, moTable.convertRowIndexToModel(row)
-                        , moTable.convertColumnIndexToModel(INCLUDE_COLUMN));
+        for (int row = 0; row < moTable.getMainTable().getRowCount(); row++)
+            if (moTable.getMainTable().isRowSelected(row))
+                moModel.setValueAt(included, moTable.getMainTable().convertRowIndexToModel(row)
+                        , moTable.getMainTable().convertColumnIndexToModel(INCLUDE_COLUMN));
     }
-    
+
     // Returns the desired menu for this panel.
     // Expected to be called by owner frame
     protected JMenuBar getMenu() {
@@ -884,6 +874,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         JMenu subMenu;
         JMenuItem item;
         ButtonGroup group;
+        final Object[] hideableColumns = getHideableColumns();
+        
+        //JTable mainTable = moTable.getMainTable();
+        //final HideableTableColumnModel hideableModel
+        //        = (HideableTableColumnModel) mainTable.getColumnModel();
 
         JMenuBar menuBar = new JMenuBar();
 
@@ -897,7 +892,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         item = new JMenuItem("Show All");
         item.setMnemonic(KeyEvent.VK_S);
-        ActionListener al = new ActionListener() {
+/*        ActionListener al = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (moColMenus != null) {
@@ -910,35 +905,20 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     moTableVis.incrementShown();
                 }
             }
-        };
-        item.addActionListener(CursorController.createListener(this, al));  // Hourglass
+        }; */
+        item.addActionListener(CursorController.createListener(this
+                , createAllVisActionListener(hideableColumns, true)));  // Hourglass  al
         menu.add(item);
 
         item = new JMenuItem("Hide All");
         item.setMnemonic(KeyEvent.VK_I);
-        al = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (moColMenus != null) {
-                    moTableVis.incrementHidden();
-                    for (String key : moColMenus.keySet()) {
-                        JCheckBoxMenuItem menuItem = moColMenus.get(key);
-                        if (menuItem.isSelected()) {
-                            menuItem.doClick(0);
-                        }
-                    }
-                    moTableVis.incrementShown();
-                }
-            }
-        };
-        item.addActionListener(CursorController.createListener(this, al));  // Hourglass
+        item.addActionListener(CursorController.createListener(this
+                , createAllVisActionListener(hideableColumns, false)));  // Hourglass  al
         menu.add(item);
 
         // -------------------------------
         menu.add(new JSeparator());
-        
-        final HideableTableColumnModel hideableModel
-                = (HideableTableColumnModel) moTable.getColumnModel();
+
         for (ColumnGroup colGroup : alColGroups) {
             if (! colGroup.getName().equals("Always Show")) {
                 //ColumnGroup columnGroup = hmColGroups.get(key);
@@ -948,8 +928,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 menuItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        //setColumnsVisible(arrColumns, menuItem.isSelected()
+                        //        , hideableModel);
                         setColumnsVisible(arrColumns, menuItem.isSelected()
-                                , hideableModel);
+                                , moFreezerColModel);
                     }
                 });
 
@@ -1023,6 +1005,53 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         return menuBar;
     }
 
+    private Object[] getHideableColumns() {
+        Vector<Object> vAllColumns = moViewHandler.getAllColumns();
+        ArrayList<Object> alAlwaysShow
+                = new ArrayList<Object>(Arrays.asList(
+                moViewHandler.getColumnGroupMap().get(
+                ViewHandler.COL_GROUP_ALWAYS_SHOW).getColumns()));
+        int size = vAllColumns.size() - alAlwaysShow.size();
+        Object[] hideableColumns = new Object[size];
+        
+        int iCount = 0;
+        for (Object col : vAllColumns) {
+            if (! alAlwaysShow.contains(col)) {
+                hideableColumns[iCount] = col;
+                iCount++;
+            }
+        }
+        return hideableColumns;
+    }
+    
+    private ActionListener createAllVisActionListener(
+            final Object[] affectedColumns, final boolean visible) {
+        
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (moColMenus != null) {
+                    moTableVis.incrementHidden();
+                    
+                    // Show or hide columns
+                    setColumnsVisible(affectedColumns, visible
+                            , moFreezerColModel);
+                    
+                    // Set menu item states
+                    for (String key : moColMenus.keySet()) {
+                        JCheckBoxMenuItem menuItem = moColMenus.get(key);
+                        if (menuItem.isSelected() != visible) {
+                            //menuItem.doClick(0);
+                            menuItem.setSelected(visible);
+                        }
+                    }
+                    
+                    moTableVis.incrementShown();
+                }
+            }
+        };        
+    }
+    
     private void createFormatSubMenu(JMenu subMenu, final String which
             , Map<ValueAndTextFormat, JMenuItem> map) {
         JMenuItem item;
@@ -1045,9 +1074,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     }
 
     private void setValueAndTextFormat(String which, ValueAndTextFormat newFormat) {
-        
+
         moTableVis.incrementHidden();
-        
+
         if (which.equals("Stat")) {
             currentStatFormat = newFormat;
         }
@@ -1061,32 +1090,29 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             System.err.println("Unknown format option: " + which);
         }
         resizeColumns(which);   // Resize relevant columns
-        
+
         moTableVis.incrementShown();
     }
-    
+
     // Auto-resizes the proper columns
     private void resizeColumns(String which) {
+        final String STATS = ViewHandler.COL_GROUP_STATS;
+
+        //JTable table;
         Map<String, ColumnGroup> colMap = moViewHandler.getColumnGroupMap();
-        MyTableWidthAdjuster adjuster = new MyTableWidthAdjuster(moTable);
-        
+
         if (which.equals("Stat")) {
             // Don't resize all stats - some might be hidden by View
             //MyHandyTable.autoResizeTableColumns(moTable
             //    , colMap.get(ViewHandler.COL_GROUP_STATS).getColumns());
-            for (String id : colMap.get(ViewHandler.COL_GROUP_STATS).getColumns()) {
-                try {
-                    int colIndex = moTable.getColumnModel().getColumnIndex(id);
-                    MyHandyTable.autoResizeTableColumn(colIndex, adjuster);
-                } catch (IllegalArgumentException ignore) {
-                    // (We cannot resize "hidden" columns)
-                }
+            for (String id : colMap.get(STATS).getColumns()) {
+                moFreezer.autoResizeTableColumn(id);
             }
         }
         else if (which.equals("Potential") || which.equals("Skill Level")) {
             ColumnNameGetter cng;
             Map[] skillMaps;
-            
+
             if (which.equals("Potential")) {
                 skillMaps = new Map[] { mhtSkills, mhtMetaSkills };
                 cng = new ColumnNameGetter() {
@@ -1105,21 +1131,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     }
                 };
             }
-            
+
             for (Map map : skillMaps) {
                 Map<String, GenericSkill> skillMap
                         = (Map<String, GenericSkill>) map;
                 for (String key : skillMap.keySet()) {
-                    try {
-                        int colIndex = moTable.getColumnModel().getColumnIndex(
-                            cng.getColumnName(key));
-                        MyHandyTable.autoResizeTableColumn(colIndex, adjuster);
-                    } catch (IllegalArgumentException ignore) {
-                        // (Column is "hidden" in hideableTableColumnModel --
-                        // we can't resize it since there is no cell renderer
-                        // for it
-                    }
-                    
+                    moFreezer.autoResizeTableColumn(cng.getColumnName(key));
                 }
             }
         }
@@ -1129,7 +1146,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private interface ColumnNameGetter {
         public String getColumnName(String key);
     }
-    
+
     // Sets the display for number of included dwarves
     private void updateSelectedLabel() {
         int sum = 0;
@@ -1196,67 +1213,28 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     }
 
-/*    // Sets the visibility of the columns associated with the given labor group
-    private void setLaborGroupVisible(String group, boolean visible) {
-        for (Labor labor : mvLabors) {
-            if (labor.getGroupName().equals(group)) {
-                //System.out.println("Setting visibility of " + labor.skillName);
-                setColumnVisible(getColumnNameForSkill(labor.getSkillName()), visible);
-                setColumnVisible(getColumnNameForSkillLevel(labor.getSkillName()), visible);
-            }
-        }
-    }
-
-    // Sets the visibility of the columns associated with the secondary labors
-    private void setSecondaryColumnsVisible(boolean visible) {
-        for (Skill skill : mhtSkills.values()) {
-            if (skill instanceof SecondarySkill) {
-                setColumnVisible(getColumnNameForSkill(skill.getName()), visible);
-                setColumnVisible(getColumnNameForSkillLevel(skill.getName()), visible);
-            }
-        }
-    }
-
-    // Sets the visibility of stat columns
-    private void setStatColumnsVisible(boolean visible) {
-        for (Stat stat : mhtStats.values())
-            setColumnVisible(stat.getName(), visible);
-    } */
-    private void setColumnsVisible(String[] cols, boolean visible
+    private void setColumnsVisible(Object[] cols, boolean visible
             , HideableTableColumnModel hideableModel) {
-        
-        moTableVis.incrementHidden();       
-        
-        for (String col : cols)
+
+        // Hide the table, save the current divider location, and move
+        // the divider to its default location.
+        moTableVis.incrementHidden();
+
+        for (Object col : cols) {
             hideableModel.setColumnVisible(col, visible);
-        
+        }
+
         // Resize the columns on visible=true, in case the format was
         // changed while hidden
-        if (visible)
-            MyHandyTable.autoResizeTableColumns(moTable, cols);
-        
+        if (visible) {
+            moFreezer.autoResizeTableColumns(cols);
+        }
+
+        // Put the divider back where it was, and show the table
+        //handler.increment();
+        //System.out.println("----------------------");
         moTableVis.incrementShown();
     }
-
-/*    // Sets visibility of the column with the given name in the hideable model
-    private void setColumnVisible(String colName, boolean visible) {
-
-        HideableTableColumnModel hideableModel
-                = (HideableTableColumnModel) moTable.getColumnModel();
-
-        hideableModel.setColumnVisible(colName, visible);
-
-//        for (int iCount = hideableModel.getColumnCount(false) - 1; iCount >= 0; iCount--) {
-//            //System.out.println("Number of columns: " + hideableModel.getColumnCount(false));
-//            Object oThisIdentifier = hideableModel.getColumn(iCount, false).getIdentifier();
-//            //System.out.println("Checking " + oThisIdentifier + " for " + colIdentifier);
-//            if (oThisIdentifier.equals(colName)) {
-//                //System.out.println("Match!");
-//                hideableModel.setColumnVisible(hideableModel.getColumn(iCount, false)
-//                        , visible);
-//            }
-//        }                
-    } */
 
     // Returns the column title for potential in the given skill
     private String getColumnNameForSkill(String skillName) {

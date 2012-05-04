@@ -1050,11 +1050,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             mhtSkill = dwarfIO.getSkills();
             mhtMetaSkill = dwarfIO.getMetaSkills();
 
-            //nodes = moIO.readDwarves(mstrDwarvesXML);
-
-            /*myXMLReader xmlFileReader = new myXMLReader(mstrDwarvesXML);
-            NodeList nodes = xmlFileReader.getDocument().getElementsByTagName("Creature"); */
-            //System.out.println("Dwarves.xml contains " + nodes.getLength() + " creatures.");
         } catch (Exception e) {
             System.err.println("DwarfIO failed to read dwarves.xml");
             throw e;

@@ -127,8 +127,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
         mspScrollPane = new JScrollPane(mtblRules);
         mspScrollPane.setPreferredSize(new Dimension(750, 350));
-        MyHandyTable.handyTable(mtblRules, mspScrollPane, mmdlRules, false
-                , true);
+        MyHandyTable.handyTable(mtblRules, mmdlRules, false, true);
         
         swapper.setTable(mtblRules);
         // Create other UI controls---------------------------------------------
@@ -337,7 +336,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         
         // Adjust components----------------------------------------------------
         // Resize the table columns
-        MyHandyTable.autoResizeTableColumns(mtblRules, mspScrollPane);
+        MyHandyTable.autoResizeTableColumns(mtblRules);
         
         // Resize the rest
         this.validate();

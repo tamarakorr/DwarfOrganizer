@@ -7,7 +7,7 @@ package dwarforganizer;
 
 import java.util.List;
 import javax.swing.JTable;
-import myutils.MyHandyTable;
+import javax.swing.table.TableColumnModel;
 
 /**
  *
@@ -115,40 +115,64 @@ public class GridView {
             return this.columnGroup.contains(attribute);
         }
     }
-    public void applyToTable(JTable table) {
+    public void applyToTable(CompositeTable table, TableColumnModel columnModel) {
         // Hide all columns not in the column ordering list---------------------
+        
+        hideColumns(columnModel); //table.getMainTable()
+        reorderTableColumns(columnModel, mlstColOrder); // table.getMainTable()
+                
+        //TODO: the rest
+    }
+    private void hideColumns(TableColumnModel columnModel) { //JTable table
         if (! HideableTableColumnModel.class.isAssignableFrom(
-                table.getColumnModel().getClass())) {
-            System.out.println("Could not set column visibility: table must use"
-                    + " HideableTableColumnModel.");
+                columnModel.getClass())) {
+            System.err.println("[GridView] Could not set column visibility: "
+                    + "table must use HideableTableColumnModel.");
         }
         else {
             // Show or hide each column based on presence in view
             HideableTableColumnModel hideableModel = (HideableTableColumnModel)
-                    table.getColumnModel();
+                    columnModel;
             for (int iCount = 0; iCount < hideableModel.getColumnCount(false); iCount++) {
                 Object identifier = hideableModel.getColumn(iCount
                         , false).getIdentifier(); 
-/*                if (isColumnInView(identifier))
-                    System.out.println("Showing " + identifier);
-                else
-                    System.out.println("Hiding " + identifier); */
                 hideableModel.setColumnVisible(hideableModel.getColumn(iCount
                         , false), isColumnInView(identifier));
             }
         }
         
-        // Set column order
-        reorderTableColumns(table, mlstColOrder);
-        
-        //TODO: the rest
     }
-    private void reorderTableColumns(JTable table, List<Object> order) {
+    private void reorderTableColumns(TableColumnModel columnModel
+            , List<Object> order) {
+        
         int iCount = 0;
         for (Object identifier : order) {
-            table.moveColumn(MyHandyTable.getColByName(table
-                    , identifier.toString()), iCount++);
+            columnModel.moveColumn(columnModel.getColumnIndex(identifier)
+                    , iCount++);
+            //table.moveColumn(MyHandyTable.getColByName(table
+            //        , identifier.toString()), iCount++);
         }
+    }
+    private void reorderTableColumns(CompositeTable compTable
+            , List<Object> order) {
+        
+        int col;
+        
+        int iCount = 0;
+        for (Object identifier : order) {
+            for (JTable table : compTable.getTables()) {
+                try {
+                    col = table.getColumnModel().getColumnIndex(identifier);
+                    moveColumn(compTable, table, col, iCount++);
+                } catch (IllegalArgumentException ignore) {
+                    // Column isn't in this table
+                }
+            }
+        }
+    }
+    private void moveColumn(CompositeTable compTable, JTable source
+            , int sourceIndex, int overallDestIndex) {
+        compTable.moveColumn(source, sourceIndex, overallDestIndex);        
     }
     private boolean isColumnInView(Object identifier) {
         //System.out.println(identifier.toString() + " is in view: "
