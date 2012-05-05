@@ -6,7 +6,9 @@
 package dwarforganizer;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -19,11 +21,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -35,6 +39,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
@@ -66,6 +71,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private JInternalFrame mitlDwarfList;
     private JInternalFrame mitlRulesEditor;
     private JInternalFrame mitlExclusions;
+    private JInternalFrame mitlViewManager;
 
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
@@ -94,8 +100,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private Vector<Labor> mvLabors;
     private Vector<LaborGroup> mvLaborGroups;
 
+    private static final String DIRTY_TITLE = " (Unsaved Changes)";
+
     private static final String RULES_EDITOR_TITLE_CLEAN = "Edit Rules";
-    private static final String RULES_EDITOR_TITLE_DIRTY = "Edit Rules (Unsaved Changes)";
+    private static final String RULES_EDITOR_TITLE_DIRTY
+            = RULES_EDITOR_TITLE_CLEAN + DIRTY_TITLE;
     private JobBlacklist moJobBlacklist = new JobBlacklist();
     private JobList moJobWhitelist = new JobList();
     //private DirtyListener moRuleDirtyListener;
@@ -108,13 +117,20 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private JFrame moAboutScreen = new AboutScreen(this);
 
     private static final String EXCLUSIONS_TITLE = "Manage Exclusions";
-    private static final String EXCLUSIONS_TITLE_DIRTY = EXCLUSIONS_TITLE + " (Unsaved Changes)";
+    private static final String EXCLUSIONS_TITLE_DIRTY = EXCLUSIONS_TITLE + DIRTY_TITLE;
+    private static final String VIEW_MGR_TITLE = "Manage Views";
+    private static final String VIEW_MGR_TITLE_DIRTY = VIEW_MGR_TITLE + DIRTY_TITLE;
 
     private ExclusionPanel moExclusionManager;
 
     private Hashtable<String, Stat> mhtStat;
     private Hashtable<String, Skill> mhtSkill;
     private Hashtable<String, MetaSkill> mhtMetaSkill;
+
+    private Vector<GridView> mvViews; // TODO: This really shouldn't be messed with in MainWindow
+
+    private ViewManagerUI moViewManager;
+    private JDesktopPane moDesktop;
 
     private class AboutScreen extends JFrame {
         public AboutScreen(MainWindow main) {
@@ -145,7 +161,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mvLabors = new Vector<Labor>();
         mvLaborGroups = new Vector<LaborGroup>();
 
-        JDesktopPane desktop = new JDesktopPane();
+        moDesktop = new JDesktopPane();
         //this.getContentPane().add(desktop);
 
         loadPreferences();
@@ -153,6 +169,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             @Override
             public void windowClosing(WindowEvent e) {
                 // Prompts to save changes
+                MyHandyWindow.clickClose(mitlViewManager);
                 MyHandyWindow.clickClose(mitlRulesEditor);
                 MyHandyWindow.clickClose(mitlExclusions);
 
@@ -175,17 +192,21 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         setExclusionsActive();
 
         // Create rules editor (hidden until shown)
-        createRulesEditorScreen(desktop);
+        createRulesEditorScreen(moDesktop);
 
         // Create exclusions manager (hidden until shown)
-        createExclusionScreen(desktop);
+        createExclusionScreen(moDesktop);
+
+        // Create view manager (hidden until shown)
+        createViewManager(moDesktop);
 
         // Create dwarf list window
         moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
-                , mhtMetaSkill, mvLaborGroups);
+                , mhtMetaSkill, mvLaborGroups, mvViews);
         //if (mvDwarves == null) System.out.println("mvDwarves is null");
         moDwarfListWindow.loadData(mvDwarves, mvExclusions);
         moExclusionManager.getAppliedBroadcaster().addListener(moDwarfListWindow); // Listen for exclusions applied
+        moDwarfListWindow.getBroadcaster().addListener(this);
 
         try {
             // Display a grid of the dwarves
@@ -197,7 +218,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
             mitlDwarfList.pack();
             mitlDwarfList.setVisible(true);
-            desktop.add(mitlDwarfList);
+            moDesktop.add(mitlDwarfList);
 
             // Display a grid of the jobs to assign
             moJobListPanel = new JobListPanel(mvLabors
@@ -209,16 +230,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             mitlJobList.add(moJobListPanel);
             mitlJobList.pack();
             mitlJobList.setVisible(true);
-            desktop.add(mitlJobList);
+            moDesktop.add(mitlJobList);
             int width = (int) (moJobListPanel.getPreferredSize().getWidth() * 1.2);
             int height = (int) (moJobListPanel.getPreferredSize().getHeight() * 1.42);
-            desktop.setPreferredSize(new Dimension(width, height));
+            moDesktop.setPreferredSize(new Dimension(width, height));
 
             this.setJMenuBar(createMenu(moJobListPanel));
             //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
 
             this.setLayout(new BorderLayout());
-            this.add(desktop);
+            this.add(moDesktop, BorderLayout.CENTER);
 
             this.setTitle("Dwarf Organizer");
             this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -253,11 +274,117 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return jmbReturn;
     }
 
+    private abstract class AbstractEditorFrameCreator {
+        public abstract Container createUIObject();
+        public abstract DirtyForm getDirtyForm();
+        public abstract void addListeners();
+
+        public JInternalFrame createInternalFrame(JDesktopPane desktop
+                , String dirtyTitle, String cleanTitle
+                , boolean resizable, boolean closable, boolean maximizable
+                , boolean iconifiable, int closeBehavior, JMenuBar jMenuBar
+                , FrameClosingFunction fcf) {
+
+            final JInternalFrame frameToCreate;
+
+            Container uiObject = createUIObject();
+            addListeners();
+
+            frameToCreate = new JInternalFrame(cleanTitle, resizable, closable
+                    , maximizable, iconifiable);
+            frameToCreate.setDefaultCloseOperation(closeBehavior);
+            frameToCreate.setJMenuBar(jMenuBar);
+            frameToCreate.setLayout(new BorderLayout());
+            frameToCreate.add(uiObject);
+            //frameToCreate.pack();  <-Done by Window menu
+
+            // Update title when dirty state changes
+            DirtyListener dirtyListener = createDirtyListener(
+                dirtyTitle, cleanTitle, new FrameTitleSetter() {
+                @Override
+                public void setFrameTitle(String title) {
+                    if (! title.equals(frameToCreate.getTitle()))
+                        frameToCreate.setTitle(title);
+                }
+            });
+            getDirtyForm().addDirtyListener(dirtyListener);
+            frameToCreate.addInternalFrameListener(
+                    new InternalFrameClosingAdapter(fcf));
+            desktop.add(frameToCreate);
+
+            return frameToCreate;
+        }
+    }
+
+    private void createViewManager(JDesktopPane desktop) {
+
+        final MainWindow mainWindow = this;
+
+        final AbstractEditorFrameCreator creator
+                = new AbstractEditorFrameCreator() {
+
+            @Override
+            public Container createUIObject() {
+                moViewManager = new ViewManagerUI();
+                return moViewManager.getUIPanel();
+            }
+            @Override
+            public DirtyForm getDirtyForm() {
+                return moViewManager;
+            }
+            @Override
+            public void addListeners() {
+                moViewManager.getBroadcaster().addListener(mainWindow);
+            }
+        };
+
+        mitlViewManager = creator.createInternalFrame(desktop
+                , VIEW_MGR_TITLE_DIRTY
+                , VIEW_MGR_TITLE, true, true, true, true
+                , WindowConstants.HIDE_ON_CLOSE, new JMenuBar()
+                , new FrameClosingFunction() {
+
+            @Override
+            public void doFrameClosing(InternalFrameEvent e) {
+                doViewMgrWindowClosing(mainWindow, moViewManager);
+            }
+        });
+
+        setDefaultButton(moViewManager.getDefaultButton(), mitlViewManager);
+    }
+    private Point getCenteringPoint(JDesktopPane desktop
+            , JInternalFrame frame) {
+
+        Dimension desktopSize = desktop.getSize();
+        Dimension frameSize = frame.getSize();
+        return new Point((desktopSize.width - frameSize.width) / 2
+                , (desktopSize.height - frameSize.height) / 2);
+    }
+    private void doViewMgrWindowClosing(MainWindow mainWindow
+            , final ViewManagerUI viewManagerUI) {
+
+        doWindowClosing(mainWindow, viewManagerUI
+                , new ConfirmFunction() {
+            @Override
+            public void doConfirm() {
+                saveViewManagerViews(); // viewManagerUI.getViews()
+                //viewManagerUI.setClean();
+            }
+        }
+                , "Save Views?"
+                , "Would you like to save your changes to views?");
+    }
+    private void saveViews(Vector<GridView> views) {
+        moIO.writeViews(views);
+        mvViews = views;            // Update local copy
+        // (Don't set anything clean here since we don't know which window
+        // initiated the save.)
+    }
     private void createExclusionScreen(JDesktopPane desktop) {
 
         final MainWindow main = this;
 
-        // Update title of Rules Editor when dirty state changes
+        // Update title of window when dirty state changes
         DirtyListener dirtyListener = createDirtyListener(
                 EXCLUSIONS_TITLE_DIRTY, EXCLUSIONS_TITLE
                 , new FrameTitleSetter() {
@@ -504,7 +631,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         doExclWindowClosing(this, moExclusionManager);
         mitlExclusions.setVisible(false);
     }
-
+    private void closeViewManager() {
+        doViewMgrWindowClosing(this, moViewManager);
+        mitlViewManager.setVisible(false);
+    }
     private JMenuBar createDwarfListMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
@@ -649,6 +779,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
             mvExclusions = moIO.readExclusions(mvDwarves); // mhtActiveExclusions
 
+            mvViews = moIO.readViews();
         } catch (Exception e) {
             throw e;
         }
@@ -831,14 +962,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private interface DataLoader {
         public void loadData();
     }
-    
+
     // Reload if invisible; show if visible.
-    private void showOrLoad(JInternalFrame frame, DataLoader loader) {    
+    private void showOrLoad(JInternalFrame frame, DataLoader loader) {
         if (frame.isVisible() == false) {
             loader.loadData();
             frame.pack();
         }
 
+        frame.setLocation(getCenteringPoint(moDesktop, frame)); // Center
         frame.setVisible(true);
         try {
             frame.setSelected(true);
@@ -1120,6 +1252,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         else if (message.getSource().equals("RulesEditorDefaultButton")) {
             setDefaultButton(message, mitlRulesEditor);
         }
+        else if (message.getSource().equals("ViewManagerDefaultButton")) {
+            setDefaultButton(message, mitlViewManager);
+        }
         else if (message.getSource().equals("ExclusionPanelActiveExclusions")) {
             try {
                 mhtActiveExclusions = (Hashtable<Integer, Boolean>) message.getTarget();
@@ -1135,8 +1270,53 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     = (DeepCloneableVector<Exclusion>) message.getTarget();
             updateActiveExclusions(colExclusion);
         }
+        else if (message.getSource().equals("DwarfListSaveViews")) {
+            List<GridView> views = (List<GridView>) message.getTarget();
+            saveViews(new Vector(views));
+        }
+        else if (message.getSource().equals("DwarfListManageViews")) {
+            loadViewManager();
+        }
+        else if (message.getSource().equals("ViewManagerSave")) {
+            saveViewManagerViews();
+        }
+        else if (message.getSource().equals("ViewManagerClose"))
+            closeViewManager();
+        else if (message.getSource().equals("ViewManagerRequestFocus")) {
+            System.out.println("ViewMgrReqFoc");
+            final JComponent comp = (JComponent) message.getTarget();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("Requesting focus");
+                    comp.requestFocusInWindow();
+                }
+            });
+        }
         else
             System.out.println("[MainWindow] Unknown broadcast message received");
+    }
+    private void saveViewManagerViews() {
+        Vector<GridView> vView = moViewManager.getViews();
+        saveViews(vView);
+        moViewManager.setClean();
+        moDwarfListWindow.updateViews(vView);
+    }
+    private void loadViewManager() {
+        final DataLoader loader = new DataLoader() {
+                    @Override
+                    public void loadData() {
+                        // Use a clone for the table model. Otherwise
+                        // unsaved changes will persist when window is closed
+                        // and reopened.
+                        DeepCloneableVector<GridView> vViewClone
+                                = (DeepCloneableVector<GridView>)
+                                new DeepCloneableVector<GridView>(
+                                mvViews).deepClone();
+                        moViewManager.loadData(vViewClone);
+                    }
+                };
+        showOrLoad(mitlViewManager, loader);
     }
 
     // Attempts to set the default button in the given internal frame
@@ -1151,11 +1331,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             else {
                 JButton btn = (JButton) message.getTarget();
                 if (! btn.equals(frame.getRootPane().getDefaultButton()))
-                    frame.getRootPane().setDefaultButton(btn);
+                    setDefaultButton(btn, frame);
             }
         } catch (Exception e) {
             System.err.println(e.getMessage() + " Failed to set default button");
         }
+    }
+    private void setDefaultButton(JButton btn, JInternalFrame frame) {
+        frame.getRootPane().setDefaultButton(btn);
     }
     private void updateActiveExclusions(DeepCloneableVector<Exclusion> colExclusion) {
         // Rebuild mhtActiveExclusions

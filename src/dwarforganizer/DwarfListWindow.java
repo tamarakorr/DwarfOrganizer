@@ -31,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -43,6 +44,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import myutils.MyArrayUtils;
 import myutils.MyHandyTable;
@@ -133,12 +135,17 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private Vector<Labor> mvLabors; // Set in constructor
 
-    private Map<String, GridView> moViews;  // Keyed by view name
-    private Map<String, List<String>> moViewColumnGroups; // Keyed by view name, values are lists of column group keys
+    //private List<GridView> mlstOrderedViews;    // Ordered views
+    //private Map<String, GridView> moViews;      // Views keyed by view name
+    private Views moViews;
+
+    //private Map<String, List<String>> moViewColumnGroups; // Keyed by view name, values are lists of column group keys
     private ViewHandler moViewHandler;
 
     private JMenuBar moMenuBar;
     private Map<String, JCheckBoxMenuItem> moColMenus;
+    private ButtonGroup moViewButtonGroup;
+    private JMenu moViewMenu;
 
     private VisibilityHandler moTableVis;
 
@@ -167,9 +174,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private ValueAndTextFormat currentLevelFormat;
     private Map<ValueAndTextFormat, JMenuItem> mmLevelFormatMenus;
 
+    private Broadcaster moBroadcaster;
+
+    private int mintFixedViewMenuItems;
+
     public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
             , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta
-            , Vector<LaborGroup> vLaborGroups) {
+            , Vector<LaborGroup> vLaborGroups
+            , List<GridView> lstViews) {
 
         // Parent constructor---------------------------------------------------
         super();
@@ -179,6 +191,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mhtStats = htStat;
         mhtSkills = htSkill;
         mhtMetaSkills = htMeta;
+        moViews = new Views(lstViews);
+        //mlstOrderedViews = lstViews;
+        //moViews = viewsToHashMap(lstViews); // Convert view list to hashmap
 
         // Create objects-------------------------------------------------------
         Map[] skillMaps = { mhtSkills, mhtMetaSkills };
@@ -186,6 +201,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mvDwarves = new Vector<Dwarf>(); //vDwarves;
         Collection<Exclusion> vExclusions = new Vector<Exclusion>();
 
+        moBroadcaster = new Broadcaster();
         mbLoading = true;
 
         // Create view data-----------------------------------------------------
@@ -203,7 +219,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moTableVis = new VisibilityHandler(mainTable);
         moTableVis.initialize();
 
-        moViewHandler.createDwarfListViews();
+        //moViewHandler.createDwarfListViews();
 
         // Create the column freeze pane----------------------------------------
         // Should be done after setting up renderers and table
@@ -216,7 +232,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // Must be done after composite table is created.
         createPopup();
 
-        moMenuBar = createMenu();   // Must be done after creating views & composite table
+        moMenuBar = createMenu(lstViews);   // Must be done after creating views & composite table
 
         // Must be done after creating menu but before setting views------------
         // Set column renderer for stats
@@ -297,6 +313,61 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         mbLoading = false;
     }
+    // For using a list or map to access the collection of views--whichever
+    // is more convenient.
+    private class Views {
+
+        private List<GridView> mlstOrderedViews;    // Ordered views
+        private Map<String, GridView> mmViews;      // Views keyed by view name
+
+        public Views(List<GridView> views) {
+            setViews(views);
+        }
+        public void setViews(List<GridView> views) {
+            mlstOrderedViews = views;
+            mmViews = viewsToHashMap(views);
+        }
+        public List<GridView> getOrderedList() {
+            return mlstOrderedViews;
+        }
+        public Map<String, GridView> getMap() {
+            return mmViews;
+        }
+        public GridView get(String key) {
+            return mmViews.get(key);
+        }
+        public boolean containsKey(Object key) {
+            return mmViews.containsKey(key);
+        }
+        public int size() {
+            return mlstOrderedViews.size();
+        }
+        // Remove the view from the hash map and ordered list of views
+        public void remove(String name) {
+            mmViews.remove(name);
+            for (GridView view : mlstOrderedViews) {
+                if (view.getName().equals(name)) {
+                    mlstOrderedViews.remove(view);
+                    break;
+                }
+            }
+        }
+        // Add the view to the hash map and ordered list of views
+        public void add(GridView view) {
+            mmViews.put(view.getName(), view);
+            mlstOrderedViews.add(view);
+        }
+        private HashMap<String, GridView> viewsToHashMap(List<GridView> views) {
+            HashMap<String, GridView> hmReturn = new HashMap<String, GridView>(
+                    views.size());
+            for (GridView view : views)
+                hmReturn.put(view.getName(), view);
+            return hmReturn;
+        }        
+    }
+    public Broadcaster getBroadcaster() {
+        return moBroadcaster;
+    }
     private class VisibilityHandler extends StateIncrementHandler {
         private JComponent comp;
         private ThresholdFunctions tf;
@@ -349,14 +420,22 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     }
     private void setView(String viewName) {
         // Set the table columns/view
-        moViews.get(viewName).applyToTable(moTable
-                , moFreezer.getAllColumnsModel());
+        GridView view = moViews.get(viewName);
+        view.applyToTable(moTable, moFreezer.getAllColumnsModel());
 
         // Set the selected column groups in the menu
         for (String columnKey : moColMenus.keySet()) {
             moColMenus.get(columnKey).setSelected(
-                    moViewColumnGroups.get(viewName).contains(columnKey));
+                    isColumnGroupFullyInView(columnKey, view));
+                    //moViewColumnGroups.get(viewName).contains(columnKey));
         }
+    }
+    // Returns true if all columns in the column group keyed by columnKey
+    // are included in the given grid view.
+    private boolean isColumnGroupFullyInView(String columnKey, GridView view) {
+        List<String> lstGroupCols = Arrays.asList(
+                moViewHandler.getColumnGroupMap().get(columnKey).getColumns());
+        return view.getColOrder().containsAll(lstGroupCols);
     }
     private class ColumnGroup {
         private String[] columns;
@@ -575,13 +654,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             return vReturn;
         }
 
-        public void createDwarfListViews() {
+        // These are read from file now
+/*        public void createDwarfListViews() {
             ArrayList<String> alColGroupList;
 
-            moViews = new HashMap<String, GridView>();
+            //moViews = new HashMap<String, GridView>();
             moViewColumnGroups = new HashMap<String, List<String>>();
 
-            // TODO: Read from file?
             // Default view-----------------------------------------------------
             alColGroupList = new ArrayList<String>(Arrays.asList(new String[] {
                 COL_GROUP_ALWAYS_SHOW, COL_GROUP_NICKNAME, COL_GROUP_GENDER
@@ -631,7 +710,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             })));
 
             // TODO: Potential view
-        }
+        } */
 
         public MyEditableTableModel<DwarfListItem> createDwarfListModel(
                 Collection<Exclusion> vExclusions) {
@@ -868,14 +947,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     protected JMenuBar getMenu() {
         return moMenuBar;
     }
-    private JMenuBar createMenu() {
+    private JMenuBar createMenu(List<GridView> lstView) {
 
         JMenu menu;
         JMenu subMenu;
         JMenuItem item;
-        ButtonGroup group;
+        //ButtonGroup group;
         final Object[] hideableColumns = getHideableColumns();
-        
+
         //JTable mainTable = moTable.getMainTable();
         //final HideableTableColumnModel hideableModel
         //        = (HideableTableColumnModel) mainTable.getColumnModel();
@@ -976,35 +1055,80 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         createFormatSubMenu(subMenu, "Skill Level", mmLevelFormatMenus);
 
         // Views----------------------------------------------------------------
-        menu = new JMenu("View");
-        menu.setMnemonic(KeyEvent.VK_V);
-        menuBar.add(menu);
-        //System.out.println("Menu count: " + menuBar.getMenuCount());
-
-        group = new ButtonGroup();
-        for (String key : moViews.keySet()) {
-            final GridView view = moViews.get(key);
-            item = new JRadioButtonMenuItem(view.getName());
-            item.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setView(view.getName());
-                }
-            });
-            item.setSelected(view.getName().equals(DEFAULT_VIEW_NAME));
-            group.add(item);
-            menu.add(item);
-        }
-
-        menu.add(new JSeparator());
-        item = new JMenuItem("Manage Views..."); // TODO
-        item.setToolTipText("Coming soon"); // TODO
-        item.setEnabled(false); // TODO
-        menu.add(item);
+        createViewMenu(lstView);
+        menuBar.add(moViewMenu);
 
         return menuBar;
     }
+    private void addViewToMenu(String viewName, int index, JMenu menu
+            , ButtonGroup group, boolean selected) {
+        JMenuItem item = createViewMenuItem(viewName, false);
+        group.add(item);
+        menu.add(item, index);
 
+        // Have to select after adding to button group
+        if (selected)
+            item.setSelected(selected);
+    }
+    private JMenuItem createViewMenuItem(final String viewName
+            , boolean selected) {
+
+        JMenuItem item = new JRadioButtonMenuItem(viewName);
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setView(viewName);
+            }
+        });
+        item.setSelected(selected);
+        return item;
+    }
+    private void saveCurrentView() {
+
+        String name;
+
+        Object response = JOptionPane.showInputDialog(this
+                , "Enter a name for this view:", "Save View"
+                , JOptionPane.PLAIN_MESSAGE);
+        if (response == null) // User cancelled
+            return;
+        name = response.toString();
+
+        if (moViews.containsKey(name)) {
+            int overwrite = JOptionPane.showConfirmDialog(this
+                    , "Overwrite the current '" + name + "'?"
+                    , "Confirm Overwrite", JOptionPane.OK_CANCEL_OPTION);
+            if (JOptionPane.CANCEL_OPTION == overwrite
+                    || JOptionPane.CLOSED_OPTION == overwrite)
+                return;
+            else {
+                System.out.println("overwrite = " + overwrite
+                        + "; Deleting view '" + name + "'");
+                moViews.remove(name);
+            }
+        }
+
+        // Create a new view with the current columns
+        List<Object> lstOrder = new ArrayList<Object>(
+                moTable.getTotalColumns());
+        TableColumnModel tcm = moFreezer.getAllColumnsModel();
+        for (int iCount = 0; iCount < tcm.getColumnCount(); iCount++) {
+            lstOrder.add(tcm.getColumn(iCount).getIdentifier());
+        }
+
+        GridView newView = new GridView(name, "", GridView.KeyAxis.X_AXIS, false
+                , lstOrder);
+        moViews.add(newView);
+
+        // Write to file
+        moBroadcaster.notifyListeners(new BroadcastMessage("DwarfListSaveViews"
+                , moViews.getOrderedList(), "")); // moViews
+
+        // Add and select menu item
+        addViewToMenu(name, moViews.size() - 1 + mintFixedViewMenuItems
+                , moViewMenu, moViewButtonGroup
+                , true);
+    }
     private Object[] getHideableColumns() {
         Vector<Object> vAllColumns = moViewHandler.getAllColumns();
         ArrayList<Object> alAlwaysShow
@@ -1013,7 +1137,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 ViewHandler.COL_GROUP_ALWAYS_SHOW).getColumns()));
         int size = vAllColumns.size() - alAlwaysShow.size();
         Object[] hideableColumns = new Object[size];
-        
+
         int iCount = 0;
         for (Object col : vAllColumns) {
             if (! alAlwaysShow.contains(col)) {
@@ -1023,20 +1147,20 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         }
         return hideableColumns;
     }
-    
+
     private ActionListener createAllVisActionListener(
             final Object[] affectedColumns, final boolean visible) {
-        
+
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (moColMenus != null) {
                     moTableVis.incrementHidden();
-                    
+
                     // Show or hide columns
                     setColumnsVisible(affectedColumns, visible
                             , moFreezerColModel);
-                    
+
                     // Set menu item states
                     for (String key : moColMenus.keySet()) {
                         JCheckBoxMenuItem menuItem = moColMenus.get(key);
@@ -1045,13 +1169,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                             menuItem.setSelected(visible);
                         }
                     }
-                    
+
                     moTableVis.incrementShown();
                 }
             }
-        };        
+        };
     }
-    
+
     private void createFormatSubMenu(JMenu subMenu, final String which
             , Map<ValueAndTextFormat, JMenuItem> map) {
         JMenuItem item;
@@ -1646,5 +1770,75 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         else
             System.err.println("[Dwarf List]Unknown broadcast message received: "
                     + message.getSource());
+    }
+    public void updateViews(List<GridView> newViews) {
+        createDynamicViewItems(moViewMenu, moViewButtonGroup, newViews
+                , moViews.size(), getSelectedViewName());
+        moViews.setViews(newViews);
+    }
+    private String getSelectedViewName() {
+        for (int iCount = 0; iCount < moViews.size(); iCount++) {
+            JMenuItem item = moViewMenu.getItem(
+                    iCount + mintFixedViewMenuItems);
+            if (item.isSelected())
+                return item.getText();
+        }
+        return DEFAULT_VIEW_NAME;
+    }
+    private void createDynamicViewItems(JMenu viewMenu, ButtonGroup viewGroup
+            , List<GridView> views
+            , int numOldViews, String selectedView) {
+
+        // Remove any existing dynamic view menu items
+        for (int iCount = numOldViews - 1; iCount >= 0; iCount--) {
+            viewMenu.remove(iCount + mintFixedViewMenuItems);
+        }
+
+        // Add dynamic view menu items
+        int index = 0;
+        for (GridView view : views) {
+            String name = view.getName();
+            addViewToMenu(name, index + mintFixedViewMenuItems, viewMenu
+                    , viewGroup, name.equals(selectedView));
+            index++;
+        }
+    }
+    // Creates moViewMenu and moViewButtonGroup
+    private void createViewMenu(List<GridView> views) {
+        JMenuItem item;
+        moViewMenu = new JMenu("View");
+        moViewMenu.setMnemonic(KeyEvent.VK_V);
+
+        // Manage views
+        item = new JMenuItem("Manage Views...");
+        item.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moBroadcaster.notifyListeners(new BroadcastMessage(
+                        "DwarfListManageViews", null, ""));
+            }
+        });
+        moViewMenu.add(item);
+
+        // Save current view
+        item = new JMenuItem("Save Current View As...");
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveCurrentView();
+            }
+        });
+        moViewMenu.add(item);
+
+        // -----------------------------
+        moViewMenu.add(new JSeparator());
+        mintFixedViewMenuItems = moViewMenu.getMenuComponentCount();
+        System.out.println("Fixed view menu items: " + mintFixedViewMenuItems);
+
+        // Dynamic views
+        moViewButtonGroup = new ButtonGroup();
+        createDynamicViewItems(moViewMenu, moViewButtonGroup, views, 0
+                , DEFAULT_VIEW_NAME);
     }
 }

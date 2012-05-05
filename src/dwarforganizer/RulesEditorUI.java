@@ -41,7 +41,7 @@ import myutils.MyHandyTable;
 public class RulesEditorUI extends JPanel implements DirtyForm {
 
     private static final int NUM_TEXT_COLUMNS = 49; // For preferred width
-    
+
     private static final Vector<Object> mvHeadings = new Vector<Object>(
             Arrays.asList(new Object[]
             { "Entry Type", "First Labor", "Second Labor", "Comment"}));
@@ -52,23 +52,23 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
     private static final String TEXT_ADD = "Add New";
     private static final String TEXT_EDIT = "Update";
-    
+
     private JButton mbtnAdd; // mbtnAddOrUpdate
     private JButton mbtnUpdate;
 
     private JTable mtblRules;
     private MyTableModel<LaborRule> mmdlRules;
-    
+
     private JComboBox mcboType;
     private JComboBox mcboFirstLabor;
     private JComboBox mcboSecondLabor;
     private PlaceholderTextField mtxtComment;
     private JTextArea mtxtMeaning;
-    private JScrollPane mspScrollPane;    
+    private JScrollPane mspScrollPane;
 
     private RulesEditor moRulesEditor;
     private Broadcaster defaultButtonBroadcaster;
-    
+
     // Never mind
     // JTable editing interface is just too awful to inflict on users
 /*    class LaborCellEditor extends DefaultCellEditor {
@@ -93,7 +93,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     } */
 
     public RulesEditorUI(Vector<Labor> vLabors) { // Vector<String[]> ruleFileContents
-        
+
         // Super constructor----------------------------------------------------
         super();
 
@@ -103,15 +103,15 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         // Create objects-------------------------------------------------------
         //moDirtyHandler = new DirtyHandler();
         defaultButtonBroadcaster = new Broadcaster();
-        
+
         Vector<String> vLaborNames = getLaborNames(vLabors);
         vLaborNames.add(0, DEFAULT_LABOR);
 
         // Dummy data vector
         //Vector<String[]> ruleFileContents = new Vector<String[]>();
-        
+
         moRulesEditor = new RulesEditor();
-        
+
         // Create model---------------------------------------------------------
         Class[] aColClasses = new Class[] { String.class, String.class
                 , String.class, String.class };
@@ -128,7 +128,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mspScrollPane = new JScrollPane(mtblRules);
         mspScrollPane.setPreferredSize(new Dimension(750, 350));
         MyHandyTable.handyTable(mtblRules, mmdlRules, false, true);
-        
+
         swapper.setTable(mtblRules);
         // Create other UI controls---------------------------------------------
 
@@ -138,12 +138,12 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mtxtMeaning.setWrapStyleWord(true);
         mtxtMeaning.setColumns(NUM_TEXT_COLUMNS);   // For preferred width
         mtxtMeaning.setRows(2);                     // For preferred height
-        
+
         // (Nimbus bug workaround - setBackground() doesn't work properly)
         mtxtMeaning.setOpaque(false);
         mtxtMeaning.setBorder(BorderFactory.createEmptyBorder());
         mtxtMeaning.setBackground(new Color(0, 0, 0, 0)); // JLabel().getBackground()
-        
+
         ActionListener alUpdateMeaning = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -154,15 +154,15 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mcboType = new JComboBox(new String[] { DEFAULT_TYPE, "BLACKLIST", "WHITELIST" });
         mcboType.addActionListener(alUpdateMeaning);
         mcboType.setPrototypeDisplayValue("BLACKLISTXX");
-        
+
         mcboFirstLabor = new JComboBox(vLaborNames);
         mcboFirstLabor.addActionListener(alUpdateMeaning);
         mcboFirstLabor.setPrototypeDisplayValue("Small Animal DissectionXX");
-        
+
         mcboSecondLabor = new JComboBox(vLaborNames);
         mcboSecondLabor.addActionListener(alUpdateMeaning);
         mcboSecondLabor.setPrototypeDisplayValue("Small Animal DissectionXX");
-        
+
         mbtnAdd = new JButton(TEXT_ADD);
         mbtnAdd.addActionListener(new ActionListener() {
             @Override
@@ -170,7 +170,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
                 moRulesEditor.addRecord();
             }
         });
-        
+
         mbtnUpdate = new JButton(TEXT_EDIT);
         mbtnUpdate.addActionListener(new ActionListener() {
 
@@ -183,11 +183,11 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mtxtComment = new PlaceholderTextField(NUM_TEXT_COLUMNS
                 , "Add a comment (optional)", true);
         DefaultFocus.setDefaultComponent(mtxtComment);
-        
+
         // Post-initialize controls---------------------------------------------
         moRulesEditor.initialize(mtblRules, mmdlRules, mbtnUpdate
-                , false, false, true, true, true, true, true);
-        
+                , false, false, true, true, true, true, true, mtxtComment);
+
         // Set up default buttons
         Map<JComponent, JButton> hmDefaultButtons = new HashMap<JComponent
                 , JButton>(5);
@@ -197,7 +197,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
             hmDefaultButtons.put(comp, mbtnAdd);
         }
         hmDefaultButtons.put(mtblRules, null);
-        
+
         for (JComponent comp : hmDefaultButtons.keySet()) {
             final JButton btn = hmDefaultButtons.get(comp);
             comp.addFocusListener(new FocusListener() {
@@ -210,7 +210,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
                 }
             });
         }
-        
+
         // Build the UI---------------------------------------------------------
         JPanel panCommentOnTop = new JPanel();
         panCommentOnTop.setLayout(new BorderLayout());
@@ -244,10 +244,10 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         panel = new JPanel(new BorderLayout());
         panel.add(new JLabel("Comment"), BorderLayout.NORTH);
         panel.add(mtxtComment, BorderLayout.SOUTH);
-        
+
         JPanel flowPanel = new JPanel(new FlowLayout());
         flowPanel.add(panel);
-        
+
         panCommentOnTop.add(flowPanel, BorderLayout.NORTH); // panel
         panCommentOnTop.add(panEdit, BorderLayout.CENTER);
 
@@ -256,12 +256,12 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         updateMeaning();
         panCommentOnTop.add(panel, BorderLayout.SOUTH);
         panCommentOnTop.setBorder(BorderFactory.createEtchedBorder());
-        
+
         this.setLayout(new BorderLayout());
         this.add(mspScrollPane, BorderLayout.CENTER);
         this.add(panCommentOnTop, BorderLayout.SOUTH);
     }
-    
+
     private class RulesEditor extends AbstractEditor<LaborRule> {
 
         @Override
@@ -269,7 +269,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
             mcboType.setSelectedItem(DEFAULT_TYPE);
             mcboFirstLabor.setSelectedItem(DEFAULT_LABOR);
             mcboSecondLabor.setSelectedItem(DEFAULT_LABOR);
-            mtxtComment.setText(DEFAULT_COMMENT);            
+            mtxtComment.setText(DEFAULT_COMMENT);
         }
 
         @Override
@@ -307,11 +307,11 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
                 mtxtComment.setText(rowData.getComment());
 
             //updateMeaning();  Unnecessary
-            
+
             return true;
         }
     }
-    
+
     protected Broadcaster getDefaultButtonBroadcaster() {
         return defaultButtonBroadcaster;
     }
@@ -325,22 +325,22 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     protected JComponent getDefaultFocusComp() {
         return mtxtComment;
     }
-    
+
     // Load the given rule file contents
     public void loadData(Vector<LaborRule> ruleFileContents) { // String[]
         // Clear input----------------------------------------------------------
         moRulesEditor.clearInput(); // clearInput();
-        
+
         // Set data-------------------------------------------------------------
         mmdlRules.setRowData(ruleFileContents);
-        
+
         // Adjust components----------------------------------------------------
         // Resize the table columns
         MyHandyTable.autoResizeTableColumns(mtblRules);
-        
+
         // Resize the rest
         this.validate();
-        
+
         // Set clean state------------------------------------------------------
         moRulesEditor.getDirtyHandler().setClean();
     }

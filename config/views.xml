@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Views>
+    <NumViews>3</NumViews>
+    <View_0>
+        <Name>Default View</Name>
+        <ColOrder>
+            <NumCols>33</NumCols>
+            <Col_0>Include</Col_0>
+            <Col_1>Name</Col_1>
+            <Col_2>Nickname</Col_2>
+            <Col_3>Gender</Col_3>
+            <Col_4>Age</Col_4>
+            <Col_5>Exclusion</Col_5>
+            <Col_6>Inactive Lists</Col_6>
+            <Col_7>Intuition</Col_7>
+            <Col_8>Straightforwardness</Col_8>
+            <Col_9>Self_consciousness</Col_9>
+            <Col_10>Endurance</Col_10>
+            <Col_11>Disease Resistance</Col_11>
+            <Col_12>Social Awareness</Col_12>
+            <Col_13>Linguistic Ability</Col_13>
+            <Col_14>Assertiveness</Col_14>
+            <Col_15>Altruism</Col_15>
+            <Col_16>Willpower</Col_16>
+            <Col_17>Memory</Col_17>
+            <Col_18>Analytical Ability</Col_18>
+            <Col_19>Toughness</Col_19>
+            <Col_20>Friendliness</Col_20>
+            <Col_21>Creativity</Col_21>
+            <Col_22>Cooperation</Col_22>
+            <Col_23>Patience</Col_23>
+            <Col_24>Agility</Col_24>
+            <Col_25>Spatial Sense</Col_25>
+            <Col_26>Kinesthetic Sense</Col_26>
+            <Col_27>Focus</Col_27>
+            <Col_28>Strength</Col_28>
+            <Col_29>Empathy</Col_29>
+            <Col_30>Musicality</Col_30>
+            <Col_31>Recuperation</Col_31>
+            <Col_32>Jobs</Col_32>
+        </ColOrder>
+    </View_0>
+    <View_1>
+        <Name>Military View</Name>
+        <ColOrder>
+            <NumCols>17</NumCols>
+            <Col_0>Include</Col_0>
+            <Col_1>Name</Col_1>
+            <Col_2>Nickname</Col_2>
+            <Col_3>Close Combat Potential</Col_3>
+            <Col_4>Close Combat Lvl</Col_4>
+            <Col_5>Ranged Combat Potential</Col_5>
+            <Col_6>Ranged Combat Lvl</Col_6>
+            <Col_7>Strength</Col_7>
+            <Col_8>Agility</Col_8>
+            <Col_9>Toughness</Col_9>
+            <Col_10>Willpower</Col_10>
+            <Col_11>Spatial Sense</Col_11>
+            <Col_12>Kinesthetic Sense</Col_12>
+            <Col_13>Focus</Col_13>
+            <Col_14>Gender</Col_14>
+            <Col_15>Exclusion</Col_15>
+            <Col_16>Inactive Lists</Col_16>
+        </ColOrder>
+    </View_1>
+    <View_2>
+        <Name>helloooo</Name>
+        <ColOrder>
+            <NumCols>33</NumCols>
+            <Col_0>Include</Col_0>
+            <Col_1>Name</Col_1>
+            <Col_2>Nickname</Col_2>
+            <Col_3>Gender</Col_3>
+            <Col_4>Age</Col_4>
+            <Col_5>Exclusion</Col_5>
+            <Col_6>Inactive Lists</Col_6>
+            <Col_7>Intuition</Col_7>
+            <Col_8>Straightforwardness</Col_8>
+            <Col_9>Self_consciousness</Col_9>
+            <Col_10>Endurance</Col_10>
+            <Col_11>Disease Resistance</Col_11>
+            <Col_12>Social Awareness</Col_12>
+            <Col_13>Linguistic Ability</Col_13>
+            <Col_14>Assertiveness</Col_14>
+            <Col_15>Altruism</Col_15>
+            <Col_16>Willpower</Col_16>
+            <Col_17>Memory</Col_17>
+            <Col_18>Analytical Ability</Col_18>
+            <Col_19>Toughness</Col_19>
+            <Col_20>Friendliness</Col_20>
+            <Col_21>Creativity</Col_21>
+            <Col_22>Cooperation</Col_22>
+            <Col_23>Patience</Col_23>
+            <Col_24>Agility</Col_24>
+            <Col_25>Spatial Sense</Col_25>
+            <Col_26>Kinesthetic Sense</Col_26>
+            <Col_27>Focus</Col_27>
+            <Col_28>Strength</Col_28>
+            <Col_29>Empathy</Col_29>
+            <Col_30>Musicality</Col_30>
+            <Col_31>Recuperation</Col_31>
+            <Col_32>Jobs</Col_32>
+        </ColOrder>
+    </View_2>
+</Views>

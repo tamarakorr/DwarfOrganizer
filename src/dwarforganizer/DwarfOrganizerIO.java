@@ -16,6 +16,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
@@ -46,61 +47,62 @@ import org.xml.sax.SAXException;
  * @author Owner
  */
 public class DwarfOrganizerIO {
-    
+
     public static final boolean DEFAULT_EXCLUSION_ACTIVE = true;
-    
+
     private static final String GROUP_LIST_FILE_NAME = "config/group-list.txt";
     private static final String LABOR_LIST_FILE_NAME = "config/labor-list.txt";
     private static final String RULE_FILE_NAME = "config/rules.txt";
     private static final String EXCLUSION_FILE_NAME = "config/exclusion-list.xml";
     private static final String LABOR_SKILLS_XML_FILE_NAME = "config/labor-skills.xml";
     private static final String TRAITS_FILE_NAME = "config/trait-hints.txt";
-    
+    private static final String VIEW_FILE_NAME = "config/views.xml";
+
     private static final String CURRENT_EXCLUSIONS_VERSION = "B";
-    
+
     private static final String RULES_NOTE = "This file lists jobs that aren't allowed"
             + " together (BLACKLIST), or aren't allowed with other jobs"
             + " (WHITELIST). Put each new pair on a different line, and separate"
             + " the pair by a a Tab. The names must exactly match the XML 'Labour' names,"
             + " which can be found in labor-list.txt. Comments can be added after the last"
-            + " column.";        
-    
+            + " column.";
+
     private static final int LABOR_RULE_INDEX_TYPE = 0;
     private static final int LABOR_RULE_INDEX_FIRST_LABOR = 1;
     private static final int LABOR_RULE_INDEX_SECOND_LABOR = 2;
     private static final int LABOR_RULE_INDEX_COMMENT = 3;
     private static final int LABOR_RULE_MIN_COLS = 3;
     private static final int LABOR_RULE_MAX_COLS = 4;
-    
+
 /*    private enum RuleFileColIndex {
         LABOR_RULE_TYPE (0)
         , LABOR_RULE_FIRST_LABOR (1)
         , LABOR_RULE_SECOND_LABOR (2)
         , LABOR_RULE_COMMENT (3);
-        
+
         private final int index;
-        
+
         RuleFileColIndex(int index) {
             this.index = index;
         }
         public int getIndex() { return index; }
     }; */
-        
+
     private JobBlacklist moBlacklist;
     private JobList moWhitelist;
     //private Vector<String[]> mvRuleFile;
     private Vector<LaborRule> mvRuleFile;
-    
+
     private Integer mintMaxExclID = 0;
-    
+
     public DwarfOrganizerIO() {
         super();
     }
-    
+
     protected Vector<LaborGroup> readLaborGroups() throws Exception {
         final int EXPECTED_COLUMNS = 5;
         Vector<LaborGroup> vReturn = new Vector<LaborGroup>();
-        
+
         try {
             FileInputStream in = new FileInputStream(GROUP_LIST_FILE_NAME);
             Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
@@ -115,23 +117,23 @@ public class DwarfOrganizerIO {
             }
 
             in.close();
-            
+
         } catch (Exception ex) {
             System.err.println("Could not process group-list.txt. All results are invalid.");
             throw ex;
         }
-        
+
         return vReturn;
     }
 
     protected Vector<Labor> readLabors() throws Exception {
         final int EXPECTED_COLUMNS = 3;
         Vector<Labor> vReturn = new Vector<Labor>();
-        
+
         try {
             FileInputStream in = new FileInputStream(LABOR_LIST_FILE_NAME);
             Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
-            
+
             for (String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
                     System.err.println("A line in " + LABOR_LIST_FILE_NAME
@@ -148,7 +150,7 @@ public class DwarfOrganizerIO {
         }
         return vReturn;
     }
-    
+
     // Reads the rule file
     // Results can be obtained with getWhitelist() and getBlacklist()
     // Raw file data is stored in mvRuleFile
@@ -160,18 +162,18 @@ public class DwarfOrganizerIO {
         moWhitelist = new JobList();
         //mvRuleFile = new Vector<String[]>();
         mvRuleFile = new Vector<LaborRule>();
-        
+
         try {
             // Open the file
             FileInputStream in = new FileInputStream(RULE_FILE_NAME);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            
+
             // Throw out the first line
             br.readLine();
-            
+
             while ((line = br.readLine()) != null) {
                 jobs = line.split("\t");
-                
+
                 // Convert old "COMMENT" entries to end-of-line comments
                 // COMMENT entries at the very end of the file are handled out of loop
                 if (jobs[LABOR_RULE_INDEX_TYPE].equals("COMMENT")) {
@@ -189,13 +191,13 @@ public class DwarfOrganizerIO {
                         System.err.println("Warning: A line in "
                                 + RULE_FILE_NAME + " is improperly formatted.");
                     else {
-                        
+
                         // Use an empty string for the comment if there is no
                         // "Comment" column
                         String strComment = "";
                         if (jobs.length > LABOR_RULE_MIN_COLS)
                             strComment = jobs[LABOR_RULE_INDEX_COMMENT];
-                        
+
                         mvRuleFile.add(new LaborRule(jobs[LABOR_RULE_INDEX_TYPE]
                                 , jobs[LABOR_RULE_INDEX_FIRST_LABOR]
                                 , jobs[LABOR_RULE_INDEX_SECOND_LABOR]
@@ -203,7 +205,7 @@ public class DwarfOrganizerIO {
                     }
                 }
             }
-            
+
             // Comments from the end of the file - append to last non-COMMENT entry
             if (! strCommentFix.equals("")) {
                 int lastIndex = mvRuleFile.size() - 1;
@@ -213,16 +215,16 @@ public class DwarfOrganizerIO {
                 mvRuleFile.get(lastIndex).setComment(
                         newData[LABOR_RULE_INDEX_COMMENT]);
             }
-            
+
             br.close();
             in.close();
-            
+
             // Create the rule structures
             createRuleStructures(mvRuleFile);
-            
+
             // Post-process the whitelist
             //addWhitelistToBlacklist(moWhitelist, moBlacklist, jobSettings);
-            
+
         } catch (Exception e) {
             System.err.println("Error when processing rule file."
                     + " Job blacklist/whitelist will not be correct.");
@@ -233,7 +235,7 @@ public class DwarfOrganizerIO {
     protected JobList getWhitelist() { return moWhitelist; }
     //protected Vector<String[]> getRuleFileContents() { return mvRuleFile; }
     protected Vector<LaborRule> getRuleFileContents() { return mvRuleFile; }
-    
+
     // Appends old COMMENT entries (comment) to the given non-comment line (jobs)
     private String[] fixOldStyleComment(String[] jobs, String comment) {
         // Append comment to existing comment
@@ -249,7 +251,7 @@ public class DwarfOrganizerIO {
         }
         return jobs;
     }
-    
+
     // Creates moBlacklist and moWhitelist from the given file data
     private void createRuleStructures(Vector<LaborRule> vData) { // String[]
         //for (String[] fields : vData) {
@@ -260,12 +262,12 @@ public class DwarfOrganizerIO {
                 moBlacklist.addOneWayEntry(laborRule.getSecondLabor()
                         , laborRule.getFirstLabor()); //fields[2], fields[1]);
                 //System.out.println("RULE: Blacklist: One dwarf may not do " + fields[1]
-                //    + " and " + fields[2] + " simultaneously.");                        
+                //    + " and " + fields[2] + " simultaneously.");
             }
             else if (laborRule.getType().equals("WHITELIST")) { // fields[0].equals("WHITELIST")
                 moWhitelist.addOneWayEntry(laborRule.getFirstLabor()
                         , laborRule.getSecondLabor()); //fields[1], fields[2]);
-                //System.out.println("RULE: Whitelist: " + fields[1] + " may do " 
+                //System.out.println("RULE: Whitelist: " + fields[1] + " may do "
                 //    + fields[2]);
             }
             else {
@@ -274,25 +276,25 @@ public class DwarfOrganizerIO {
             }
         }
     }
-    
+
     // Writes the given data to the rule file.
     // Recreates the whitelist and blacklist data structures.
     protected void writeRuleFile(Vector<LaborRule> vData) { // String[]
 
         moBlacklist = new JobBlacklist();
         moWhitelist = new JobList();
-        
+
         // Open the file
         try {
             FileWriter fstream = new FileWriter(RULE_FILE_NAME);
             BufferedWriter out = new BufferedWriter(fstream);
             System.out.println("Writing " + RULE_FILE_NAME);
-            
+
             // Write the first line
             out.write(RULES_NOTE);
             out.newLine();
             out.flush();
-            
+
             // Write all subsequent lines
             //for (String[] line : vData) {
             for (LaborRule line : vData) {
@@ -309,30 +311,30 @@ public class DwarfOrganizerIO {
                 out.newLine();
                 out.flush();
             }
-            
+
             out.close();
             fstream.close();
-            
+
             // Success: update mvRuleFile with the new data
             mvRuleFile = vData;
             createRuleStructures(mvRuleFile);
-            
+
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to write " + RULE_FILE_NAME);
         }
 
     }
-    
+
     // DwarfIO has been imported from DwarfListWindow and is a little more messy
     // than newer functions in this file
     public static class DwarfIO {
-        
+
         private static final String DEFAULT_DWARF_AGE = "999";
         private static final String DEFAULT_TRAIT_VALUE = "50";
         private static final int MAX_DWARF_TIME = 100;
         private Pattern SKILL_LEVEL_PATTERN; // Set by constructor
-        
+
         private final int[] plusplusRange = { 700, 1200, 1400, 1500, 1600, 1800, 2500 };
         private final int[] plusRange = { 450, 950, 1150, 1250, 1350, 1550, 2250 };
         private final int[] avgRange = { 200, 750, 900, 1000, 1100, 1300, 2000 };
@@ -340,23 +342,23 @@ public class DwarfOrganizerIO {
 
         // Fixed to include the neutral range  4/23/12
         //private final long[] socialRange = { 0, 10, 25, 61, 76, 91, 100 };
-        private final int[] socialRange = { 0, 10, 25, 40, 61, 76, 91 }; 
-        
+        private final int[] socialRange = { 0, 10, 25, 40, 61, 76, 91 };
+
         private final String[] SOCIAL_TRAITS = { "Friendliness"
                 , "Self_consciousness", "Straightforwardness", "Cooperation"
                 , "Assertiveness", "Altruism" };
-        
+
         private Hashtable<String, Stat> mhtStats;
         private Hashtable<String, Skill> mhtSkills;
         private Hashtable<String, MetaSkill> mhtMetaSkills;
-        
+
         private Vector<Dwarf> mvDwarves;
-        
-        public DwarfIO() {            
+
+        public DwarfIO() {
             // "Constants"
             SKILL_LEVEL_PATTERN = Pattern.compile("(.*\\[)(\\d+)(\\].*)");
         }
-        
+
         public Vector<Dwarf> getDwarves() {
             return mvDwarves;
         }
@@ -372,37 +374,37 @@ public class DwarfOrganizerIO {
         public Hashtable<String, Stat> getStats() {
             return mhtStats;
         }
-        
+
         public void readDwarves(String filePath) { //throws Exception { // NodeList
-            
+
             mvDwarves = new Vector<Dwarf>(); // Initialize before reading anything
-            
+
             try {
-                
+
                 // Skills
                 createSkills();
-                
+
                 // Trait hints
                 readTraitHints();
-                
+
                 // Dwarves.xml
                 myXMLReader xmlFileReader = new myXMLReader(filePath);
                 NodeList nodes = xmlFileReader.getDocument().getElementsByTagName(
                         "Creature");
                 System.out.println("Dwarves.xml contains " + nodes.getLength()
-                        + " creatures.");        
+                        + " creatures.");
                 parseDwarves(nodes);
             } catch (Exception e) {
                 System.err.println(e.getMessage() + " Failed to read dwarves.XML");
             }
         }
-        
+
         // Reads labor-skills.XML
         private void createSkills() {
-            
+
             mhtSkills = new Hashtable<String, Skill>();
             mhtMetaSkills = new Hashtable<String, MetaSkill>();
-            
+
             createStats();
 
             // Read skills from XML.
@@ -436,7 +438,7 @@ public class DwarfOrganizerIO {
         // TODO Remove hard-coding
         private void createStats() {
             mhtStats = new Hashtable<String, Stat>();
-            
+
             String[] plusplusStats = { "Focus", "Spatial Sense" };
             String[] plusStats = { "Strength", "Toughness", "Analytical Ability"
                 , "Creativity", "Patience", "Memory" };
@@ -473,18 +475,18 @@ public class DwarfOrganizerIO {
             mhtStats.get("Agility").setXmlName("Agility");
 
             // TODO ... Figure out why I wrote TODO here and what this is/was for
-            //mhtStats.get("Friendliness").xmlName = 
-            //mhtStats.get("Self-consciousness").xmlName = 
-            //mhtStats.get("Straightforwardness").xmlName = 
-            //mhtStats.get("Cooperation").xmlName = 
-            //mhtStats.get("Assertiveness").xmlName = 
+            //mhtStats.get("Friendliness").xmlName =
+            //mhtStats.get("Self-consciousness").xmlName =
+            //mhtStats.get("Straightforwardness").xmlName =
+            //mhtStats.get("Cooperation").xmlName =
+            //mhtStats.get("Assertiveness").xmlName =
         }
 
         private void createStats(String[] statName, int[] statRange) {
             for (int iCount = 0; iCount < statName.length; iCount++)
                 mhtStats.put(statName[iCount], new Stat(statName[iCount], statRange));
         }
-        
+
         // Reads the trait hints file (needed for Runesmith style XML traits)
         private void readTraitHints() {
             String strLine;
@@ -509,7 +511,7 @@ public class DwarfOrganizerIO {
                 e.printStackTrace();
             }
         }
-        
+
         // Reads the labor skills XML data file
         // Commented code has been left intact so that I (hopefully) don't ever have
         // to research the problems I encountered here again
@@ -581,7 +583,7 @@ public class DwarfOrganizerIO {
                     NodeList nlLaborSkill = xmlFileReader.getDocument().getElementsByTagName(
                                 classItem.getSimpleName());   // "Skill"
                     for (int kCount = 0; kCount < nlLaborSkill.getLength(); kCount++) {
-                        
+
                         Element thisLaborSkill = (Element) nlLaborSkill.item(kCount);
                         String strName = getTagValue(thisLaborSkill, "Name"
                                 , "Error - Null labor skill name in XML");
@@ -615,7 +617,7 @@ public class DwarfOrganizerIO {
                         if (classItem == SocialSkill.class) {
                             strTrait = thisLaborSkill
                                     .getElementsByTagName("Trait").item(0).getTextContent();
-                            intMin = Integer.parseInt( 
+                            intMin = Integer.parseInt(
                                     thisLaborSkill.getElementsByTagName("Min").item(0)
                                     .getTextContent());
                             intMax = Integer.parseInt(
@@ -636,18 +638,18 @@ public class DwarfOrganizerIO {
                             System.err.println("classItem is not of a recognized type."
                                     + " Ignoring skill " + strName);
                     }
-                }            
+                }
 
             //} catch (URISyntaxException e) { e.printStackTrace();
             //}
 
             return htReturn;
-        }    
-        
+        }
+
         // Translates XML data to dwarf objects
         private void parseDwarves(NodeList nodes) {
             //mvDwarves = new Vector<Dwarf>();
-            
+
             for (int iCount = 0; iCount < nodes.getLength(); iCount++) {
 
                 Element thisCreature = (Element) nodes.item(iCount);
@@ -671,7 +673,7 @@ public class DwarfOrganizerIO {
 
                     else {  // Look under Traits if there is no attribute XML name
 
-                        // TODO: get dwarven personality average to use as default                        
+                        // TODO: get dwarven personality average to use as default
 
                         // (DFHack style XML) If the trait has a named entry,
                         // then get the value
@@ -716,8 +718,8 @@ public class DwarfOrganizerIO {
                 String jobs[] = oDwarf.getJobText().split("\n");
                 //if (jobs.length <= 1)
                     //System.out.println("No labors enabled.");
-                //else {    
-                if (jobs.length > 1) {  // First and last entries in the labor list from XML are blank                
+                //else {
+                if (jobs.length > 1) {  // First and last entries in the labor list from XML are blank
                     for (int jCount = 1; jCount < jobs.length - 1; jCount++) {
                         //System.out.println(oDwarf.name + ": labor " + jCount
                         //        + " enabled: " + jobs[jCount].trim());
@@ -816,7 +818,7 @@ public class DwarfOrganizerIO {
                 System.err.println("Pattern not matched.");
 
             return 0;
-        }    
+        }
         private double getPlusPlusPercent(int[] range, int attribute) {
             double chanceToBeInBracket = 1.0d / (range.length - 1);
             int bracket = getPlusPlusBracket(range, attribute);
@@ -827,7 +829,7 @@ public class DwarfOrganizerIO {
                 double inBracketPercent = (attribute - range[bracket - 1]) / bracketSize;
 
                 return 100.0d * chanceToBeInBracket
-                        * (inBracketPercent + numBracketsBelow);            
+                        * (inBracketPercent + numBracketsBelow);
             }
             else    // Not in a bracket: better than 100% of dwarves
                 return 100.0d;
@@ -883,20 +885,20 @@ public class DwarfOrganizerIO {
                 return parent.item(0).getTextContent();
         }
     }
-    
+
     protected String getLicense() {
         String strReturn = "";
         String line;
         try {
             FileInputStream in = new FileInputStream("./license.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            
+
             while ((line = br.readLine()) != null)
                 strReturn += line + "\n";
-            
+
             br.close();
             in.close();
-                
+
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
             ex.printStackTrace();
@@ -908,14 +910,14 @@ public class DwarfOrganizerIO {
         }
         return strReturn;
     }
-    
+
     // Loads job settings from file
     public void readJobSettings(File file, Vector<Job> vLaborSettings
             , String defaultReminder) {
-        
+
         try {
             FileInputStream fstream = new FileInputStream(file.getAbsolutePath());
-            DataInputStream in = new DataInputStream(fstream);            
+            DataInputStream in = new DataInputStream(fstream);
 
             Hashtable<String, Job> htJobs = hashJobs(MyFileUtils.readDelimitedLineByLine(
                     in, "\t", 0), defaultReminder);
@@ -940,15 +942,15 @@ public class DwarfOrganizerIO {
             e.printStackTrace();
         }
     }
-    
+
     // Loads the job data into a hash table
     private Hashtable<String, Job> hashJobs(Vector<String[]> vJobs
             , String defaultReminder) {
-        
+
         Hashtable<String, Job> htReturn = new Hashtable<String, Job>();
-        
+
         String strReminder;
-        
+
         for (String[] jobData : vJobs) {
             if (jobData.length == 1) {
                 // Version data
@@ -967,29 +969,183 @@ public class DwarfOrganizerIO {
         }
         return htReturn;
     }
-    
+
+    // Write views to XML
+    public boolean writeViews(List<GridView> lstView) {
+
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        try {
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+            Document doc = docBuilder.newDocument();
+
+            // Root element
+            Element eleRoot = doc.createElement("Views");
+            doc.appendChild(eleRoot);
+
+            // Number of views
+            Element eleNum = doc.createElement("NumViews");
+            eleRoot.appendChild(eleNum);
+            eleNum.appendChild(doc.createTextNode(Integer.toString(
+                    lstView.size())));
+
+            // Body
+            int iCount = 0;
+            for (GridView view : lstView) {
+                //GridView view = mapView.get(key);
+                Element eleView = doc.createElement("View_" + iCount);
+                eleRoot.appendChild(eleView);
+
+                Element eleName = doc.createElement("Name");
+                eleView.appendChild(eleName);
+                eleName.appendChild(doc.createTextNode(view.getName()));
+
+                Element eleOrder = doc.createElement("ColOrder");
+                eleView.appendChild(eleOrder);
+                int size = view.getColOrder().size();
+                Element eleNumCols = doc.createElement("NumCols");
+                eleOrder.appendChild(eleNumCols);
+                eleNumCols.appendChild(doc.createTextNode(
+                        Integer.toString(size)));
+
+                for (int jCount = 0; jCount < size; jCount++) {
+                    Object col = view.getColOrder().get(jCount);
+                    Element eleCol = doc.createElement("Col_" + jCount);
+                    eleOrder.appendChild(eleCol);
+                    eleCol.appendChild(doc.createTextNode(col.toString()));
+                }
+                iCount++;   // View count
+            }
+
+            //-----------------------
+            // Write the document to XML file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File(VIEW_FILE_NAME));
+            //StreamResult result = new StreamResult(System.out);  Uncomment for testing
+
+            transformer.transform(source, result);
+
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (TransformerConfigurationException ex) {
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        } catch (TransformerException ex) {
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
+
+        return true;    // Success
+    }
+    public Vector<GridView> readViews() {
+
+        AbstractXMLReader<Vector<GridView>> reader
+                = new AbstractXMLReader<Vector<GridView>>() {
+
+            @Override
+            public Vector<GridView> getDefaultReturnObject() {
+                return new Vector<GridView>();
+            }
+
+            @Override
+            public Vector<GridView> processDocument(Document doc
+                    , Vector<GridView> returnObject) {
+
+                String name = "";
+                ArrayList<Object> colOrder = new ArrayList<Object>();
+                int numViews;
+
+                numViews = Integer.parseInt(doc.getElementsByTagName(
+                        "NumViews").item(0).getTextContent());
+                for (int iCount = 0; iCount < numViews; iCount++) {
+                    Node viewNode = doc.getElementsByTagName(
+                            "View_" + iCount).item(0);
+                    Element ele = (Element) viewNode;
+                    name = ele.getElementsByTagName(
+                            "Name").item(0).getTextContent();
+
+                    int numCols = Integer.parseInt(ele.getElementsByTagName(
+                            "NumCols").item(0).getTextContent());
+                    colOrder = new ArrayList<Object>(numCols);
+                    for (int jCount = 0; jCount < numCols; jCount++) {
+                        colOrder.add(ele.getElementsByTagName(
+                                "Col_" + jCount).item(0).getTextContent());
+                    }
+
+                    GridView view = new GridView(name, ""
+                            , GridView.KeyAxis.X_AXIS, false, colOrder);
+                    returnObject.add(view);
+                }
+                return returnObject;
+            }
+
+        };
+        return reader.readFile(VIEW_FILE_NAME);
+    }
+    private abstract class AbstractXMLReader<T> {
+        // Returns the initialized object to be processed and returned after
+        // reading:
+        public abstract T getDefaultReturnObject();
+
+        // Processes the given document and returns the contents,
+        // given the initialized return object
+        public abstract T processDocument(Document doc, T initializedObject);
+
+        public T readFile(String fileName) {
+            T returnObject = getDefaultReturnObject();
+
+            File file = new File(fileName);
+            DocumentBuilderFactory dbFactory
+                    = DocumentBuilderFactory.newInstance();
+
+            try {
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(file);
+                doc.getDocumentElement().normalize();
+
+                returnObject = processDocument(doc, returnObject);
+
+            } catch (ParserConfigurationException ex) {
+                Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
+                        Level.SEVERE, null, ex);
+            } catch (SAXException ex) {
+                Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
+                        Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
+                        Level.SEVERE, null, ex);
+            }
+
+            return returnObject;
+        }
+    }
+
     // Writes exclusions to XML
     public boolean writeExclusions(List<Exclusion> lstExclusion) {
-        
+
         // Create XML document
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
             Document doc = docBuilder.newDocument();
-            
+
             // Root element
             Element eleRoot = doc.createElement("Exclusions");
             doc.appendChild(eleRoot);
-            
+
             // File version
             Element eleVer = doc.createElement("FileVersion");
             eleVer.setAttribute("Version", CURRENT_EXCLUSIONS_VERSION);
             eleRoot.appendChild(eleVer);
-            
+
             // Start Exclusion rules
             Element eleRules = doc.createElement("ExclusionRules");
             eleRoot.appendChild(eleRules);
-            
+
             // Exclusion rules body
             for (Exclusion exclusion : lstExclusion) {
                 if (exclusion.getClass().equals(ExclusionRule.class)) {
@@ -1003,11 +1159,11 @@ public class DwarfOrganizerIO {
                     eleRule.setAttribute("Value", rule.getValue().toString());
                 }
             }
-            
+
             // Exclusion Lists
             Element eleLists = doc.createElement("ExclusionLists");
             eleRoot.appendChild(eleLists);
-            
+
             // Exclusion lists body
             for (Exclusion exclusion : lstExclusion) {
                 if (exclusion.getClass().equals(ExclusionList.class)) {
@@ -1016,7 +1172,7 @@ public class DwarfOrganizerIO {
                     eleLists.appendChild(eleList);
                     eleList.setAttribute("ID", list.getID().toString());
                     eleList.setAttribute("Name", list.getName());
-                    
+
                     Element eleCitizens = doc.createElement("Citizens");
                     eleList.appendChild(eleCitizens);
                     for (String citizen : list.getCitizenList()) {
@@ -1026,7 +1182,7 @@ public class DwarfOrganizerIO {
                     }
                 }
             }
-            
+
             //-----------------------
             // Write the document to XML file
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -1040,7 +1196,7 @@ public class DwarfOrganizerIO {
             //StreamResult result = new StreamResult(System.out);  Uncomment for testing
 
             transformer.transform(source, result);
-            
+
         } catch (ParserConfigurationException ex) {
             Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
             return false;
@@ -1054,7 +1210,7 @@ public class DwarfOrganizerIO {
 
         return true;        // Success
     }
-    
+
     private abstract class SectionReader {
         String name;
         Integer ID;
@@ -1068,16 +1224,16 @@ public class DwarfOrganizerIO {
         public abstract void doVersionBPlusFunction(Element ele);
         public abstract Exclusion createExclusion();
     }
-    
+
     private Vector<Exclusion> readSection(SectionReader srf
             , Document doc, String tagName, String version) {
         Node node;
         Element ele;
         Vector<Exclusion> vReturn = new Vector<Exclusion>();
-        
+
         Integer id = -1;
-        String name = "Exclusion rule name";        
-        
+        String name = "Exclusion rule name";
+
         NodeList lstExclusionRules = doc.getElementsByTagName(tagName);
         for (int iCount = 0; iCount < lstExclusionRules.getLength(); iCount++) {
             node = lstExclusionRules.item(iCount);
@@ -1106,27 +1262,27 @@ public class DwarfOrganizerIO {
                     //System.out.println("Reading exclusion #" + id);
                     mintMaxExclID = Math.max(mintMaxExclID, id);
                     vReturn.add(srf.createExclusion());
-                    
+
                 } catch (Exception e) {
-                    System.err.println(e.getMessage() 
+                    System.err.println(e.getMessage()
                             + " Failed to read a(n) " + tagName);
                 }
             }
         }
         return vReturn;
     }
-    
+
     public DeepCloneableVector<Exclusion> readExclusions(final Vector<Dwarf> citizens) {
             //, final Hashtable<Integer, Boolean> htActive) {
         Node node;
         Element ele;
         String version;
-                
+
         DeepCloneableVector<Exclusion> vReturn = new DeepCloneableVector<Exclusion>();
 
         File file = new File(EXCLUSION_FILE_NAME);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        
+
         try {
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(file);
@@ -1136,13 +1292,13 @@ public class DwarfOrganizerIO {
             node = lstFileVersion.item(0);
             ele = (Element) node;
             version = ele.getAttribute("Version");
-            
+
             // Exclusion Rules-----------------
             SectionReader exclusionRuleReader = new SectionReader() {
                 private String field;
                 private String comparator;
                 private Object value;
-                
+
                 @Override
                 public void doVersionAPlusFunction(Element ele) {
                     field = ele.getAttribute("Field");
@@ -1165,12 +1321,12 @@ public class DwarfOrganizerIO {
             };
             vReturn.addAll(readSection(exclusionRuleReader, doc, "ExclusionRule"
                     , version));
-            
+
             // Exclusion Lists---------------
             SectionReader exclusionListReader = new SectionReader() {
                 //private DeepCloneableVector<Dwarf> vCitizen;
                 Vector<String> vCitizenName;
-                
+
                 @Override
                 public void doVersionAPlusFunction(Element ele) {
                     // Do nothing extra
@@ -1191,7 +1347,7 @@ public class DwarfOrganizerIO {
                     //vCitizen = getCitizensFromNames(vCitizenName, citizens);
                     //System.out.println("    Found " + vCitizen.size() + " matching citizen objects");
                 }
-                
+
                 @Override
                 public Exclusion createExclusion() {
                     return new ExclusionList(this.ID, this.name
@@ -1200,8 +1356,8 @@ public class DwarfOrganizerIO {
 
             };
             vReturn.addAll(readSection(exclusionListReader, doc, "ExclusionList"
-                    , version));            
-            
+                    , version));
+
         } catch (ParserConfigurationException ex) {
             Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SAXException ex) {
@@ -1229,7 +1385,7 @@ public class DwarfOrganizerIO {
         else
             return ((Node) ele.getChildNodes().item(0)).getNodeValue().trim();
     }
-    
+
     // Returns the next exclusion ID to use, and increments the current maximum.
     protected Integer incrementExclusionID() {
         mintMaxExclID++;
@@ -1249,12 +1405,12 @@ public class DwarfOrganizerIO {
     }
     private DeepCloneableVector<Dwarf> getCitizensFromNames(Vector<String> names
             , Vector<Dwarf> citizens) {
-        
+
         DeepCloneableVector<Dwarf> vReturn = new DeepCloneableVector<Dwarf>();
-        
+
         for (String name : names) {
             //System.out.println("Looking for " + name);
-            
+
             //Get the dwarf object for the name
             for (Dwarf citizen : citizens) {
                 //Dwarf citizen = (Dwarf) oCitizen;

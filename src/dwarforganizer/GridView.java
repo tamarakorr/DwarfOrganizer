@@ -13,24 +13,24 @@ import javax.swing.table.TableColumnModel;
  *
  * @author Tamara Orr
  */
-public class GridView {
+public class GridView implements MyPropertyGetter, DeepCloneable {
 
     private String mstrName;
-    
+
     private Object moKey;
     public enum KeyAxis { X_AXIS, Y_AXIS };
     private KeyAxis moKeyAxis;
-    
+
     private boolean mbLabelY;
     //private List<GridFilter> mlstGridFilter;
     //private List<GridColumn> mlstGridColumn;
     //private List<GridColumn> mlstColOrder;
     private List<Object> mlstColOrder;
-    
-    public GridView(String name, Object keyAttribute, KeyAxis axis, boolean labelY
-            , List<Object> colOrder) {
+
+    public GridView(String name, Object keyAttribute, KeyAxis axis
+            , boolean labelY, List<Object> colOrder) {
         super();
-        
+
         mstrName = name;
         moKey = keyAttribute;
         moKeyAxis = axis;
@@ -62,11 +62,11 @@ public class GridView {
         this.mlstColOrder = colOrder;
     }
 
-    public Object getKey() {
+    public Object getKeyAttribute() {
         return moKey;
     }
 
-    public void setKey(Object key) {
+    public void setKeyAttribute(Object key) {
         this.moKey = key;
     }
 
@@ -77,7 +77,7 @@ public class GridView {
     public void setKeyAxis(KeyAxis keyAxis) {
         this.moKeyAxis = keyAxis;
     }
-    
+
 /*    public class GridAttribute {
         private Object attribute;
         public GridAttribute(Object attribute) {
@@ -117,10 +117,10 @@ public class GridView {
     }
     public void applyToTable(CompositeTable table, TableColumnModel columnModel) {
         // Hide all columns not in the column ordering list---------------------
-        
+
         hideColumns(columnModel); //table.getMainTable()
         reorderTableColumns(columnModel, mlstColOrder); // table.getMainTable()
-                
+
         //TODO: the rest
     }
     private void hideColumns(TableColumnModel columnModel) { //JTable table
@@ -135,16 +135,16 @@ public class GridView {
                     columnModel;
             for (int iCount = 0; iCount < hideableModel.getColumnCount(false); iCount++) {
                 Object identifier = hideableModel.getColumn(iCount
-                        , false).getIdentifier(); 
+                        , false).getIdentifier();
                 hideableModel.setColumnVisible(hideableModel.getColumn(iCount
                         , false), isColumnInView(identifier));
             }
         }
-        
+
     }
     private void reorderTableColumns(TableColumnModel columnModel
             , List<Object> order) {
-        
+
         int iCount = 0;
         for (Object identifier : order) {
             columnModel.moveColumn(columnModel.getColumnIndex(identifier)
@@ -155,9 +155,9 @@ public class GridView {
     }
     private void reorderTableColumns(CompositeTable compTable
             , List<Object> order) {
-        
+
         int col;
-        
+
         int iCount = 0;
         for (Object identifier : order) {
             for (JTable table : compTable.getTables()) {
@@ -172,11 +172,34 @@ public class GridView {
     }
     private void moveColumn(CompositeTable compTable, JTable source
             , int sourceIndex, int overallDestIndex) {
-        compTable.moveColumn(source, sourceIndex, overallDestIndex);        
+        compTable.moveColumn(source, sourceIndex, overallDestIndex);
     }
     private boolean isColumnInView(Object identifier) {
         //System.out.println(identifier.toString() + " is in view: "
         //        + mlstColOrder.contains(identifier));
         return mlstColOrder.contains(identifier);
+    }
+
+    @Override
+    public Object getProperty(String propName, boolean humanReadable) {
+        String prop = propName.toLowerCase();
+
+        if (prop.equals("name"))
+            return getName();
+        else {
+            return "[GridView] Unsupported property: " + propName;
+        }
+    }
+
+    @Override
+    public long getKey() {
+        // TODO
+        return 0;
+    }
+
+    @Override
+    public Object deepClone() {
+        // NOTE: mlstColOrder is not deep-cloned
+        return new GridView(mstrName, moKey, moKeyAxis, mbLabelY, mlstColOrder);
     }
 }
