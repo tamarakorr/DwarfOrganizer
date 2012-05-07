@@ -1894,5 +1894,4 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         createDynamicViewItems(moViewMenu, moViewButtonGroup, views, 0
                 , moPrefs.getViewName()); // DEFAULT_VIEW_NAME
     }
-
 }
