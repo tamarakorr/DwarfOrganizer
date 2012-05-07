@@ -1076,8 +1076,8 @@ public class DwarfOrganizerIO {
                                 "Col_" + jCount).item(0).getTextContent());
                     }
 
-                    GridView view = new GridView(name, ""
-                            , GridView.KeyAxis.X_AXIS, false, colOrder);
+                    // "", GridView.KeyAxis.X_AXIS, false,
+                    GridView view = new GridView(name, colOrder);
                     returnObject.add(view);
                 }
                 return returnObject;

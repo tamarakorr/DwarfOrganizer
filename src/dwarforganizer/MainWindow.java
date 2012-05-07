@@ -12,6 +12,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 import java.io.ByteArrayInputStream;
@@ -45,7 +46,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
-import myutils.Adapters.WindowClosingAdapter;
 import myutils.MyHandyOptionPane;
 import myutils.MyHandyWindow;
 import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
@@ -107,7 +107,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             = RULES_EDITOR_TITLE_CLEAN + DIRTY_TITLE;
     private JobBlacklist moJobBlacklist = new JobBlacklist();
     private JobList moJobWhitelist = new JobList();
-    //private DirtyListener moRuleDirtyListener;
 
     private DwarfOrganizerIO moIO = new DwarfOrganizerIO();
     private Vector<Dwarf> mvDwarves;
@@ -165,19 +164,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         //this.getContentPane().add(desktop);
 
         loadPreferences();
-        this.addWindowListener(new WindowClosingAdapter() {
+        this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                // Prompts to save changes
-                MyHandyWindow.clickClose(mitlViewManager);
-                MyHandyWindow.clickClose(mitlRulesEditor);
-                MyHandyWindow.clickClose(mitlExclusions);
-
-                // Destroy "about" screen
-                moAboutScreen.dispose();
-
-                // Save preferences
-                savePreferences();
+                exit();
             }
         });
 
@@ -203,7 +193,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // Create dwarf list window
         moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
                 , mhtMetaSkill, mvLaborGroups, mvViews);
-        //if (mvDwarves == null) System.out.println("mvDwarves is null");
         moDwarfListWindow.loadData(mvDwarves, mvExclusions);
         moExclusionManager.getAppliedBroadcaster().addListener(moDwarfListWindow); // Listen for exclusions applied
         moDwarfListWindow.getBroadcaster().addListener(this);
@@ -242,7 +231,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             this.add(moDesktop, BorderLayout.CENTER);
 
             this.setTitle("Dwarf Organizer");
-            this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // WindowConstants.DISPOSE_ON_CLOSE
             this.pack();
             this.setVisible(true);
 
@@ -251,6 +240,29 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
 
+    // Takes care of confirmations to save, disposal of objects, and
+    // saving preferences.
+    // Disposes of the window if the user does not cancel the operation.
+    // (The default close operation should be DO_NOTHING_ON_CLOSE in order
+    // for this to work.)
+    private void exit() {
+
+        // Prompts to save changes
+        if (! moDwarfListWindow.checkForChanges()) {
+            return;
+        }
+        MyHandyWindow.clickClose(mitlViewManager);
+        MyHandyWindow.clickClose(mitlRulesEditor);
+        MyHandyWindow.clickClose(mitlExclusions);
+
+        // Destroy "about" screen
+        moAboutScreen.dispose();
+
+        // Save preferences
+        savePreferences();
+
+        this.dispose();
+    }
     private void updateDwarfListMenu() {
         mitlDwarfList.setJMenuBar(appendMenuBar(createDwarfListMenuBar()
             , moDwarfListWindow.getMenu())); // mvLaborGroups

@@ -15,6 +15,8 @@ import javax.swing.table.TableColumnModel;
  */
 public class GridView implements MyPropertyGetter, DeepCloneable {
 
+    public static final String UNSAVED_VIEW_NAME = "Unsaved View";
+
     private String mstrName;
 
     private Object moKey;
@@ -27,14 +29,14 @@ public class GridView implements MyPropertyGetter, DeepCloneable {
     //private List<GridColumn> mlstColOrder;
     private List<Object> mlstColOrder;
 
-    public GridView(String name, Object keyAttribute, KeyAxis axis
-            , boolean labelY, List<Object> colOrder) {
+    // TODO: Object keyAttribute, KeyAxis axis, boolean labelY
+    public GridView(String name, List<Object> colOrder) {
         super();
 
         mstrName = name;
-        moKey = keyAttribute;
-        moKeyAxis = axis;
-        mbLabelY = labelY;
+        //moKey = keyAttribute;
+        //moKeyAxis = axis;
+        //mbLabelY = labelY;
         mlstColOrder = colOrder;
     }
 
@@ -200,6 +202,46 @@ public class GridView implements MyPropertyGetter, DeepCloneable {
     @Override
     public Object deepClone() {
         // NOTE: mlstColOrder is not deep-cloned
-        return new GridView(mstrName, moKey, moKeyAxis, mbLabelY, mlstColOrder);
+        // moKey, moKeyAxis, mbLabelY,
+        return new GridView(mstrName, mlstColOrder);
+    }
+
+    // Note: We do not check the name
+    public boolean equals(GridView otherView) {
+
+        //System.out.println("equals()");
+
+        // Check name-----------------------------------------------------------
+        // Name is ignored if otherView's name is UNSAVED_VIEW_NAME.
+
+        if ((! otherView.getName().equals(UNSAVED_VIEW_NAME))
+                && (! mstrName.equals(UNSAVED_VIEW_NAME))
+                && (! otherView.getName().equals(mstrName))) {
+            //System.out.println("Names unequal");
+            return false;
+        }
+
+        // Check column ordering------------------------------------------------
+        List<Object> otherOrder = otherView.getColOrder();
+        int size = otherOrder.size();
+
+        // If column ordering lists aren't the same size, unequal
+        if (mlstColOrder.size() != size) {
+            //System.out.println("Size unequal");
+            return false;
+        }
+
+        // If any column ordering objects in the list are unequal, unequal
+        for (int iCount = 0; iCount < size; iCount++) {
+            if (! mlstColOrder.get(iCount).equals(otherOrder.get(iCount))) {
+                //System.out.println(mlstColOrder.get(iCount).toString() + " != "
+                //        + otherOrder.get(iCount).toString());
+                return false;
+            }
+        }
+
+        // Objects are equal
+        //System.out.println("Equal");
+        return true;
     }
 }
