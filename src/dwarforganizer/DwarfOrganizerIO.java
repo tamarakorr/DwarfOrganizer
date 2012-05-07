@@ -50,13 +50,16 @@ public class DwarfOrganizerIO {
 
     public static final boolean DEFAULT_EXCLUSION_ACTIVE = true;
 
-    private static final String GROUP_LIST_FILE_NAME = "config/group-list.txt";
-    private static final String LABOR_LIST_FILE_NAME = "config/labor-list.txt";
-    private static final String RULE_FILE_NAME = "config/rules.txt";
-    private static final String EXCLUSION_FILE_NAME = "config/exclusion-list.xml";
-    private static final String LABOR_SKILLS_XML_FILE_NAME = "config/labor-skills.xml";
-    private static final String TRAITS_FILE_NAME = "config/trait-hints.txt";
-    private static final String VIEW_FILE_NAME = "config/views.xml";
+    private static final String USER_FILES_DIR = "config/";
+    private static final String DEFAULT_FILES_DIR = "config/default/";
+
+    private static final String GROUP_LIST_FILE_NAME = "group-list.txt";
+    private static final String LABOR_LIST_FILE_NAME = "labor-list.txt";
+    private static final String RULE_FILE_NAME = "rules.txt";
+    private static final String EXCLUSION_FILE_NAME = "exclusion-list.xml";
+    private static final String LABOR_SKILLS_XML_FILE_NAME = "labor-skills.xml";
+    private static final String TRAITS_FILE_NAME = "trait-hints.txt";
+    private static final String VIEW_FILE_NAME = "views.xml";
 
     private static final String CURRENT_EXCLUSIONS_VERSION = "B";
 
@@ -74,23 +77,8 @@ public class DwarfOrganizerIO {
     private static final int LABOR_RULE_MIN_COLS = 3;
     private static final int LABOR_RULE_MAX_COLS = 4;
 
-/*    private enum RuleFileColIndex {
-        LABOR_RULE_TYPE (0)
-        , LABOR_RULE_FIRST_LABOR (1)
-        , LABOR_RULE_SECOND_LABOR (2)
-        , LABOR_RULE_COMMENT (3);
-
-        private final int index;
-
-        RuleFileColIndex(int index) {
-            this.index = index;
-        }
-        public int getIndex() { return index; }
-    }; */
-
     private JobBlacklist moBlacklist;
     private JobList moWhitelist;
-    //private Vector<String[]> mvRuleFile;
     private Vector<LaborRule> mvRuleFile;
 
     private Integer mintMaxExclID = 0;
@@ -99,12 +87,34 @@ public class DwarfOrganizerIO {
         super();
     }
 
+    // Prioritizes user files over defaults
+    private static String getInputFile(String fileName) {
+
+        String userFile = USER_FILES_DIR + fileName;
+        if (new File(userFile).exists())
+            return userFile;
+
+        String defaultFile = DEFAULT_FILES_DIR + fileName;
+        if (new File(defaultFile).exists())
+            return defaultFile;
+        else {
+            System.err.println("User file and default file for " + fileName
+                    + " do not exist");
+            return fileName;
+        }
+    }
+    // Write only to user files (never to default files)
+    private static String getOutputFile(String fileName) {
+        return USER_FILES_DIR + fileName;
+    }
+
     protected Vector<LaborGroup> readLaborGroups() throws Exception {
         final int EXPECTED_COLUMNS = 5;
         Vector<LaborGroup> vReturn = new Vector<LaborGroup>();
 
         try {
-            FileInputStream in = new FileInputStream(GROUP_LIST_FILE_NAME);
+            FileInputStream in = new FileInputStream(
+                    getInputFile(GROUP_LIST_FILE_NAME));
             Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
             for (String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
@@ -131,7 +141,8 @@ public class DwarfOrganizerIO {
         Vector<Labor> vReturn = new Vector<Labor>();
 
         try {
-            FileInputStream in = new FileInputStream(LABOR_LIST_FILE_NAME);
+            FileInputStream in = new FileInputStream(getInputFile(
+                    LABOR_LIST_FILE_NAME));
             Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
 
             for (String[] array : vData) {
@@ -165,7 +176,8 @@ public class DwarfOrganizerIO {
 
         try {
             // Open the file
-            FileInputStream in = new FileInputStream(RULE_FILE_NAME);
+            FileInputStream in = new FileInputStream(getInputFile(
+                    RULE_FILE_NAME));
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
             // Throw out the first line
@@ -286,7 +298,7 @@ public class DwarfOrganizerIO {
 
         // Open the file
         try {
-            FileWriter fstream = new FileWriter(RULE_FILE_NAME);
+            FileWriter fstream = new FileWriter(getOutputFile(RULE_FILE_NAME));
             BufferedWriter out = new BufferedWriter(fstream);
             System.out.println("Writing " + RULE_FILE_NAME);
 
@@ -495,7 +507,8 @@ public class DwarfOrganizerIO {
                 // Open the file
                 //InputStream in =
                 //        this.getClass().getResourceAsStream(TRAITS_FILE_NAME);
-                FileInputStream in = new FileInputStream(TRAITS_FILE_NAME);
+                FileInputStream in = new FileInputStream(getInputFile(
+                        TRAITS_FILE_NAME));
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
 
                 while ((strLine = br.readLine()) != null) {
@@ -552,7 +565,7 @@ public class DwarfOrganizerIO {
                 //myXMLReader xmlFileReader = new myXMLReader(getClass()
                 //        .getResourceAsStream(LABOR_SKILLS_XML_FILE_NAME));
                 myXMLReader xmlFileReader = new myXMLReader(new FileInputStream(
-                        LABOR_SKILLS_XML_FILE_NAME));
+                        getInputFile(LABOR_SKILLS_XML_FILE_NAME)));
 
                 // Read the stat group macros
                 NodeList nlStatGroup = xmlFileReader.getDocument().getElementsByTagName(
@@ -1023,7 +1036,8 @@ public class DwarfOrganizerIO {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(VIEW_FILE_NAME));
+            StreamResult result = new StreamResult(new File(getOutputFile(
+                    VIEW_FILE_NAME)));
             //StreamResult result = new StreamResult(System.out);  Uncomment for testing
 
             transformer.transform(source, result);
@@ -1084,7 +1098,7 @@ public class DwarfOrganizerIO {
             }
 
         };
-        return reader.readFile(VIEW_FILE_NAME);
+        return reader.readFile(getInputFile(VIEW_FILE_NAME));
     }
     private abstract class AbstractXMLReader<T> {
         // Returns the initialized object to be processed and returned after
@@ -1192,7 +1206,8 @@ public class DwarfOrganizerIO {
             // Hooray for completely undocumented solutions:
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(EXCLUSION_FILE_NAME));
+            StreamResult result = new StreamResult(new File(getOutputFile(
+                    EXCLUSION_FILE_NAME)));
             //StreamResult result = new StreamResult(System.out);  Uncomment for testing
 
             transformer.transform(source, result);
@@ -1272,15 +1287,16 @@ public class DwarfOrganizerIO {
         return vReturn;
     }
 
-    public DeepCloneableVector<Exclusion> readExclusions(final Vector<Dwarf> citizens) {
-            //, final Hashtable<Integer, Boolean> htActive) {
+    public DeepCloneableVector<Exclusion> readExclusions(
+            final Vector<Dwarf> citizens) {
+
         Node node;
         Element ele;
         String version;
 
         DeepCloneableVector<Exclusion> vReturn = new DeepCloneableVector<Exclusion>();
 
-        File file = new File(EXCLUSION_FILE_NAME);
+        File file = new File(getInputFile(EXCLUSION_FILE_NAME));
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 
         try {
