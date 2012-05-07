@@ -19,6 +19,7 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -164,6 +165,14 @@ public class ViewManagerUI extends AbstractEditor<GridView>
 
     @Override
     public boolean validateInput() {
+        // Ensure no other view has the same name:
+        for (GridView view : vViews)
+            if (view.getName().equals(txtName.getText())) {
+                JOptionPane.showMessageDialog(uiPanel
+                        , "There is already a view with that name."
+                        , "Cannot Update", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
         return true;
     }
 
