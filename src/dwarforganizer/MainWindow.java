@@ -248,7 +248,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void exit() {
 
         // Prompts to save changes
-        if (! moDwarfListWindow.checkForChanges()) {
+        if (! moDwarfListWindow.exit()) {
             return;
         }
         MyHandyWindow.clickClose(mitlViewManager);

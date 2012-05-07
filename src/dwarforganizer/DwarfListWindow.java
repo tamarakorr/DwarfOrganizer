@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -178,13 +179,18 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private int mintFixedViewMenuItems;
 
+    private PrefsRecaller moPrefs;
+
     public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
             , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta
-            , Vector<LaborGroup> vLaborGroups
-            , List<GridView> lstViews) {
+            , Vector<LaborGroup> vLaborGroups, List<GridView> lstViews) {
 
         // Parent constructor---------------------------------------------------
         super();
+
+        // Load preferences-----------------------------------------------------
+        moPrefs = new PrefsRecaller();
+        moPrefs.loadPreferences();
 
         // Set local variables--------------------------------------------------
         mvLabors = vLabors;
@@ -283,7 +289,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         }
         // ---------------------------------------------------------------------
 
-        setView(DEFAULT_VIEW_NAME);    // // "Military View"
+        //setView(DEFAULT_VIEW_NAME);    // // "Military View"
+        setView(moPrefs.getViewName());
 
         // Show some statistics-------------------------------------------------
         mlblPop = new JLabel("X total dwarves from XML"); // total adult
@@ -312,6 +319,23 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         this.add(panDwarfList); // , BorderLayout.LINE_START
 
         mbLoading = false;
+    }
+    private class PrefsRecaller extends MyPrefs {
+        private String mstrViewName;
+
+        @Override
+        public void savePrefs(Preferences prefs) {
+            System.out.println("Current view = " + getSelectedViewName());
+            prefs.put("CurrentView", getSelectedViewName());
+        }
+
+        @Override
+        public void loadPrefs(Preferences prefs) {
+            mstrViewName = prefs.get("CurrentView", DEFAULT_VIEW_NAME);
+        }
+        public String getViewName() {
+            return mstrViewName;
+        }
     }
     // For using a list or map to access the collection of views--whichever
     // is more convenient.
@@ -418,9 +442,20 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         return tblReturn;
     }
+    // Sets the table columns/view
     private void setView(String viewName) {
-        // Set the table columns/view
-        GridView view = moViews.get(viewName);
+        GridView view;
+
+        if (moViews.containsKey(viewName)) {
+            view = moViews.get(viewName);
+        }
+        else {
+            // If the selected view doesn't exist, add a new view with
+            // all columns
+            view = new GridView("Everything", moViewHandler.getAllColumns());
+            // (Do not add this temporary view to moViews)
+        }
+
         view.applyToTable(moTable, moFreezer.getAllColumnsModel());
 
         // Set the selected column groups in the menu
@@ -1106,10 +1141,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // "", GridView.KeyAxis.X_AXIS, false
         return new GridView(name, lstOrder);
     }
-    // Called before application is closed
+    // Called by MainWindow before application is closed
     // Returns false if the user cancels the operation
-    public boolean checkForChanges() {
+    public boolean exit() {
 
+        // View-----------------------------------------------------------------
         GridView thisView = createView(GridView.UNSAVED_VIEW_NAME);
         GridView selView = getSelectedView();
 
@@ -1123,19 +1159,22 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 return false;
             }
             else if (response == JOptionPane.NO_OPTION) {
-                return true;
+                // Do nothing
             }
             else if (response == JOptionPane.YES_OPTION) {
-                return saveCurrentView(); // Same return values as this function
+                if (! saveCurrentView()) // Same return values as this function
+                    return false;
             }
             else {
                 System.err.println("[DwarfListWindow.checkForChanges()]"
                         + " Unknown response from JOptionPane: " + response);
-                return true;
             }
         }
-        else
-            return true;
+
+        // Preferences----------------------------------------------------------
+        moPrefs.savePreferences();
+
+        return true;
     }
     private Object[] getHideableColumns() {
         Vector<Object> vAllColumns = moViewHandler.getAllColumns();
@@ -1824,6 +1863,16 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         moViewMenu = new JMenu("View");
         moViewMenu.setMnemonic(KeyEvent.VK_V);
 
+        // Save current view
+        item = new JMenuItem("Save Current View As...");
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean ignore = saveCurrentView();
+            }
+        });
+        moViewMenu.add(item);
+
         // Manage views
         item = new JMenuItem("Manage Views...");
         item.addActionListener(new ActionListener() {
@@ -1836,16 +1885,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         });
         moViewMenu.add(item);
 
-        // Save current view
-        item = new JMenuItem("Save Current View As...");
-        item.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                boolean ignore = saveCurrentView();
-            }
-        });
-        moViewMenu.add(item);
-
         // -----------------------------
         moViewMenu.add(new JSeparator());
         mintFixedViewMenuItems = moViewMenu.getMenuComponentCount();
@@ -1853,6 +1892,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // Dynamic views
         moViewButtonGroup = new ButtonGroup();
         createDynamicViewItems(moViewMenu, moViewButtonGroup, views, 0
-                , DEFAULT_VIEW_NAME);
+                , moPrefs.getViewName()); // DEFAULT_VIEW_NAME
     }
+
 }

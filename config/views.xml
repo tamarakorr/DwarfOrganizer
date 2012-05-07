@@ -2,29 +2,6 @@
 <Views>
     <NumViews>2</NumViews>
     <View_0>
-        <Name>Military View</Name>
-        <ColOrder>
-            <NumCols>17</NumCols>
-            <Col_0>Include</Col_0>
-            <Col_1>Name</Col_1>
-            <Col_2>Nickname</Col_2>
-            <Col_3>Close Combat Potential</Col_3>
-            <Col_4>Close Combat Lvl</Col_4>
-            <Col_5>Ranged Combat Potential</Col_5>
-            <Col_6>Ranged Combat Lvl</Col_6>
-            <Col_7>Strength</Col_7>
-            <Col_8>Agility</Col_8>
-            <Col_9>Toughness</Col_9>
-            <Col_10>Willpower</Col_10>
-            <Col_11>Spatial Sense</Col_11>
-            <Col_12>Kinesthetic Sense</Col_12>
-            <Col_13>Focus</Col_13>
-            <Col_14>Gender</Col_14>
-            <Col_15>Exclusion</Col_15>
-            <Col_16>Inactive Lists</Col_16>
-        </ColOrder>
-    </View_0>
-    <View_1>
         <Name>Default View</Name>
         <ColOrder>
             <NumCols>33</NumCols>
@@ -61,6 +38,29 @@
             <Col_30>Musicality</Col_30>
             <Col_31>Recuperation</Col_31>
             <Col_32>Jobs</Col_32>
+        </ColOrder>
+    </View_0>
+    <View_1>
+        <Name>Military View</Name>
+        <ColOrder>
+            <NumCols>17</NumCols>
+            <Col_0>Include</Col_0>
+            <Col_1>Name</Col_1>
+            <Col_2>Nickname</Col_2>
+            <Col_3>Close Combat Potential</Col_3>
+            <Col_4>Close Combat Lvl</Col_4>
+            <Col_5>Ranged Combat Potential</Col_5>
+            <Col_6>Ranged Combat Lvl</Col_6>
+            <Col_7>Strength</Col_7>
+            <Col_8>Agility</Col_8>
+            <Col_9>Toughness</Col_9>
+            <Col_10>Willpower</Col_10>
+            <Col_11>Spatial Sense</Col_11>
+            <Col_12>Kinesthetic Sense</Col_12>
+            <Col_13>Focus</Col_13>
+            <Col_14>Gender</Col_14>
+            <Col_15>Exclusion</Col_15>
+            <Col_16>Inactive Lists</Col_16>
         </ColOrder>
     </View_1>
 </Views>

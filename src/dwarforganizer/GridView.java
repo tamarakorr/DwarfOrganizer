@@ -211,6 +211,10 @@ public class GridView implements MyPropertyGetter, DeepCloneable {
 
         //System.out.println("equals()");
 
+        // Not null
+        if (otherView == null)
+            return false;
+
         // Check name-----------------------------------------------------------
         // Name is ignored if otherView's name is UNSAVED_VIEW_NAME.
 
