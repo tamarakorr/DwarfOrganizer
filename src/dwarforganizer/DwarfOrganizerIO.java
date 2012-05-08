@@ -6,6 +6,7 @@
 package dwarforganizer;
 
 import dwarforganizer.Stat.StatHint;
+import dwarforganizer.deepclone.DeepCloneableVector;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -515,7 +516,8 @@ public class DwarfOrganizerIO {
                     String[] data = strLine.split("\t");
 
                     mhtStats.get(data[0]).addStatHint(data[3]
-                            , Integer.parseInt(data[1]), Integer.parseInt(data[2]));
+                            , Integer.parseInt(data[1])
+                            , Integer.parseInt(data[2]));
                 }
                 in.close();
             } catch (Exception e) {
@@ -765,7 +767,7 @@ public class DwarfOrganizerIO {
                             // to a numeric value if so
                             skillValue = skillDescToLevel(strSkillLevel);
                         }
-                        oDwarf.skillLevels.put(strSkillName, skillValue);
+                        oDwarf.getSkillLevels().put(strSkillName, skillValue);
 
                         //oDwarf.skillLevels.put(strSkillName
                         //        , skillDescToLevel(strSkillLevel));
@@ -810,8 +812,9 @@ public class DwarfOrganizerIO {
                 // If the dwarf cannot gain skill because of a personality trait
                 if (oSkill.getClass() == SocialSkill.class) {
                     SocialSkill sSkill = (SocialSkill) oSkill;
-                    long noValue = oDwarf.statValues.get(sSkill.noStatName);
-                    if (noValue >= sSkill.noStatMin && noValue <= sSkill.noStatMax)
+                    long noValue = oDwarf.statValues.get(sSkill.getNoStatName());
+                    if (noValue >= sSkill.getNoStatMin()
+                            && noValue <= sSkill.getNoStatMax())
                         addValue = 0;
                 }
 
@@ -937,17 +940,19 @@ public class DwarfOrganizerIO {
 
             // Update the current labor settings with the file data.
             for (Job job : vLaborSettings) {
-                Job jobFromFile = htJobs.get(job.name);
+                Job jobFromFile = htJobs.get(job.getName());
                 if (jobFromFile != null) {
-                    job.qtyDesired = jobFromFile.qtyDesired;
-                    job.candidateWeight = jobFromFile.candidateWeight;
-                    job.currentSkillWeight = jobFromFile.currentSkillWeight;
-                    job.time = jobFromFile.time;
-                    job.reminder = jobFromFile.reminder;
+                    job.setQtyDesired(jobFromFile.getQtyDesired());
+                    job.setCandidateWeight(jobFromFile.getCandidateWeight());
+                    job.setCurrentSkillWeight(
+                            jobFromFile.getCurrentSkillWeight());
+                    job.setTime(jobFromFile.getTime());
+                    job.setReminder(jobFromFile.getReminder());
                 }
 
                 else
-                    System.err.println("WARNING: Job '" + job.name + "' was not found"
+                    System.err.println("WARNING: Job '" + job.getName()
+                            + "' was not found"
                             + " in the file. Its settings will be the defaults.");
             }
         } catch (Exception e) {
@@ -1403,7 +1408,7 @@ public class DwarfOrganizerIO {
     }
 
     // Returns the next exclusion ID to use, and increments the current maximum.
-    protected Integer incrementExclusionID() {
+    public Integer incrementExclusionID() {
         mintMaxExclID++;
         return mintMaxExclID;
     }

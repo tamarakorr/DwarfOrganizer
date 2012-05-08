@@ -5,6 +5,13 @@
 
 package dwarforganizer;
 
+import dwarforganizer.dirty.DirtyListener;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.swing.MenuMnemonicSetter;
+import dwarforganizer.swing.MyFileChooser;
+import dwarforganizer.deepclone.DeepCloneableVector;
+import dwarforganizer.broadcast.BroadcastMessage;
+import dwarforganizer.broadcast.BroadcastListener;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -1218,18 +1225,20 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         for (Dwarf dwarf : vDwarves) {
             for (Job job : vJobs) {
 
-                double dblCurrentSkillPct = ((double) job.currentSkillWeight) / 100.0d;
+                double dblCurrentSkillPct = ((double)
+                        job.getCurrentSkillWeight()) / 100.0d;
                 double dblPotentialPct = 1.0d - dblCurrentSkillPct;
                 long skillLevel = 0l;
-                if (null != dwarf.skillLevels.get(job.skillName))
-                    skillLevel = dwarf.skillLevels.get(job.skillName);
+                if (null != dwarf.getSkillLevels().get(job.getSkillName()))
+                    skillLevel = dwarf.getSkillLevels().get(job.getSkillName());
 
                 double dblBalancedPotential = (dblCurrentSkillPct
                         * skillLevelToPercent(skillLevel))
                         + (dblPotentialPct
-                        * ((double) dwarf.skillPotentials.get(job.skillName)));
+                        * ((double) dwarf.skillPotentials.get(
+                        job.getSkillName())));
 
-                dwarf.balancedPotentials.put(job.name
+                dwarf.balancedPotentials.put(job.getName()
                         , Math.round(dblBalancedPotential));
             }
         }

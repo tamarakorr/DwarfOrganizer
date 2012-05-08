@@ -16,12 +16,14 @@ import myutils.MyHandyTable;
  */
 public class CompositeTable {
     private JTable[] tables;
+    private int mainIndex;
     
-    public CompositeTable(JTable[] tables) {
+    public CompositeTable(JTable[] tables, int mainIndex) {
         this.tables = tables;
+        this.mainIndex = mainIndex;
     }
     public JTable getMainTable() {
-        return tables[0];
+        return tables[mainIndex];
     }
     public JTable[] getTables() {
         return tables;

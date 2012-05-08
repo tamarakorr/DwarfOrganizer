@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.broadcast;
 
 /**
  *
  * @author Tamara Orr
  */
-public interface DeepCloneable {
-    public Object deepClone();
+public interface BroadcastListener {
+    public void broadcast(BroadcastMessage message);
 }

@@ -5,11 +5,18 @@
 
 package dwarforganizer;
 
+import dwarforganizer.swing.ClipboardTableHelper;
+import dwarforganizer.swing.ColumnFreezingTable;
+import dwarforganizer.swing.MyEditableTableModel;
+import dwarforganizer.swing.SortKeySwapper;
+import dwarforganizer.swing.HideableTableColumnModel;
+import dwarforganizer.broadcast.BroadcastMessage;
+import dwarforganizer.broadcast.BroadcastListener;
+import dwarforganizer.broadcast.Broadcaster;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -152,6 +159,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private ColumnFreezingTable moFreezer;
     private HideableTableColumnModel moFreezerColModel;
+    private ClipboardTableHelper moClipboardHelper;
 
     private enum ValueAndTextFormat {
         NUMBER ("Value"),
@@ -230,13 +238,19 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // Create the column freeze pane----------------------------------------
         // Should be done after setting up renderers and table
         moFreezerColModel = new HideableTableColumnModel();
-        moFreezer = new ColumnFreezingTable(mspScrollPane, moFreezerColModel); // TODO: make sure all changes to columns are applied to this model
-        //moFreezer.getFixedTable().setColumnModel(new HideableTableColumnModel());
+        moFreezer = new ColumnFreezingTable(mspScrollPane, moFreezerColModel);
         moTable = new CompositeTable(new JTable[]
-            { mainTable, moFreezer.getFixedTable() });
+            { moFreezer.getFixedTable(), mainTable }, 1); // Order is important for view saving
+
         // Create the popup menu for mass including/excluding.
         // Must be done after composite table is created.
         createPopup();
+
+        // Create the key listener for copying rows. Must be done after
+        // composite table is created.
+        moClipboardHelper = new ClipboardTableHelper(moTable.getTables()
+                , true, false, false);
+        mainTable.addKeyListener(moClipboardHelper.createKeyAdapter());
 
         moMenuBar = createMenu(lstViews);   // Must be done after creating views & composite table
 
@@ -325,7 +339,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         @Override
         public void savePrefs(Preferences prefs) {
-            System.out.println("Current view = " + getSelectedViewName());
+            //System.out.println("Current view = " + getSelectedViewName());
             prefs.put("CurrentView", getSelectedViewName());
         }
 
@@ -435,8 +449,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // For cleaner copy/paste to spreadsheets
         tblReturn.setColumnSelectionAllowed(false);
         tblReturn.setRowSelectionAllowed(true);
-        tblReturn.addKeyListener(new ClipboardKeyAdapter(tblReturn, true, false
-                , false));
+        //tblReturn.addKeyListener(new ClipboardKeyAdapter(tblReturn, true, false
+        //        , false));
 
         tblReturn.setUpdateSelectionOnSort(false); // For freezing columns
 
@@ -827,8 +841,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     , dwarf, formatJuvenile(dwarf)
                     , formatExclusions(dwarf, true, colExclusions)
                     , formatExclusions(dwarf, false, colExclusions)
-                    , listCombatLevels("Close", dwarf.skillLevels)
-                    , listCombatLevels("Ranged", dwarf.skillLevels)));
+                    , listCombatLevels("Close", dwarf.getSkillLevels())
+                    , listCombatLevels("Ranged", dwarf.getSkillLevels())));
         }
 
         return vReturn;
@@ -862,7 +876,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Include selected
         menuItem = new JMenuItem("Include Selected");
-        menuItem.setMnemonic(KeyEvent.VK_I);
+        //menuItem.setMnemonic(KeyEvent.VK_I);
         menuItem.addActionListener(new ActionListener() {
 
             @Override
@@ -874,7 +888,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         popUp.add(menuItem);
 
         menuItem = new JMenuItem("Exclude Selected");
-        menuItem.setMnemonic(KeyEvent.VK_U);
+        //menuItem.setMnemonic(KeyEvent.VK_U);
         menuItem.addActionListener(new ActionListener() {
 
             @Override
@@ -890,13 +904,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Copy selected rows to clipboard in spreadsheet-friendly format-----
         menuItem = new JMenuItem("Copy");
-        menuItem.setMnemonic(KeyEvent.VK_C);
         menuItem.setAccelerator(KeyStroke.getKeyStroke("ctrl C"));
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                MyHandyTable.cancelEditing(moTable.getMainTable());
-                MyHandyTable.copyToClipboard(moTable.getTables(), false);
+                moClipboardHelper.doCopy();
             }
         });
         popUp.add(menuItem);
@@ -904,7 +916,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         // ---------------------------------------------------------------------
         for (JTable table : moTable.getTables())
             table.setComponentPopupMenu(popUp); // moTable
-        moTable.getMainTable().getSelectionModel().addListSelectionListener(
+            moTable.getMainTable().getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
 
             @Override
@@ -926,8 +938,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void setIncluded(boolean included) {
         for (int row = 0; row < moTable.getMainTable().getRowCount(); row++)
             if (moTable.getMainTable().isRowSelected(row))
-                moModel.setValueAt(included, moTable.getMainTable().convertRowIndexToModel(row)
-                        , moTable.getMainTable().convertColumnIndexToModel(INCLUDE_COLUMN));
+                moModel.setValueAt(included
+                        , moTable.getMainTable().convertRowIndexToModel(row)
+                        , moTable.getMainTable().convertColumnIndexToModel(
+                        INCLUDE_COLUMN));
     }
 
     // Returns the desired menu for this panel.
@@ -952,17 +966,17 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 hideableColumns.length);
 
         menu = new JMenu("Columns");
-        menu.setMnemonic(KeyEvent.VK_C);
+        //menu.setMnemonic(KeyEvent.VK_C);
         menuBar.add(menu);
 
         item = new JMenuItem("Show All");
-        item.setMnemonic(KeyEvent.VK_S);
+        //item.setMnemonic(KeyEvent.VK_S);
         item.addActionListener(CursorController.createListener(this
                 , createAllVisActionListener(hideableColumns, true)));  // Hourglass  al
         menu.add(item);
 
         item = new JMenuItem("Hide All");
-        item.setMnemonic(KeyEvent.VK_I);
+        //item.setMnemonic(KeyEvent.VK_I);
         item.addActionListener(CursorController.createListener(this
                 , createAllVisActionListener(hideableColumns, false)));  // Hourglass  al
         menu.add(item);
@@ -1019,11 +1033,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Formats--------------------------------------------------------------
         menu = new JMenu("Format");
-        menu.setMnemonic(KeyEvent.VK_O);
+        //menu.setMnemonic(KeyEvent.VK_O);
         menuBar.add(menu);
 
         subMenu = new JMenu("Stats");
-        subMenu.setMnemonic(KeyEvent.VK_S);
+        //subMenu.setMnemonic(KeyEvent.VK_S);
         menu.add(subMenu);
 
         mmStatFormatMenus = new HashMap<ValueAndTextFormat, JMenuItem>(
@@ -1031,7 +1045,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         createFormatSubMenu(subMenu, "Stat", mmStatFormatMenus);
 
         subMenu = new JMenu("Potentials");
-        subMenu.setMnemonic(KeyEvent.VK_T);
+        //subMenu.setMnemonic(KeyEvent.VK_T);
         menu.add(subMenu);
 
         mmPotFormatMenus = new HashMap<ValueAndTextFormat, JMenuItem>(
@@ -1039,7 +1053,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         createFormatSubMenu(subMenu, "Potential", mmPotFormatMenus);
 
         subMenu = new JMenu("Skill Levels");
-        subMenu.setMnemonic(KeyEvent.VK_K);
+        //subMenu.setMnemonic(KeyEvent.VK_K);
         menu.add(subMenu);
 
         mmLevelFormatMenus = new HashMap<ValueAndTextFormat, JMenuItem>(
@@ -1135,6 +1149,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             JTable table = moTable.getTables()[iCount];
             for (int jCount = 0; jCount < table.getColumnCount(); jCount++) {
                 lstOrder.add(table.getColumnName(jCount));
+                //System.out.println(table.getColumnName(jCount));
             }
         }
 
@@ -1532,11 +1547,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             SocialSkill social = (SocialSkill) skill;
             out.write("    <PreventedBy>");
             out.newLine();
-            out.write("        <Trait>" + social.noStatName + "</Trait>");
+            out.write("        <Trait>" + social.getNoStatName() + "</Trait>");
             out.newLine();
-            out.write("        <Min>" + social.noStatMin + "</Min>");
+            out.write("        <Min>" + social.getNoStatMin() + "</Min>");
             out.newLine();
-            out.write("        <Max>" + social.noStatMax + "</Max>");
+            out.write("        <Max>" + social.getNoStatMax() + "</Max>");
             out.newLine();
             out.write("    </PreventedBy>");
             out.newLine();
@@ -1861,7 +1876,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void createViewMenu(List<GridView> views) {
         JMenuItem item;
         moViewMenu = new JMenu("View");
-        moViewMenu.setMnemonic(KeyEvent.VK_V);
+        //moViewMenu.setMnemonic(KeyEvent.VK_V);
 
         // Save current view
         item = new JMenuItem("Save Current View As...");

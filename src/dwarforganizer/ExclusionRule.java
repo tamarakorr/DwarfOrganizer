@@ -15,10 +15,10 @@ public class ExclusionRule extends Exclusion {
     private String comparator;
     private Object value;
 
-    protected static final String[] maStringComparators = new String[] {
+    public static final String[] STRING_COMPARATORS = new String[] {
         "Contains", "Does not contain", "Equals", "Not equal to"
     };
-    protected static final String[] maNumericComparators = new String[] {
+    public static final String[] NUMERIC_COMPARATORS = new String[] {
         "Less than", "Less than or equal to", "Equals", "Greater than"
                 , "Greater than or equal to", "Not equal to"
     };    

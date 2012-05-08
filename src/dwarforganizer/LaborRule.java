@@ -5,6 +5,8 @@
 
 package dwarforganizer;
 
+import dwarforganizer.deepclone.DeepCloneable;
+
 /**
  *
  * @author Tamara Orr

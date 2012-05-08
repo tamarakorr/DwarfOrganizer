@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.dirty;
 
 /**
  *
  * @author Tamara Orr
  */
-public interface BroadcastListener {
-    public void broadcast(BroadcastMessage message);
+public interface DirtyListener {
+    public void dirtyChanged(boolean newDirtyState);
 }

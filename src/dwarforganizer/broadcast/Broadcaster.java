@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.broadcast;
 
 import java.util.Vector;
 

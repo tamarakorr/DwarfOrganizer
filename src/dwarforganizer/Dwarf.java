@@ -5,6 +5,7 @@
 
 package dwarforganizer;
 
+import dwarforganizer.deepclone.DeepCloneable;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -29,7 +30,7 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
     protected Hashtable<String, Integer> statPercents;
     private int time;
     protected Hashtable<String, Long> skillPotentials;
-    protected Hashtable<String, Long> skillLevels;
+    private Hashtable<String, Long> skillLevels;
     protected Hashtable<String, Long> balancedPotentials;
     private String jobText;
     protected Vector<String> labors;
@@ -113,6 +114,10 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public Hashtable<String, Long> getSkillLevels() {
+        return skillLevels;
     }
 
     @Override

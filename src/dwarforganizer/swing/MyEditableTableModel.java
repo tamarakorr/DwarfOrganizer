@@ -3,8 +3,9 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.swing;
 
+import dwarforganizer.*;
 import java.util.Vector;
 
 /**

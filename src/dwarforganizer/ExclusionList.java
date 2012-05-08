@@ -9,7 +9,7 @@ import java.util.Vector;
 
 /**
  *
- * @author Owner
+ * @author Tamara Orr
  */
 public class ExclusionList extends Exclusion {
 

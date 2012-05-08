@@ -5,6 +5,10 @@
 
 package dwarforganizer;
 
+import dwarforganizer.dirty.DirtyHandler;
+import dwarforganizer.dirty.DirtyListener;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.swing.MyTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -58,7 +62,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter> implements Dirt
         moDirtyHandler = new DirtyHandler();
     }
 
-    protected void initialize(JTable table, MyTableModel model
+    public void initialize(JTable table, MyTableModel model
             , JButton btnUpdate, boolean clearAfterAdd
             , boolean clearAfterEdit, boolean editOnDoubleClick
             , boolean ctrlEnterToEdit, boolean deleteKeyToDelete

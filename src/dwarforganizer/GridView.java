@@ -5,6 +5,8 @@
 
 package dwarforganizer;
 
+import dwarforganizer.swing.HideableTableColumnModel;
+import dwarforganizer.deepclone.DeepCloneable;
 import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
@@ -212,8 +214,10 @@ public class GridView implements MyPropertyGetter, DeepCloneable {
         //System.out.println("equals()");
 
         // Not null
-        if (otherView == null)
+        if (otherView == null) {
+            //System.out.println("Unequal: null");
             return false;
+        }
 
         // Check name-----------------------------------------------------------
         // Name is ignored if otherView's name is UNSAVED_VIEW_NAME.

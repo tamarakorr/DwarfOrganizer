@@ -5,6 +5,7 @@
 
 package dwarforganizer;
 
+import dwarforganizer.swing.HideableTableColumnModel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -365,23 +366,25 @@ public class ResultsView implements ActionListener {
             
             for (int job = 0; job < mvJobs.size(); job++) {   // NUM_JOBS
                 Job thisJob = mvJobs.get(job);
-                boolean bHasReminder = ! thisJob.reminder.equals("");
+                boolean bHasReminder = ! thisJob.getReminder().equals("");
                 
                 if (mbSolution[job][row]) {
 
                     // Display any change from the current labors
-                    if (thisDwarf.labors.contains(thisJob.name)) {
+                    if (thisDwarf.labors.contains(thisJob.getName())) {
 
                         vChanges.add(new DisplayableChange(getJobAndPotentialText(
-                                thisJob.name
-                                , thisDwarf.balancedPotentials.get(thisJob.name))
+                                thisJob.getName()
+                                , thisDwarf.balancedPotentials.get(
+                                thisJob.getName()))
                                 , ChangeType.STAY_SAME));
                     }
                     else {
 
                         vChanges.add(new DisplayableChange(getJobAndPotentialText(
-                                thisJob.name
-                                , thisDwarf.balancedPotentials.get(thisJob.name))
+                                thisJob.getName()
+                                , thisDwarf.balancedPotentials.get(
+                                thisJob.getName()))
                                 , ChangeType.ADD));                        
                         
                         
@@ -389,26 +392,29 @@ public class ResultsView implements ActionListener {
                         if (bHasReminder) {
                             strReminderText = addLineBreakIfNonEmpty(strReminderText);
                             strReminderText = getAddText(strReminderText
-                                    , thisJob.reminder + " (" + thisJob.name + ")");
+                                    , thisJob.getReminder() + " ("
+                                    + thisJob.getName() + ")");
                         }
                     }
                     jobCount++;
                 }
                 
                 // Check for printing any labors to remove
-                else if (thisDwarf.labors.contains(thisJob.name)) {
+                else if (thisDwarf.labors.contains(thisJob.getName())) {
                     //intChangeCount++;
 
                     vChanges.add(new DisplayableChange(getJobAndPotentialText(
-                                thisJob.name
-                                , thisDwarf.balancedPotentials.get(thisJob.name))
+                                thisJob.getName()
+                                , thisDwarf.balancedPotentials.get(
+                                thisJob.getName()))
                                 , ChangeType.REMOVE));
                     
                     // Add reminder text if any is needed.
                     if (bHasReminder) {
                         strReminderText = addLineBreakIfNonEmpty(strReminderText);
                         strReminderText = getRemoveText(strReminderText
-                            , thisJob.reminder + " (" + thisJob.name + ")");
+                            , thisJob.getReminder() + " (" + thisJob.getName()
+                            + ")");
                     }
                 }
             }

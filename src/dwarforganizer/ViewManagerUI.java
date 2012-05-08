@@ -5,6 +5,12 @@
 
 package dwarforganizer;
 
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.swing.MyTableModel;
+import dwarforganizer.swing.SortKeySwapper;
+import dwarforganizer.swing.PlaceholderTextField;
+import dwarforganizer.broadcast.BroadcastMessage;
+import dwarforganizer.broadcast.Broadcaster;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;

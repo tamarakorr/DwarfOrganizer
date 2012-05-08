@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package dwarforganizer;
+package dwarforganizer.swing;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -303,12 +303,12 @@ public class ColumnFreezingTable implements RowSorterListener {
             return allColumnsIndex - leftColumns;
     }
     // Returns the fixed component
-    protected JTable getFixedTable() {
+    public JTable getFixedTable() {
         return leftTable;
     }
 
     // Returns the splitpane component
-    protected JSplitPane getSplitPane() {
+    public JSplitPane getSplitPane() {
         return split;
     }
 

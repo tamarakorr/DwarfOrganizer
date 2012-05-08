@@ -11,7 +11,7 @@ package dwarforganizer;
  * See MIT license in license.txt
  */
 public class Job extends JobOpening {
-    protected int qtyDesired;
+    private int qtyDesired;
     
     public Job(String name, String skillName, int qtyDesired, int time
             , double candidateWeight, int currentSkillWeight, String reminder) {
@@ -19,6 +19,12 @@ public class Job extends JobOpening {
         super(name, skillName, time, candidateWeight, currentSkillWeight
                 , reminder);
         
+        this.qtyDesired = qtyDesired;
+    }
+    public int getQtyDesired() {
+        return qtyDesired;
+    }
+    public void setQtyDesired(int qtyDesired) {
         this.qtyDesired = qtyDesired;
     }
 }

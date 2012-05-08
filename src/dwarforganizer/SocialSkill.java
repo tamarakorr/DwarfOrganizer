@@ -15,9 +15,9 @@ public class SocialSkill extends SecondarySkill {
     // Social skills are defined as skills whose development can be prevented
     // completely by a trait.
     
-    protected String noStatName;
-    protected int noStatMin;
-    protected int noStatMax;
+    private String noStatName;
+    private int noStatMin;
+    private int noStatMax;
 
     public SocialSkill(String name, Vector<Stat> stats, String noStatName
             , int noStatMin, int noStatMax) {
@@ -26,4 +26,17 @@ public class SocialSkill extends SecondarySkill {
         this.noStatMin = noStatMin;
         this.noStatMax = noStatMax;
     }
+
+    public int getNoStatMax() {
+        return noStatMax;
+    }
+
+    public int getNoStatMin() {
+        return noStatMin;
+    }
+
+    public String getNoStatName() {
+        return noStatName;
+    }
+
 }

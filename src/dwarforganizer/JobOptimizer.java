@@ -5,6 +5,7 @@
 
 package dwarforganizer;
 
+import dwarforganizer.bins.BinPack;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -73,7 +74,7 @@ public class JobOptimizer { // implements ActionListener
         // Summarize
         long jobHours = 0l;
         for (Job job : mvJobs)
-            jobHours += job.time * job.qtyDesired;
+            jobHours += job.getTime() * job.getQtyDesired();
         long dwarfHours = 0l;
         for (Dwarf dwarf : mvDwarves)
             dwarfHours += dwarf.getTime();
@@ -107,8 +108,8 @@ public class JobOptimizer { // implements ActionListener
     // Hashes job names to vector indices
     private void createJobIndex() {
         for (int iCount = 0; iCount < NUM_JOBS; iCount++) {
-            System.out.println(iCount + " " + mvJobs.get(iCount).name);
-            mhtJobNameToIndex.put(mvJobs.get(iCount).name, iCount);    // Index it for matching
+            System.out.println(iCount + " " + mvJobs.get(iCount).getName());
+            mhtJobNameToIndex.put(mvJobs.get(iCount).getName(), iCount);    // Index it for matching
         }
     }
         
@@ -248,7 +249,7 @@ public class JobOptimizer { // implements ActionListener
             // If the job is selected in this combination
             if (isJobIncludedInCombo(iCount, combo, intJobs)) {
                 //dblTotalTime += mvdJobTime.get(vJobs.get(iCount));
-                intTotalTime += mvJobs.get(vJobs.get(iCount)).time;
+                intTotalTime += mvJobs.get(vJobs.get(iCount)).getTime();
                 if (intTotalTime > MAX_TIME) break;
             }
         }
@@ -265,7 +266,7 @@ public class JobOptimizer { // implements ActionListener
         Vector<JobOpening> vReturn = new Vector<JobOpening>();
         
         for (Job job : mvJobs) {
-            for (int iCount = 0; iCount < job.qtyDesired; iCount++)
+            for (int iCount = 0; iCount < job.getQtyDesired(); iCount++)
                 vReturn.add((JobOpening) job);
         }
         
@@ -299,14 +300,14 @@ public class JobOptimizer { // implements ActionListener
             Vector<JobOpening> bin = vPackedBins.get(dCount);
             for (int jCount = 0; jCount < bin.size(); jCount++) {
                 JobOpening job = bin.get(jCount);
-                int jobIndex = mhtJobNameToIndex.get(job.name);
+                int jobIndex = mhtJobNameToIndex.get(job.getName());
                 mbSolution[jobIndex][dCount] = true;
                 
                 // Decrease the dwarf's available time
-                dwarf.setTime(dwarf.getTime() - job.time);
+                dwarf.setTime(dwarf.getTime() - job.getTime());
                 
                 System.out.println("Selected initial job for "
-                        + dwarf.getName() + ": " + job.name);
+                        + dwarf.getName() + ": " + job.getName());
             }
         }
                 
@@ -351,7 +352,7 @@ public class JobOptimizer { // implements ActionListener
                         // Is another dwarf that is not assigned this job,
                         // better at this job?
                         for (int otherDwarf = 0; otherDwarf < NUM_DWARVES; otherDwarf++) {
-                            String jobName = mvJobs.get(job).name;
+                            String jobName = mvJobs.get(job).getName();
                             double otherDwarfSkill = mvDwarves.get(otherDwarf).balancedPotentials.get(jobName);
                             double dwarfSkill = mvDwarves.get(dwarf).balancedPotentials.get(jobName);
 
@@ -361,7 +362,7 @@ public class JobOptimizer { // implements ActionListener
                                 System.out.println(" ("
                                         + mvDwarves.get(otherDwarf).getName()
                                         + " is better at "
-                                        + mvJobs.get(job).name + ")");
+                                        + mvJobs.get(job).getName() + ")");
 
                                 // Now swap them if necessary
                                 bReassigned = checkForJobSwap(dwarf, otherDwarf);
@@ -393,7 +394,7 @@ public class JobOptimizer { // implements ActionListener
             int intTime = MAX_TIME;
             for (int job = 0; job < NUM_JOBS; job++)
                 if (mbSolution[job][dwarf])
-                    intTime -= mvJobs.get(job).time;
+                    intTime -= mvJobs.get(job).getTime();
             //mvdDwarfTimeNew.set(dwarf, time);
             mvDwarves.get(dwarf).setTime(intTime);
         }
@@ -418,7 +419,7 @@ public class JobOptimizer { // implements ActionListener
             // If both dwarves have the job, remove the time taken by the
             // job from the available time.
             else if (mbSolution[jCount][dwarf1] && mbSolution[jCount][dwarf2])
-                intMaxFreeTime -= mvJobs.get(jCount).time;
+                intMaxFreeTime -= mvJobs.get(jCount).getTime();
         
         // Find and rate every possible combination of these dwarves' jobs.
         Vector<Long> vCombos = getValidJobCombos(vRelevantJobs, intMaxFreeTime);
@@ -504,9 +505,9 @@ public class JobOptimizer { // implements ActionListener
         long potential = -1;
         
         //if (oDwarf.skillPotentials.get(thisJob.skillName) == null)
-        if (oDwarf.balancedPotentials.get(thisJob.name) == null) {
+        if (oDwarf.balancedPotentials.get(thisJob.getName()) == null) {
             System.err.println("ERROR: Potential for job '"
-                    + thisJob.name + "' not found"
+                    + thisJob.getName() + "' not found"
                     + " for dwarf " + oDwarf.getName() + "."
                     + " All results are invalid. (Dwarf has "
                     + oDwarf.balancedPotentials.size() + " valid job potentials.)");
@@ -514,11 +515,10 @@ public class JobOptimizer { // implements ActionListener
         }
         else {
             //potential = oDwarf.skillPotentials.get(thisJob.skillName);
-            potential = oDwarf.balancedPotentials.get(thisJob.name);
+            potential = oDwarf.balancedPotentials.get(thisJob.getName());
         }
         
-        return Math.round(thisJob.candidateWeight
-                * potential);
+        return Math.round(thisJob.getCandidateWeight() * potential);
     }
     
     private void setDwarfJobs(int dwarfIndex, long jobCombo, Vector<Integer> vJobs) {
@@ -533,12 +533,12 @@ public class JobOptimizer { // implements ActionListener
             
             if (! bOld && bNew)
                 System.out.println(mvDwarves.get(dwarfIndex).getName() + " +"
-                        + mvJobs.get(job).name + " (" + mvJobs.get(job).time
-                        + " time units)");
+                        + mvJobs.get(job).getName() + " ("
+                        + mvJobs.get(job).getTime() + " time units)");
             else if (bOld && ! bNew)
                 System.out.println(mvDwarves.get(dwarfIndex).getName()
-                        + " -" + mvJobs.get(job).name
-                        + " (" + mvJobs.get(job).time + " time units"
+                        + " -" + mvJobs.get(job).getName()
+                        + " (" + mvJobs.get(job).getTime() + " time units"
                         + ")");
             
             mbSolution[job][dwarfIndex] = bNew;
@@ -580,8 +580,8 @@ public class JobOptimizer { // implements ActionListener
     private boolean isJobLegalForDwarf(int job, int dwarf) {
         for (int iCount = 0; iCount < NUM_JOBS; iCount++) {
             if (mbSolution[iCount][dwarf]) {
-                if (mhtJobBlacklist.areItemsListedTogether(mvJobs.get(iCount).name
-                        , mvJobs.get(job).name))
+                if (mhtJobBlacklist.areItemsListedTogether(mvJobs.get(iCount).getName()
+                        , mvJobs.get(job).getName()))
                     return false;
 /*                if (! areJobsAllowedTogether(mvJobs.get(iCount).name
                     , mvJobs.get(job).name))

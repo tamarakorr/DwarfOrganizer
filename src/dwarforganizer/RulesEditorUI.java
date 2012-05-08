@@ -5,6 +5,13 @@
 
 package dwarforganizer;
 
+import dwarforganizer.dirty.DirtyListener;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.swing.MyTableModel;
+import dwarforganizer.swing.SortKeySwapper;
+import dwarforganizer.swing.PlaceholderTextField;
+import dwarforganizer.broadcast.BroadcastMessage;
+import dwarforganizer.broadcast.Broadcaster;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -342,7 +349,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         this.validate();
 
         // Set clean state------------------------------------------------------
-        moRulesEditor.getDirtyHandler().setClean();
+        moRulesEditor.setClean(); // getDirtyHandler()
     }
 
     // Returns the current file data in Vector<LaborRule> format
@@ -389,16 +396,16 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
     @Override
     public void addDirtyListener(DirtyListener listener) {
-        moRulesEditor.getDirtyHandler().addDirtyListener(listener);
+        moRulesEditor.addDirtyListener(listener); // getDirtyHandler()
     }
 
     @Override
     public boolean isDirty() {
-        return moRulesEditor.getDirtyHandler().isDirty();
+        return moRulesEditor.isDirty(); // getDirtyHandler()
     }
     @Override
     public void setClean() {
-        moRulesEditor.getDirtyHandler().setClean();
+        moRulesEditor.setClean(); // getDirtyHandler()
     }
 
 }

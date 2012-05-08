@@ -5,6 +5,16 @@
 
 package dwarforganizer;
 
+import dwarforganizer.dirty.DirtyHandler;
+import dwarforganizer.dirty.DirtyListener;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.swing.MyEditableTableModel;
+import dwarforganizer.swing.MyTableModel;
+import dwarforganizer.swing.SortKeySwapper;
+import dwarforganizer.swing.PlaceholderTextField;
+import dwarforganizer.deepclone.DeepCloneableVector;
+import dwarforganizer.broadcast.BroadcastMessage;
+import dwarforganizer.broadcast.Broadcaster;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -127,9 +137,9 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 
         // Create combo box models----------------------------------------------
         moCompStringModel = new DefaultComboBoxModel(merge(UNSELECTED_COMPARISON
-            , ExclusionRule.maStringComparators));
+            , ExclusionRule.STRING_COMPARATORS));
         moCompNumModel = new DefaultComboBoxModel(merge(UNSELECTED_COMPARISON
-            , ExclusionRule.maNumericComparators));
+            , ExclusionRule.NUMERIC_COMPARATORS));
         moCompUnknownModel = new DefaultComboBoxModel(new Object[] {
             COMPARISON_TEXT_ATTR_UNSELECTED });
 
@@ -1380,8 +1390,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     private class MasterDirtyHandler extends DirtyHandler {
         @Override
         public void setClean() {
-            moRuleTable.getDirtyHandler().setClean();
-            moListTable.getDirtyHandler().setClean();
+            moRuleTable.setClean(); // getDirtyHandler()
+            moListTable.setClean(); // getDirtyHandler()
             super.setClean();
         }
     }

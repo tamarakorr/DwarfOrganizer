@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.swing;
 
 import java.awt.Component;
 import java.awt.Container;

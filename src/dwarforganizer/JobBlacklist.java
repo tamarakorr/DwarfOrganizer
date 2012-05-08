@@ -5,6 +5,8 @@
 
 package dwarforganizer;
 
+import dwarforganizer.bins.BinRule;
+
 /**
  *
  * @author Tamara Orr
@@ -14,10 +16,11 @@ public class JobBlacklist extends JobList implements BinRule<JobOpening> {
 
     @Override
     public boolean canItemsBeBinned(JobOpening job1, JobOpening job2) {
-        if (job1.name.equals(job2.name))
+        if (job1.getName().equals(job2.getName()))
             return false;
         else
-            return (! this.areItemsListedTogether(job1.name, job2.name));
+            return (! this.areItemsListedTogether(job1.getName()
+                    , job2.getName()));
     }
 
 }

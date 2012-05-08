@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.swing;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;

@@ -3,14 +3,13 @@
  * and open the template in the editor.
  */
 
-package dwarforganizer;
+package dwarforganizer.bins;
 
 /**
  *
  * @author Tamara Orr
  * MIT license: Refer to license.txt
  */
-public abstract class Binnable implements Comparable
-        , MyPropertyGetter {
-
+public interface BinRule<T extends Binnable> {
+    public boolean canItemsBeBinned(T item1, T item2);
 }

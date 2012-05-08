@@ -5,6 +5,9 @@
 
 package dwarforganizer;
 
+import dwarforganizer.swing.CopyCutPastingTable;
+import dwarforganizer.swing.MyTableTransferHandler;
+import dwarforganizer.bins.BinPack;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -224,22 +227,22 @@ public class JobListPanel extends JPanel {
                 }
                 
                 Job job = mvLaborSettings.get(firstRow);
-                boolean bTimeChanged = (job.qtyDesired != intNewQty
-                        || job.time != intNewTime);
+                boolean bTimeChanged = (job.getQtyDesired() != intNewQty
+                        || job.getTime() != intNewTime);
                 
-                job.qtyDesired = intNewQty;
-                job.time = intNewTime;
+                job.setQtyDesired(intNewQty);
+                job.setTime(intNewTime);
                 try {
-                    job.candidateWeight = Double.parseDouble(oModel.getValueAt(firstRow, 4).toString());
+                    job.setCandidateWeight(Double.parseDouble(oModel.getValueAt(firstRow, 4).toString()));
                 } catch (NumberFormatException e) {
-                    job.candidateWeight = DEFAULT_WT;
+                    job.setCandidateWeight(DEFAULT_WT);
                 }
                 try {
-                    job.currentSkillWeight = Integer.parseInt(oModel.getValueAt(firstRow, 5).toString());
+                    job.setCurrentSkillWeight(Integer.parseInt(oModel.getValueAt(firstRow, 5).toString()));
                 } catch (NumberFormatException e) {
-                    job.currentSkillWeight = DEFAULT_SKILL_WT;
+                    job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
                 }
-                job.reminder = oModel.getValueAt(firstRow, 6).toString();
+                job.setReminder(oModel.getValueAt(firstRow, 6).toString());
                 
                 if (bTimeChanged) {
                     //updateHours();
@@ -343,7 +346,7 @@ public class JobListPanel extends JPanel {
         Vector<JobOpening> vReturn = new Vector<JobOpening>();
         
         for (Job job : mvLaborSettings) {
-            for (int iCount = 0; iCount < job.qtyDesired; iCount++)
+            for (int iCount = 0; iCount < job.getQtyDesired(); iCount++)
                 vReturn.add((JobOpening) job);
         }
         
@@ -353,7 +356,7 @@ public class JobListPanel extends JPanel {
     private long sumHours() {
         long lngReturn = 0l;        // It's an L, not a one
         for (Job job : mvLaborSettings)
-            lngReturn += job.qtyDesired * job.time;
+            lngReturn += job.getQtyDesired() * job.getTime();
         return lngReturn;
     }
     
@@ -386,14 +389,14 @@ public class JobListPanel extends JPanel {
         TableModel oModel = moTable.getModel();
         int row = 0;
         for (Job job : mvLaborSettings) {
-            oModel.setValueAt(getGroupForLabor(job.name), row, 0);
-            oModel.setValueAt(job.name, row, 1);
-            oModel.setValueAt(job.qtyDesired, row, 2);
+            oModel.setValueAt(getGroupForLabor(job.getName()), row, 0);
+            oModel.setValueAt(job.getName(), row, 1);
+            oModel.setValueAt(job.getQtyDesired(), row, 2);
             //if (laborSetting.time != DEFAULT_TIME) System.out.println("Setting time to " + laborSetting.time);
-            oModel.setValueAt(job.time, row, 3);
-            oModel.setValueAt(job.candidateWeight, row, 4);
-            oModel.setValueAt(job.currentSkillWeight, row, 5);
-            oModel.setValueAt(job.reminder, row, 6);
+            oModel.setValueAt(job.getTime(), row, 3);
+            oModel.setValueAt(job.getCandidateWeight(), row, 4);
+            oModel.setValueAt(job.getCurrentSkillWeight(), row, 5);
+            oModel.setValueAt(job.getReminder(), row, 6);
             row++;
         }
         mbLoading = false;
@@ -431,12 +434,12 @@ public class JobListPanel extends JPanel {
             out.write(CURRENT_JOB_SETTINGS_VERSION);
             out.newLine();
             for (Job job : mvLaborSettings) {
-                out.write(job.name
-                        + "\t" + job.qtyDesired
-                        + "\t" + job.time
-                        + "\t" + job.candidateWeight
-                        + "\t" + job.currentSkillWeight
-                        + "\t" + job.reminder);
+                out.write(job.getName()
+                        + "\t" + job.getQtyDesired()
+                        + "\t" + job.getTime()
+                        + "\t" + job.getCandidateWeight()
+                        + "\t" + job.getCurrentSkillWeight()
+                        + "\t" + job.getReminder());
                 out.newLine();
                 out.flush();
             }
@@ -472,11 +475,11 @@ public class JobListPanel extends JPanel {
             
             // Update the current labor settings with the defaults.
             for (Job job : mvLaborSettings) {
-                job.qtyDesired = DEFAULT_QTY;
-                job.candidateWeight = DEFAULT_WT;
-                job.currentSkillWeight = DEFAULT_SKILL_WT;
-                job.time = DEFAULT_TIME;
-                job.reminder = DEFAULT_REMINDER;
+                job.setQtyDesired(DEFAULT_QTY);
+                job.setCandidateWeight(DEFAULT_WT);
+                job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
+                job.setTime(DEFAULT_TIME);
+                job.setReminder(DEFAULT_REMINDER);
             }
         }
         
@@ -490,9 +493,11 @@ public class JobListPanel extends JPanel {
     // Print labor settings, for debugging
     private void printLaborSettings() {
         for (Job job : mvLaborSettings) {
-            System.out.println(job.name + " " + job.qtyDesired + " " + job.time + " "
-                    + job.candidateWeight + " " + job.currentSkillWeight + " "
-                    + job.reminder);
+            System.out.println(job.getName() + " " + job.getQtyDesired()
+                    + " " + job.getTime() + " "
+                    + job.getCandidateWeight() + " "
+                    + job.getCurrentSkillWeight() + " "
+                    + job.getReminder());
         }
     }
     
