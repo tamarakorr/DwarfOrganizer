@@ -10,26 +10,27 @@ import dwarforganizer.deepclone.DeepCloneable;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
     , DeepCloneable {
-    
+
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
         "id", "name" };
-    
+
     private String name;
     private Integer ID;
     private boolean active;
-    
+
     public abstract boolean appliesTo(MyPropertyGetter obj);
-    
+
     public Exclusion(Integer ID, String name, boolean active) {
         super();
         this.ID = ID;
         this.name = name;
         this.active = active;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -53,13 +54,13 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
     public void setName(String name) {
         this.name = name;
     }
-    
+
     @Override
     public String toString() {
         return "Exclusion: ID = " + ID + ", Name = " + name
                 + ", Active = " + active;
     }
-    
+
 
     @Override
     public Object getProperty(String propName, boolean humanReadable) {
@@ -86,7 +87,7 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
     @Override
     public void setProperty(String propName, Object value) {
         String prop = propName.toLowerCase();
-        
+
         try {
             if (prop.equals("name"))
                 this.setName(value.toString());
@@ -100,5 +101,5 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
             System.err.println("Failed to set Exclusion property " + propName);
         }
     }
-    
+
 }

@@ -36,6 +36,7 @@ import myutils.MyHandyTable;
  * Call editRow()/copyRow()/deleteRow() to edit, copy, or delete a row
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public abstract class AbstractEditor<T extends MyPropertyGetter> implements DirtyForm {
 

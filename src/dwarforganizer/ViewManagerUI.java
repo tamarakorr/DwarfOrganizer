@@ -35,6 +35,7 @@ import javax.swing.JTextField;
  * Allows the user to rename and delete views
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class ViewManagerUI extends AbstractEditor<GridView>
         implements DirtyForm {

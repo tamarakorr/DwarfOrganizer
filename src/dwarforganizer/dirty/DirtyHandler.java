@@ -10,9 +10,10 @@ import java.util.Vector;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class DirtyHandler {
-    
+
     private boolean mbDirty;
     private Vector<DirtyListener> mvDirtyListener;
 

@@ -15,7 +15,7 @@ import dwarforganizer.bins.Binnable;
 public class JobOpening extends Binnable {
 
     private static String[] SUPPORTED_PROPERTIES = new String[] { "size" };
-    
+
     private String name;
     private String skillName;
     private int time;
@@ -32,7 +32,7 @@ public class JobOpening extends Binnable {
         this.currentSkillWeight = currentSkillWeight;
         this.reminder = reminder;
     }
-    
+
     @Override
     public int compareTo(Object o) {
         Job j = (Job) o;
@@ -122,5 +122,5 @@ public class JobOpening extends Binnable {
     public Class getPropertyClass(String propName, boolean humanReadable) {
         throw new UnsupportedOperationException("Not supported yet.");
     } */
-    
+
 }

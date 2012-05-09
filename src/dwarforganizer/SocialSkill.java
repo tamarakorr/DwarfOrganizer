@@ -10,11 +10,12 @@ import java.util.Vector;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class SocialSkill extends SecondarySkill {
     // Social skills are defined as skills whose development can be prevented
     // completely by a trait.
-    
+
     private String noStatName;
     private int noStatMin;
     private int noStatMax;

@@ -10,17 +10,18 @@ import java.util.Vector;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class Broadcaster {
-    
+
     private Vector<BroadcastListener> mvListener;
-    
+
     public Broadcaster() {
         super();
-        
+
         mvListener = new Vector<BroadcastListener>();
     }
-    
+
     public void notifyListeners(BroadcastMessage message) {
         Vector<BroadcastListener> v = (Vector<BroadcastListener>) mvListener.clone();
         for (BroadcastListener listener : v)

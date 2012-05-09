@@ -12,13 +12,13 @@ package dwarforganizer;
  */
 public class Job extends JobOpening {
     private int qtyDesired;
-    
+
     public Job(String name, String skillName, int qtyDesired, int time
             , double candidateWeight, int currentSkillWeight, String reminder) {
-        
+
         super(name, skillName, time, candidateWeight, currentSkillWeight
                 , reminder);
-        
+
         this.qtyDesired = qtyDesired;
     }
     public int getQtyDesired() {

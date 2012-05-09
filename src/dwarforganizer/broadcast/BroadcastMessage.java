@@ -7,22 +7,23 @@ package dwarforganizer.broadcast;
 
 /**
  *
- * @author Owner
+ * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class BroadcastMessage {
 
     private String sourceMessage;
     private Object target;
     private String messageText;
-    
+
     public BroadcastMessage(String sourceMessage, Object target
             , String messageText) { // JComponent
         super();
-        
+
         this.sourceMessage = sourceMessage;
         this.target = target;
         this.messageText = messageText;
-        
+
     }
 
     public String getMessageText() {
@@ -36,5 +37,5 @@ public class BroadcastMessage {
     public Object getTarget() {
         return target;
     }
-    
+
 }

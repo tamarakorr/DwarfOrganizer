@@ -8,6 +8,7 @@ package dwarforganizer.dirty;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public interface DirtyForm {
     // These are just the DirtyHandler methods we want to expose to clients

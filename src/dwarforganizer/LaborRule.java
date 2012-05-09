@@ -10,6 +10,7 @@ import dwarforganizer.deepclone.DeepCloneable;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class LaborRule implements MyPropertyGetter, DeepCloneable {
     private String type;
@@ -20,7 +21,7 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable {
     public LaborRule(String type, String firstLabor, String secondLabor
             , String comment) {
         super();
-        
+
         this.type = type;
         this.firstLabor = firstLabor;
         this.secondLabor = secondLabor;
@@ -62,7 +63,7 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable {
     @Override
     public Object getProperty(String propName, boolean humanReadable) {
         String prop = propName.toLowerCase();
-        
+
         if (prop.equals("type"))
             return getType();
         else if (prop.equals("comment"))
@@ -87,5 +88,5 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable {
     public Object deepClone() {
         return new LaborRule(type, firstLabor, secondLabor, comment);
     }
-    
+
 }

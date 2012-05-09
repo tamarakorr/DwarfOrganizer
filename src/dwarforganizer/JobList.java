@@ -14,7 +14,7 @@ import java.util.Vector;
  * See MIT license in license.txt
  */
 public class JobList extends Hashtable<String, Vector<String>> {
-    
+
     public JobList() { super(); }
 
     public void print() {
@@ -35,7 +35,7 @@ public class JobList extends Hashtable<String, Vector<String>> {
             Vector<String> vec = new Vector<String>();
             vec.add(valueJob);
             this.put(keyJob, vec);
-        }            
+        }
     }
 
     protected boolean areItemsListedTogether(String item1, String item2) {

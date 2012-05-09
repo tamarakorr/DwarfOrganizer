@@ -13,6 +13,7 @@ import java.util.Vector;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class DeepCloneableVector<T extends DeepCloneable> extends Vector<T>
         implements DeepCloneable, List<T>
@@ -30,7 +31,7 @@ public class DeepCloneableVector<T extends DeepCloneable> extends Vector<T>
     public DeepCloneableVector(int initialCapacity, int capacityIncrement) {
         super(initialCapacity, capacityIncrement);
     }
-    
+
     @Override
     public Object deepClone() {
         DeepCloneableVector<T> vReturn = new DeepCloneableVector<T>();
@@ -39,5 +40,5 @@ public class DeepCloneableVector<T extends DeepCloneable> extends Vector<T>
         }
         return vReturn;
     }
-    
+
 }

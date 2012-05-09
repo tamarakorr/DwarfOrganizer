@@ -45,7 +45,8 @@ import org.xml.sax.SAXException;
 
 /**
  *
- * @author Owner
+ * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class DwarfOrganizerIO {
 

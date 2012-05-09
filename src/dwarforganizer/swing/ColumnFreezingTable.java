@@ -52,6 +52,7 @@ import myutils.MyTableWidthAdjuster;
  * scrolled.
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class ColumnFreezingTable implements RowSorterListener {
 
@@ -101,7 +102,7 @@ public class ColumnFreezingTable implements RowSorterListener {
         leftTable.setAutoCreateColumnsFromModel(false);
         leftTable.setUpdateSelectionOnSort(false);  // We need to do this manually since we're sharing a sorter
         leftTable.setFocusable(false);  // Prevents user scrolling out of sync, such as with arrow keys
-        
+
         leftTable.setModel(rightTable.getModel());
         leftTable.setSelectionModel(rightTable.getSelectionModel());
         leftTable.setRowSorter(rightTable.getRowSorter());
@@ -121,7 +122,7 @@ public class ColumnFreezingTable implements RowSorterListener {
         // Don't show a vertical scrollbar for the left pane; copy horizontal
         // policy
         leftPane = new JScrollPane(leftTable);
-        
+
         // Instead of setting the policy to NEVER (which breaks the mouse
         // wheel), just hide the vertical scrollbar (allowing default
         // mouse wheel behavior).
@@ -131,17 +132,17 @@ public class ColumnFreezingTable implements RowSorterListener {
         leftPane.setHorizontalScrollBarPolicy(
                 rightPane.getHorizontalScrollBarPolicy());
         MyHandyTable.autoResizeTableColumns(leftTable);
-        
+
         // leftTable and rightTable
         rightTable.addPropertyChangeListener(createModelSynchronizer(rightTable
                 , leftTable));
-        
+
         // Synchronize scrolling
         this.rightPane.getViewport().addChangeListener(createScrollSynchronizer(
                 leftPane));
         leftPane.getViewport().addChangeListener(createScrollSynchronizer(
                 this.rightPane));
-        
+
         split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, leftPane
                 , rightPane);
         split.setDividerSize(DIVIDER_SIZE);
@@ -160,7 +161,7 @@ public class ColumnFreezingTable implements RowSorterListener {
         // Calculate the maximum snap position
         //mintMaxSnap = calcMaxSnap();
     }
-    
+
     public int getMaxSnap() {
         return calcMaxSnap();
     }
@@ -427,9 +428,9 @@ public class ColumnFreezingTable implements RowSorterListener {
     //  Keep the left table in sync with the main table
     private PropertyChangeListener createModelSynchronizer(final JTable leader
             , final JTable follower) {
-        
+
         return new PropertyChangeListener() {
-            
+
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if ("selectionModel".equals(evt.getPropertyName())) {

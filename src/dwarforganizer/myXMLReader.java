@@ -20,19 +20,19 @@ import org.xml.sax.SAXException;
  * See MIT license in license.txt
  */
 public class myXMLReader {
-    
+
     private Document mDoc;
-    
+
     public myXMLReader(String fileName) {
         this(new File(fileName));
     }
-    
+
     public myXMLReader(File file) {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             mDoc = docBuilder.parse(file);
-            
+
         } catch (ParserConfigurationException e) {
             System.err.println(e);
         } catch (SAXException e) {
@@ -49,15 +49,15 @@ public class myXMLReader {
         try {
             DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             mDoc = docBuilder.parse(is);
-            
+
         } catch (ParserConfigurationException e) {
             System.err.println(e);
         } catch (SAXException e) {
             System.err.println(e);
         } catch (IOException e) {
             System.err.println(e);
-        }        
+        }
     }
     public Document getDocument() { return mDoc; }
-    
+
 }

@@ -10,6 +10,7 @@ import java.util.prefs.Preferences;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public abstract class MyPrefs {
     public abstract void savePrefs(Preferences prefs);

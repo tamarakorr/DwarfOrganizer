@@ -16,7 +16,7 @@ import myutils.MyHandyTable;
 /**
  *
  * @author Tamara Orr
- *
+ * See MIT license in license.txt
  *
  * KeyAdapter to detect Windows standard cut, copy and paste keystrokes on a
  * JTable and put them to the clipboard

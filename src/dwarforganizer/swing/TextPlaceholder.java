@@ -21,6 +21,7 @@ import javax.swing.text.JTextComponent;
  * It disappears when clicked on, or when the text component otherwise
  * receives focus.
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class TextPlaceholder extends JLabel implements FocusListener
         , DocumentListener {
@@ -28,13 +29,13 @@ public class TextPlaceholder extends JLabel implements FocusListener
     public enum Show {
         ALWAYS, FOCUS_GAINED, FOCUS_LOST;
     }
-    
+
     private JTextComponent mtxtText;
     private Document mdocDoc;
     private Show meShow;
     private boolean mbShowOnce;
     private int mintFocusLost;
-    
+
     public TextPlaceholder(String text, JTextComponent component) {
         this(text, component, Show.FOCUS_LOST);
     }
@@ -42,21 +43,21 @@ public class TextPlaceholder extends JLabel implements FocusListener
         this.mtxtText = component;
         setShow(show);
         mdocDoc = component.getDocument();
-        
+
         setText(text);
         setFont(component.getFont());
         setForeground(component.getForeground());
         setBorder(new EmptyBorder(component.getInsets()));
         setHorizontalAlignment(JLabel.LEADING);
-        
+
         component.addFocusListener(this);
         mdocDoc.addDocumentListener(this);
-        
+
         component.setLayout(new BorderLayout());
         component.add(this);
         checkForPlaceholder();
     }
-    
+
     public Show getShow() { return meShow; }
     // Show.ALWAYS = always show the placeholder
     // Show.FOCUS_GAINED = show the prompt when the component gains focus,
@@ -66,14 +67,14 @@ public class TextPlaceholder extends JLabel implements FocusListener
     public void setShow(Show newValue) {
         meShow = newValue;
     }
-    
+
     // Set setShowOnce(true) to show the component once only
     // false = show repeatedly
     public boolean showOnce() { return mbShowOnce; }
     public void setShowOnce(boolean newValue) {
         mbShowOnce = newValue;
     }
-    
+
     // Change the alpha
     // @param alpha range 0 - 1.0
     public void setAlpha(float alpha) {
@@ -83,12 +84,12 @@ public class TextPlaceholder extends JLabel implements FocusListener
     // @param alpha range 0 - 255
     public void setAlpha(int alpha) {
         alpha = alpha > 255 ? 255 : alpha < 0 ? 0 : alpha;
-        
+
         Color foreground = getForeground();
         int red = foreground.getRed();
         int green = foreground.getGreen();
         int blue = foreground.getBlue();
-        
+
         Color withAlpha = new Color(red, green, blue, alpha);
         super.setForeground(withAlpha);
     }
@@ -97,20 +98,20 @@ public class TextPlaceholder extends JLabel implements FocusListener
     public void setStyle(int style) {
         setFont(getFont().deriveFont(style));
     }
-    
+
     private void checkForPlaceholder() {
         // Text entered -> remove placeholder
         if (mdocDoc.getLength() > 0) {
             setVisible(false);
             return;
         }
-        
+
         // Placeholder has been shown once -> remove
         if (mbShowOnce && (mintFocusLost > 0)) {
             setVisible(false);
             return;
         }
-        
+
         // Check Show property and focus to determine if we should display
         // the placeholder.
         if (mtxtText.hasFocus())
@@ -118,7 +119,7 @@ public class TextPlaceholder extends JLabel implements FocusListener
         else
             setVisible(meShow == Show.ALWAYS || meShow == Show.FOCUS_LOST);
     }
-    
+
     // FocusListener
     @Override
     public void focusGained(FocusEvent e) {

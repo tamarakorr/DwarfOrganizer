@@ -35,6 +35,7 @@ import javax.swing.table.TableModel;
  * A method to create a popup cut/copy/paste menu is provided.
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 
 public class CopyCutPastingTable extends JTable {

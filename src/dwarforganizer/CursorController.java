@@ -14,6 +14,7 @@ import java.util.TimerTask;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public final class CursorController {
 
@@ -22,22 +23,22 @@ public final class CursorController {
     public static final int delay = 500; // in milliseconds
 
     private CursorController() {}
-    
+
     public static ActionListener createListener(final Component component
             , final ActionListener mainActionListener) {
         ActionListener actionListener = new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent ae) {
-                
+
                 TimerTask timerTask = new TimerTask() {
                     @Override
                     public void run() {
                         component.setCursor(busyCursor);
                     }
                 };
-                Timer timer = new Timer(); 
-                
-                try {   
+                Timer timer = new Timer();
+
+                try {
                     timer.schedule(timerTask, delay);
                     mainActionListener.actionPerformed(ae);
                 } finally {

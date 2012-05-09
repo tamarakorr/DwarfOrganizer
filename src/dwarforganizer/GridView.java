@@ -14,6 +14,7 @@ import javax.swing.table.TableColumnModel;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class GridView implements MyPropertyGetter, DeepCloneable {
 

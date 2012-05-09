@@ -13,7 +13,7 @@ import java.util.Vector;
  * See MIT license in license.txt
  */
 public class Stat {
-    
+
     protected class StatHint {
         protected String hintText;
         protected int hintMin;
@@ -24,16 +24,16 @@ public class Stat {
             this.hintMax = hintMax;
         }
     }
-    
+
     private String name;
     private int[] range;
     private String xmlName;
     protected Vector<StatHint> vStatHints;
-    
+
     public Stat(String name, int[] range) {
         this.name = name;
         this.range = range;
-        
+
         vStatHints = new Vector<StatHint>();
     };
     public void addStatHint(String hintText, int hintMin, int hintMax) {
@@ -55,5 +55,5 @@ public class Stat {
     public int[] getRange() {
         return range;
     }
-    
+
 }

@@ -11,7 +11,7 @@ package dwarforganizer;
  * See MIT license in license.txt
  */
 public class Labor {
-    
+
     private String name;
     private String skillName;
     private String groupName;
@@ -33,7 +33,7 @@ public class Labor {
     public String getSkillName() {
         return skillName;
     }
-    
+
     @Override
     public String toString() {
         return this.name;

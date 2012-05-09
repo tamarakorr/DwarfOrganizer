@@ -11,13 +11,14 @@ import myutils.MyHandyTable;
 
 /**
  * Conveniently treats multiple JTables as one
- * 
+ *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class CompositeTable {
     private JTable[] tables;
     private int mainIndex;
-    
+
     public CompositeTable(JTable[] tables, int mainIndex) {
         this.tables = tables;
         this.mainIndex = mainIndex;
@@ -49,7 +50,7 @@ public class CompositeTable {
         int localDestIndex = 0;
         JTable destTable = null;
         int destCounter;
-        
+
         destCounter = 0;
         for (JTable table : tables) {
             localDestIndex = 0;
@@ -64,14 +65,14 @@ public class CompositeTable {
             if (destTable != null)
                 break;
         }
-        
+
         if (sourceTable.equals(destTable)) {
             sourceTable.moveColumn(sourceIndex, localDestIndex);
         }
         else {
             MyHandyTable.moveColumn(
                 sourceTable.getColumnModel().getColumn(sourceIndex)
-                , sourceTable, destTable, sourceIndex);        
+                , sourceTable, destTable, sourceIndex);
         }
     }
 }

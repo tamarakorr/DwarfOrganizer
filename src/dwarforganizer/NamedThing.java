@@ -8,6 +8,7 @@ package dwarforganizer;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public interface NamedThing {
     public String getName();

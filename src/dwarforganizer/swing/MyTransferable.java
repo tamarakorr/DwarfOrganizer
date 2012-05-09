@@ -15,14 +15,15 @@ import java.util.List;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class MyTransferable implements Transferable {
-    
+
     protected Object object;
     protected String string;
     protected ArrayList<DataFlavor> aFlavors = new ArrayList<DataFlavor>();
     protected DataFlavor objectFlavor;
-    
+
     protected static List<DataFlavor> stringFlavors = new ArrayList<DataFlavor>(3);
 
     static {
@@ -35,19 +36,19 @@ public class MyTransferable implements Transferable {
             System.err.println("Error initializing MyTransferable: " + e);
         }
     }
-    
+
     public MyTransferable(Object object) {
         this(object, object.toString());
     }
     public MyTransferable(Object object, String string) {
         this.object = object;
         this.string = string;
-        
+
         objectFlavor = new DataFlavor(object.getClass(), object.getClass().getSimpleName());
         aFlavors.add(objectFlavor);
         aFlavors.addAll(stringFlavors);
     }
-    
+
     @Override
     public DataFlavor[] getTransferDataFlavors() {
         DataFlavor[] arrayFlavors = new DataFlavor[aFlavors.size()];
@@ -62,7 +63,7 @@ public class MyTransferable implements Transferable {
     @Override
     public Object getTransferData(DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
-        
+
         if (objectFlavor.equals(flavor)) {
             if (object.getClass().equals(flavor.getRepresentationClass()))
                 return object;
@@ -72,7 +73,7 @@ public class MyTransferable implements Transferable {
         }
         throw new UnsupportedFlavorException(flavor);
     }
-    
+
     protected boolean isStringFlavor(DataFlavor flavor) {
         return stringFlavors.contains(flavor);
     }

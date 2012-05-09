@@ -8,6 +8,7 @@ package dwarforganizer;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class ExclusionRule extends Exclusion {
 
@@ -21,8 +22,8 @@ public class ExclusionRule extends Exclusion {
     public static final String[] NUMERIC_COMPARATORS = new String[] {
         "Less than", "Less than or equal to", "Equals", "Greater than"
                 , "Greater than or equal to", "Not equal to"
-    };    
-    
+    };
+
     // Example: new Exclusion("Juveniles", "Age", "Less than", 13) excludes juveniles
     public ExclusionRule(Integer ID, String name, boolean active
             , String propertyName, String comparator
@@ -32,7 +33,7 @@ public class ExclusionRule extends Exclusion {
         this.comparator = comparator;
         this.value = value;
     }
-    
+
     public String getComparator() {
         return comparator;
     }
@@ -42,7 +43,7 @@ public class ExclusionRule extends Exclusion {
     public Object getValue() {
         return value;
     }
-    
+
     @Override
     public String toString() {
         return "Exclusion: ID = " + super.getID() + ", Name = " + super.getName()
@@ -51,17 +52,17 @@ public class ExclusionRule extends Exclusion {
     }
     @Override
     public boolean appliesTo(MyPropertyGetter obj) {
-        
+
         return compareWith(obj.getProperty(this.propertyName, false)
                 , this.value);
-        
+
     }
     private boolean compareWith(Object valueObj, Object valueThis) {
         //System.out.println(value2.getClass().toString());
-                
+
         if (valueObj.getClass().equals(String.class)) {
             valueThis = (Object) (String) valueThis;
-            
+
             if (this.comparator.equals("Contains"))
                 return (valueObj.toString().contains(valueThis.toString()));
             else if (this.comparator.equals("Does not contain"))
@@ -70,12 +71,12 @@ public class ExclusionRule extends Exclusion {
                 return (valueObj.toString().equals(valueThis.toString()));
             else if (this.comparator.equals("Not equal to"))
                 return (! valueObj.toString().equals(valueThis.toString()));
-            
+
         }
         else if (Integer.class.equals(valueObj.getClass())) {
             Integer intThis = Integer.parseInt(valueThis.toString());
             Integer intObj = (Integer) valueObj;
-            
+
             if (this.comparator.equals("Less than")) {
                 return intObj < intThis;
             }
@@ -96,7 +97,7 @@ public class ExclusionRule extends Exclusion {
             System.out.println(valueObj + " " + valueThis);
             return false;
         }
-        
+
         System.out.println("Unsupported comparator: " + this.comparator);
         return false;
     }
@@ -126,5 +127,5 @@ public class ExclusionRule extends Exclusion {
             , this.getPropertyName(), this.getComparator()
             , this.getValue());
     }
-    
+
 }

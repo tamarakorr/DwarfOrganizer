@@ -10,12 +10,13 @@ import java.util.Vector;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class ExclusionList extends Exclusion {
 
     //private DeepCloneableVector<Dwarf> moCitizenList;
     private Vector<String> mvCitizenNames;
-    
+
     public ExclusionList(Integer ID, String name, boolean active
             , Vector<String> citizenList) {
         super(ID, name, active);
@@ -27,7 +28,7 @@ public class ExclusionList extends Exclusion {
     public void setCitizenList(Vector<String> vCitizenNames) {
         this.mvCitizenNames = vCitizenNames;
     }
-    
+
     @Override
     public boolean appliesTo(MyPropertyGetter citizen) {
         if (citizen.getClass().equals(Dwarf.class)) {

@@ -10,6 +10,7 @@ import java.util.Vector;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class SecondarySkill extends Skill {
     // Secondary skills are a convenience for filtering the list. They

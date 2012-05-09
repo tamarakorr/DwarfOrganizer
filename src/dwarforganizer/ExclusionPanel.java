@@ -65,6 +65,7 @@ import myutils.SortedComboBoxModel;
  * For creating rules that exclude dwarves, and lists of excluded dwarves
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 

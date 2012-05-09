@@ -15,13 +15,13 @@ import java.util.Vector;
  * MIT license: Refer to license.txt
  */
 public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
-    
+
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
             "Name", "Nickname", "Gender", "Age", "JobText" };
     private static final Class[] SUPPORTED_PROP_CLASSES = new Class[] {
         String.class, String.class, String.class, Integer.class, String.class
     };
-    
+
     private String name;
     private String nickname;
     private String gender;
@@ -34,7 +34,7 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
     protected Hashtable<String, Long> balancedPotentials;
     private String jobText;
     protected Vector<String> labors;
-    
+
     public Dwarf() {
         super();
         skillPotentials = new Hashtable<String, Long>();
@@ -63,7 +63,7 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
         this.jobText = jobText;
         this.labors = labors;
     }
-    
+
     public boolean isJuvenile() {
         return (age < 13);
     }

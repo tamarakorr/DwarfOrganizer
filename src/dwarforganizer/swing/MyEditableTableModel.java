@@ -10,15 +10,16 @@ import java.util.Vector;
 
 /**
  * Editable (by column exception) version of MyTableModel.
- * 
+ *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     extends MyTableModel<T> {
 
     private Vector<Integer> mvEditableExceptionCols;
-    private boolean mbEditable;    
-    
+    private boolean mbEditable;
+
     public MyEditableTableModel(Object[] cols, Class[] colClasses, String[] colProps
             , Vector<T> rows, SortKeySwapper sortKeySwapper) {
         super(cols, colClasses, colProps, rows, sortKeySwapper);
@@ -34,7 +35,7 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
-    
+
     // Initialize variables
     private void initialize() {
         mbEditable = false;

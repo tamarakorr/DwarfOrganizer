@@ -13,13 +13,14 @@ import myutils.MyHandyTextField;
 /**
  * Shows how to add TextPlaceholder to a JTextField.
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public class PlaceholderTextField extends JTextField {
 
     private static final boolean AUTOHIGHLIGHT_DEFAULT = false;
-    
+
     private String mstrPlaceholderText = null;
-    
+
     public PlaceholderTextField() {
         super();
     }
@@ -63,7 +64,7 @@ public class PlaceholderTextField extends JTextField {
         createPlaceholder();
         if (autoHighlight) enableAutoHighlight();
     }
-    
+
     private void createPlaceholder() {
         if (mstrPlaceholderText == null)
             return;

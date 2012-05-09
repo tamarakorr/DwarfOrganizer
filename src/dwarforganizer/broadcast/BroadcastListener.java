@@ -8,6 +8,7 @@ package dwarforganizer.broadcast;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public interface BroadcastListener {
     public void broadcast(BroadcastMessage message);

@@ -21,7 +21,7 @@ import myutils.MyHandyTextField;
 /**
  * A modified JFileChooser (for Nimbus and other bugged look-and-feels)
  * setting the File Name text box as the default focused control.
- * 
+ *
  * Details:
  * In Nimbus, by default the directory combo box at the top of the chooser is given
  * initial focus. This behavior is annoying and unintuitive since that control
@@ -29,17 +29,17 @@ import myutils.MyHandyTextField;
  * Tab about half a dozen times, or to click directly on the File Name box, when
  * saving a file. This class corrects the annoyance in Nimbus and other
  * look-and-feels with similar behavior.
- * 
+ *
  * Implementation quick notes:
  * I use a JDialog to hack the File Name textbox in the JFileChooser, and then
  * install an AncestorListener to set focus to the File Name textbox each time the
  * JFileChooser is shown.
- * 
+ *
  * The method to hack the text box is similar to that used in my
  * MyHandyOptionPane, but we cannot continue to use a
  * convenient JDialog container after the initial hack because of the complexity
  * of the methods used to display the JFileChooser.
- * 
+ *
  * @author Tamara Orr
  * Sunday April 1, 2012
  * See MIT license in license.txt.
@@ -47,50 +47,50 @@ import myutils.MyHandyTextField;
 public class MyFileChooser extends JFileChooser {
 
     private static final String HUNTING_TEXT = "Looking_for_file_name_textbox";
-    
+
     public MyFileChooser(Frame owner) {
         super();
         focusFileNameWhenShown(owner);
     }
-    
+
     private void focusFileNameWhenShown(Frame owner) {
         // Create a dialog to contain the chooser
         final JDialog dialog = new JDialog(owner, this.getDialogTitle(), true);
-        
+
         dialog.setContentPane(this);
-        
+
         // Find the "File Name" text component.
         // To help hunt down the right text box, set the Selected File to a known
         // value temporarily. We will search for it in the UI elements.
         File temp = this.getSelectedFile();
-        this.setSelectedFile(new File(HUNTING_TEXT));        
-        
+        this.setSelectedFile(new File(HUNTING_TEXT));
+
         JTextComponent txtFileName = findFileNameTextBox(this);
-        
+
         // (Because setting SelectedFile back to null doesn't clear the text)
         if (temp == null) {
             this.setSelectedFile(new File(""));
         }
         else
             this.setSelectedFile(temp);
-        
+
         // My workaround for the default-focus problem:
         focusFileName(txtFileName);
-        
+
         // Install auto-highlighter while we're at it:
         MyHandyTextField.autoHighlight(txtFileName);
     }
-    
+
     // Recursively search for the file name text box
     private JTextComponent findFileNameTextBox(Container cont) {
-        
+
         JTextComponent txtReturn = null;
         txtReturn = findFileNameTextBox(txtReturn, cont);
         return txtReturn;
     }
     private JTextComponent findFileNameTextBox(JTextComponent txt
             , Container cont) {
-        
+
         Component[] components = cont.getComponents();
         for (int i = 0; i < components.length; i++) {
             if (txt != null)
@@ -107,7 +107,7 @@ public class MyFileChooser extends JFileChooser {
             }
         }
         return txt;
-        
+
     }
 
     // Sets the JTextComponent in the given dialog to request focus when shown.
@@ -125,10 +125,10 @@ public class MyFileChooser extends JFileChooser {
           }
         });
     }
-    
+
     // Sets up the text component to request focus each time it's shown.
     private void focusFileName(final JTextComponent txt) {
-        
+
         // A new ancestor is added each time the JFileChooser is shown.
         // So, request focus to the file name text box each time this happens.
         // GRR, this stopped working

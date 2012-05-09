@@ -8,6 +8,7 @@ package dwarforganizer.dirty;
 /**
  *
  * @author Tamara Orr
+ * See MIT license in license.txt
  */
 public interface DirtyListener {
     public void dirtyChanged(boolean newDirtyState);
