@@ -19,8 +19,8 @@ import java.text.NumberFormat;
 import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -44,56 +44,56 @@ import myutils.MyTCRStripedHighlight;
  * See MIT license in license.txt
  */
 public class JobListPanel extends JPanel {
-    
+
     private static final int MAX_DWARF_TIME = 100;
-    
+
     private static final int DEFAULT_QTY = 0;
     private static final int DEFAULT_TIME = MAX_DWARF_TIME;      // 1.0d
     private static final double DEFAULT_WT = 1.0d;
     private static final int DEFAULT_SKILL_WT = 50;
     private static final String DEFAULT_REMINDER = "";
-    
+
     private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
-    
+
     // DEFAULT SETTINGS shouldn't be used - it just exists as a read-only file
     // with the stock defaults
     private static final String DEFAULT_SETTINGS_FILE = "samples/jobs/DEFAULT SETTINGS";
     protected static final String MY_DEFAULT_SETTINGS_FILE = "samples/jobs/MY DEFAULT SETTINGS";
-    
+
     // Column identifiers
     private static final String QTY_COL_IDENTIFIER = "Qty";
     private static final String TIME_COL_IDENTIFIER = "Time";
     private static final String JOB_PRIO_COL_IDENTIFIER = "Job Priority";
     private static final String CUR_SKILL_WT_COL_IDENTIFIER = "Current Skill Weight";
     private static final String REMINDER_COL_IDENTIFIER = "Reminder";
-    
+
     private Vector<Labor> mvLabors; // Set in constructor
     private Vector<LaborGroup> mvLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
     private Vector<Job> mvLaborSettings;
     //private Vector<String> mvstrGroups = new Vector<String>();
-    
+
     //private JTextField txtName;
     private SelectingTable moTable;
     private JLabel lblHours;
-    
+
     private boolean mbLoading = true;
-    
+
     private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
-    
-    private JobBlacklist moBlacklist = new JobBlacklist();    
-    
+
+    private JobBlacklist moBlacklist = new JobBlacklist();
+
     private DwarfOrganizerIO moIO;
-    
+
     // A table cell editor that selects all text when we start to edit a cell:
     class SelectingEditor extends DefaultCellEditor {
         public SelectingEditor(JTextField textField) {  // JTextField textField
             super(textField);    // textField
         }
-        
+
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value
                 , boolean isSelected, int row, int column) {
-            
+
             Component c = super.getTableCellEditorComponent(table, value
                     , isSelected, row, column);
             if (c instanceof JTextComponent) {
@@ -101,10 +101,11 @@ public class JobListPanel extends JPanel {
                 if (MyNumeric.isNumericClass(table.getColumnClass(column))) {
                     jtf.setHorizontalAlignment(JTextField.RIGHT);
                 }
-                //TODO: Override isCellEditable so that we can detect an edit that
-                // starts with a double-click, and highlight in that case as well
-                jtf.selectAll();    
-                
+                //TODO: Override isCellEditable so that we can detect an edit
+                // that starts with a double-click, and highlight in that case
+                // as well
+                jtf.selectAll();
+
 /*              Internet solution that doesn't work correctly:
                 (first character typed is lost in most circumstances) :
                 jtf.requestFocus();
@@ -117,7 +118,7 @@ public class JobListPanel extends JPanel {
             return c;
         }
     }
-    
+
     // A JTable that uses SelectingEditors for column edits
     class SelectingTable extends CopyCutPastingTable {
         public SelectingTable(TableModel oModel) {
@@ -131,14 +132,14 @@ public class JobListPanel extends JPanel {
             }
         }
     }
-    
-    private class CouldntProcessFileException extends Exception { 
+
+    private class CouldntProcessFileException extends Exception {
         public CouldntProcessFileException() { super(); }
     };
-    
+
     // Updates the job hours display
     private class HoursDisplayUpdater extends SwingWorker {
-        
+
         @Override
         protected Object doInBackground() throws Exception {
             long lngHours = sumHours();
@@ -148,9 +149,9 @@ public class JobListPanel extends JPanel {
                     + " (~" + lngDwarves + " dwarves)";
             lblHours.setText(text);
             return 0;
-        }        
+        }
     };
-    
+
     // keysToIgnore: A vector of keystrokes to be ignored by the JTable editor
     //               (i.e. keystrokes bound to menu items such as control S)
     // The problem with control S etc. activating the JTable editing session
@@ -159,12 +160,12 @@ public class JobListPanel extends JPanel {
     public JobListPanel(Vector<Labor> vLabors, Vector<LaborGroup> vLaborGroups
             , JobBlacklist blacklist, DwarfOrganizerIO io)   // , Vector<KeyStroke> keysToIgnore
             throws CouldntProcessFileException {
-        
+
         mvLaborGroups = vLaborGroups;
         mvLabors = vLabors;
         moBlacklist = blacklist;
         moIO = io;
-        
+
         // Create labor settings
         mvLaborSettings = new Vector<Job>(vLabors.size());
         for (Labor labor : vLabors) {
@@ -173,7 +174,7 @@ public class JobListPanel extends JPanel {
                     , DEFAULT_TIME, DEFAULT_WT, DEFAULT_SKILL_WT
                     , DEFAULT_REMINDER));
         }  //  getSkillNameForJob(labor.name)
-        
+
         // Create job settings table
         Vector<Color> vBackgroundColors = new Vector<Color>(mvLaborGroups.size());
         Vector vGroups = new Vector(mvLaborGroups.size());
@@ -183,13 +184,13 @@ public class JobListPanel extends JPanel {
                     , laborGroup.getGreen(), laborGroup.getBlue()));
             vGroups.add(laborGroup.getName());
         }
-        
+
         // Hours label
         lblHours = new JLabel("Number of job hours: X");
         JPanel panHours = new JPanel();
         panHours.setLayout(new BorderLayout());
         panHours.add(lblHours, BorderLayout.LINE_START);
-        
+
         // Build UI
         Object[] columns = { "Group", "Labor", QTY_COL_IDENTIFIER
                 , TIME_COL_IDENTIFIER, JOB_PRIO_COL_IDENTIFIER    // "Time Weight"
@@ -198,7 +199,7 @@ public class JobListPanel extends JPanel {
                 , Double.class, Integer.class, String.class };  // No primitives allowed here in Java 6!!
         final MySimpleTableModel oModel = new MySimpleTableModel(columns
                 , mvLaborSettings.size(), columnClass);
-        
+
         // Add the edit listener
         oModel.addTableModelListener(new TableModelListener() {
 
@@ -209,9 +210,9 @@ public class JobListPanel extends JPanel {
             }
 
             private void updateLaborSetting(int firstRow) {
-                //TODO: In catch blocks, also set the table value to reflect the default value
-                // (Will this be circular?)
-                
+                //TODO: In catch blocks, also set the table value to reflect the
+                // default value (Will this be circular?)
+
                 //double dblNewTime = Double.parseDouble(oModel.getValueAt(firstRow, 3).toString());
                 int intNewTime;
                 int intNewQty;
@@ -225,11 +226,11 @@ public class JobListPanel extends JPanel {
                 } catch (NumberFormatException e) {
                     intNewQty = DEFAULT_QTY;
                 }
-                
+
                 Job job = mvLaborSettings.get(firstRow);
                 boolean bTimeChanged = (job.getQtyDesired() != intNewQty
                         || job.getTime() != intNewTime);
-                
+
                 job.setQtyDesired(intNewQty);
                 job.setTime(intNewTime);
                 try {
@@ -243,13 +244,13 @@ public class JobListPanel extends JPanel {
                     job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
                 }
                 job.setReminder(oModel.getValueAt(firstRow, 6).toString());
-                
+
                 if (bTimeChanged) {
                     //updateHours();
                     new HoursDisplayUpdater().execute();
                 }
             }
-        });        
+        });
 
         // Quantity, time, weights, and reminder editable
         oModel.addEditableException(QTY_COL_IDENTIFIER); // 2
@@ -257,73 +258,73 @@ public class JobListPanel extends JPanel {
         oModel.addEditableException(JOB_PRIO_COL_IDENTIFIER); // 4
         oModel.addEditableException(CUR_SKILL_WT_COL_IDENTIFIER); // 5
         oModel.addEditableException(REMINDER_COL_IDENTIFIER); // 6
-        
+
         moTable = new SelectingTable(oModel);
         moTable.setTransferHandler(new MyTableTransferHandler());   // Allows single-cell cut copy paste
         moTable.setComponentPopupMenu(createEditMenuPopup());
         moTable.setRowSelectionAllowed(false);
-        
+
         loadLaborSettings();
-        
+
         moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight(
                 vBackgroundColors, vGroups, 0));
-        
+
         // This didn't work: see solution in MyJTable
         // JTable must ignore all menu accelerators associated with the job list
         // Otherwise it will start an editing session when Control+S or whatever is pressed
         //for (KeyStroke keyStroke : keysToIgnore) {
         /*for (MainWindow.JobListMenuAccelerator accel
                 : MainWindow.JobListMenuAccelerator.values()) {
-                
+
                 //System.out.println(accel.getKeyStroke().toString());
                 alwaysIgnoreKeyStroke(moTable, accel.getKeyStroke());
         } */
-        
+
         JScrollPane oSP = new JScrollPane(moTable);
         MyHandyTable.handyTable(moTable, oModel, false, true);
         MyHandyTable.setPrefWidthToColWidth(moTable);
-        
+
         // Create panel
         this.setLayout(new BorderLayout());
         //this.add(panFileInfo, BorderLayout.PAGE_START);
         this.add(oSP);
         this.add(panHours, BorderLayout.PAGE_END);
-        
+
         // Load any saved settings
         //load(DEFAULT_FILE_TEXT);    //txtName.getText()
         mbLoading = false;
         load(new File(MY_DEFAULT_SETTINGS_FILE)); // Takes care of mbLoading itself
-        
-        
+
+
         //this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         //this.pack();
         //this.setVisible(true);
     }
-    
+
     private JPopupMenu createEditMenuPopup() {
-        
+
         JPopupMenu popUp = new JPopupMenu();
         //JMenu menu = new JMenu("Edit");
-        
+
         moTable.createEditMenuItems(popUp);
         //popUp.add(menu);
-        
+
         return popUp;
     }
-    protected JComponent createEditMenu(JComponent menu) {
+    protected JMenu createEditMenuItems(JMenu menu) {
         moTable.createEditMenuItems(menu);
         return menu;
     }
-    
+
 /*    protected JobBlacklist getBlacklist() { return moBlacklist; }
     protected void setBlacklist(JobBlacklist newBlacklist) {
         moBlacklist = newBlacklist;
     } */
-    
+
     // Doesn't really work. Left it here so I will remember that.
     // Causes the JComponent to always ignore the given keystroke.
 /*    private void alwaysIgnoreKeyStroke(JComponent component, KeyStroke keyStroke) {
-        
+
 //        // Commented code causes the keystroke to be ignored by the entire
 //        // application...sigh
 //        // From Java SE Key Bindings tutorial
@@ -335,37 +336,37 @@ public class JobListPanel extends JPanel {
 //        };
 //        component.getInputMap().put(keyStroke, "doNothing");
 //        component.getActionMap().put("doNothing", doNothing);
-        
+
         // Just causes the component to ignore the keystroke, but doesn't seem to
         // work completely correctly with JTable
         component.getInputMap().put(keyStroke, "none");
-        
+
     } */
-    
+
     private Vector<JobOpening> getJobOpenings() {
         Vector<JobOpening> vReturn = new Vector<JobOpening>();
-        
+
         for (Job job : mvLaborSettings) {
             for (int iCount = 0; iCount < job.getQtyDesired(); iCount++)
                 vReturn.add((JobOpening) job);
         }
-        
+
         return vReturn;
-    }    
-    
+    }
+
     private long sumHours() {
         long lngReturn = 0l;        // It's an L, not a one
         for (Job job : mvLaborSettings)
             lngReturn += job.getQtyDesired() * job.getTime();
         return lngReturn;
     }
-    
+
     // Updates internal blacklist and updates display
     protected void setBlacklist(JobBlacklist newData) {
         moBlacklist = newData;
         new HoursDisplayUpdater().execute();
     }
-    
+
     // Uses a bin packing algorithm to determine the number of dwarves.
     // This value is not simply the number of job hours divided by the number
     // of hours available per dwarf. The job blacklist/whitelist and the
@@ -376,16 +377,16 @@ public class JobListPanel extends JPanel {
         Vector<Vector<JobOpening>> vPackedBins = binPacker.binPack(
                 getJobOpenings()
                 , MAX_DWARF_TIME, moBlacklist);
-        return vPackedBins.size();        
+        return vPackedBins.size();
     }
-    
+
     protected Vector<Job> getJobs() {
         return mvLaborSettings;
     }
-    
+
     private void loadLaborSettings() {
         mbLoading = true;
-        
+
         TableModel oModel = moTable.getModel();
         int row = 0;
         for (Job job : mvLaborSettings) {
@@ -401,11 +402,11 @@ public class JobListPanel extends JPanel {
         }
         mbLoading = false;
     }
-    
+
     public File getDirectory() {
         // TODO: My Documents is nice but multiplatform makes me nervous.
         // Samples is not the right place either but using it for now...
-        
+
         //String strDir = System.getProperty("user.home") + "/My Documents/";
         //return new File(strDir, "/DwarfOrganizer/");
         return new File("samples/jobs/");
@@ -413,11 +414,11 @@ public class JobListPanel extends JPanel {
     private File getFile(File directory, String fileName) {
         return new File(directory, fileName + ".txt");
     }
-    
+
     // Saves job settings to file
     public void save(File file) {
         MyHandyTable.stopEditing(moTable); // Accept partial edits
-        
+
         File dir = getDirectory();
         FileWriter fstream;
 
@@ -449,30 +450,30 @@ public class JobListPanel extends JPanel {
             //Logger.getLogger(JobListWindow.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println(ex.toString());
         }
-        
+
     }
-    
+
     // Loads job settings from file
     public void load(File file) {
         MyHandyTable.cancelEditing(moTable);    // Cancel partial edits
-        
+
         mbLoading = true;
-        
+
         moIO.readJobSettings(file, mvLaborSettings, DEFAULT_REMINDER);
-        
+
         // Display the values in the table.
         loadLaborSettings();
         new HoursDisplayUpdater().execute();
-        
+
         mbLoading = false;
     }
-    
+
     // Loads the file with the given name
     private void load(String fileName) {
-        
+
         // Defaults
         if (fileName.equals(DEFAULT_FILE_TEXT)) {
-            
+
             // Update the current labor settings with the defaults.
             for (Job job : mvLaborSettings) {
                 job.setQtyDesired(DEFAULT_QTY);
@@ -482,14 +483,14 @@ public class JobListPanel extends JPanel {
                 job.setReminder(DEFAULT_REMINDER);
             }
         }
-        
+
         // Read from file
         else {
             File file = getFile(getDirectory(), fileName);
             load(file);
         }
     }
-    
+
     // Print labor settings, for debugging
     private void printLaborSettings() {
         for (Job job : mvLaborSettings) {
@@ -500,9 +501,9 @@ public class JobListPanel extends JPanel {
                     + job.getReminder());
         }
     }
-    
+
     private Color getColor(String colorName) {
-        
+
         if (colorName.equals("Red"))
             return Color.RED;
         else if (colorName.equals("Green"))
@@ -532,25 +533,25 @@ public class JobListPanel extends JPanel {
         float saturation = hsb[1];
         float brightness = hsb[2];
         int rgb = Color.HSBtoRGB(hue, saturation, 0.999f);
-        
+
         return new Color(rgb >> 16 & 0xFF, rgb >> 8 & 0xFF, rgb & 0xFF);
          */
-        
+
         // Make a 16-color gradient with white, and choose the color just past midway
         final int MAX_COLOR = 255;
         return new Color(Math.min(MAX_COLOR, 9 * (255 + R) / 16)
                     , Math.min(MAX_COLOR, 9 * (255 + G) / 16)
                     , Math.min(MAX_COLOR, 9 * (255 + B) / 16));
-        
+
     }
-    
+
     // Returns the labor group name for the given labor name
     private String getGroupForLabor(String laborName) {
-        
+
         for (Labor labor : mvLabors)
             if (labor.getName().equals(laborName))
                 return labor.getGroupName();
-        
+
         return "";
-    }    
+    }
 }

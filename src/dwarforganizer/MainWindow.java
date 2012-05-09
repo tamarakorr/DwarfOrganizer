@@ -12,6 +12,8 @@ import dwarforganizer.swing.MyFileChooser;
 import dwarforganizer.deepclone.DeepCloneableVector;
 import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.BroadcastListener;
+import dwarforganizer.swing.MenuCombiner;
+import dwarforganizer.swing.MenuHelper;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -22,14 +24,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,16 +73,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private static final String DEFAULT_DWARVES_XML = "samples/dwarves/sample-7-dwarves.xml";
     private static final String TUTORIAL_FILE = "tutorial/ReadmeSlashTutorial.html";
 
-    private JInternalFrame mitlJobList;
-    private JInternalFrame mitlDwarfList;
-    private JInternalFrame mitlRulesEditor;
-    private JInternalFrame mitlExclusions;
-    private JInternalFrame mitlViewManager;
+    // Keys for internal frames
+    private static final String INTERNAL_DWARF_LIST = "Dwarf List";
+    private static final String INTERNAL_JOB_LIST = "Job List";
+    private static final String INTERNAL_RULES_EDITOR = "Rules Editor";
+    private static final String INTERNAL_EXCLUSIONS = "Exclusions";
+    private static final String INTERNAL_VIEW_MANAGER = "View Manager";
+    private static final int NUM_INTERNAL_FRAMES = 5;
+    private Map<String, MyAbstractInternalFrame> mhmInternalFrames;
 
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
     private RulesEditorUI moRulesEditor;
-    //private Vector<KeyStroke> mvJobListAccelerators;
 
     protected static enum JobListMenuAccelerator {
         SAVE(KeyStroke.getKeyStroke("control S"))
@@ -138,6 +139,105 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private ViewManagerUI moViewManager;
     private JDesktopPane moDesktop;
 
+    private MenuCombiner moCombiner;
+
+    public MainWindow() {
+        super();
+
+        mvLabors = new Vector<Labor>();
+        mvLaborGroups = new Vector<LaborGroup>();
+        moDesktop = new JDesktopPane();
+
+        loadPreferences();
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                exit();
+            }
+        });
+
+        try {
+            readFiles();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to read at least one critical file.");
+        }
+
+        // Combine exclusions from preferences with data from file
+        setExclusionsActive();
+
+        // Create rules editor (hidden until shown)
+        moRulesEditor = new RulesEditorUI(mvLabors);
+
+        // Create exclusions manager (hidden until shown)
+        moExclusionManager = new ExclusionPanel(moIO);
+
+        // Create view manager (hidden until shown)
+        moViewManager = new ViewManagerUI();
+
+        // Create dwarf list window
+        moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
+                , mhtMetaSkill, mvLaborGroups, mvViews);
+        moDwarfListWindow.loadData(mvDwarves, mvExclusions);
+        moExclusionManager.getAppliedBroadcaster().addListener(
+                moDwarfListWindow); // Listen for exclusions applied
+        moDwarfListWindow.getBroadcaster().addListener(this);
+
+        try {
+            // Display a grid of the jobs to assign
+            moJobListPanel = new JobListPanel(mvLabors
+                    , mvLaborGroups, moJobBlacklist, moIO);
+            createChoosers();   // (Must be done after initializing JobListPanel)
+
+            // Use JobListPanel to create main menu
+            JMenuBar menuBar = createMenu(moJobListPanel);
+            this.setJMenuBar(menuBar);
+            moCombiner = new MenuCombiner(menuBar, this.createMenuOrdering()); // Must be done after createMenu
+            //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
+
+            // Create frame maps and internal frames
+            // Must be done after MenuCombiner is created
+            mhmInternalFrames = createFrameMap();
+            for (MyAbstractInternalFrame frame : mhmInternalFrames.values()) {
+                frame.create(moCombiner);
+            }
+
+            int width = (int) (moJobListPanel.getPreferredSize().getWidth() * 1.2);
+            int height = (int) (moJobListPanel.getPreferredSize().getHeight() * 1.42);
+            moDesktop.setPreferredSize(new Dimension(width, height));
+
+            this.setLayout(new BorderLayout());
+            this.add(moDesktop, BorderLayout.CENTER);
+
+            this.setTitle("Dwarf Organizer");
+            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // WindowConstants.DISPOSE_ON_CLOSE
+            this.pack();
+            this.setVisible(true);
+
+            // Dwarf List on top (must be done after setting main window visible)
+            getInternalFrame(INTERNAL_DWARF_LIST).setSelected(true);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    private HashMap<String, MyAbstractInternalFrame> createFrameMap() {
+        HashMap<String, MyAbstractInternalFrame> map
+                = new HashMap<String, MyAbstractInternalFrame>(
+                NUM_INTERNAL_FRAMES);
+
+        map.put(INTERNAL_RULES_EDITOR, new RulesEditorFrame(this, moDesktop
+                , moRulesEditor));
+        map.put(INTERNAL_EXCLUSIONS, new ExclusionFrame(this, moDesktop
+                , moExclusionManager));
+        map.put(INTERNAL_VIEW_MANAGER, new ViewManagerFrame(this, moDesktop
+                , moViewManager));
+        map.put(INTERNAL_DWARF_LIST, new DwarfListFrame(this, moDesktop
+                , moDwarfListWindow, "Dwarf List"));
+        map.put(INTERNAL_JOB_LIST, new JobListFrame(this, moDesktop
+                , moJobListPanel, "Job Settings"));
+        return map;
+    }
     private class AboutScreen extends JFrame {
         public AboutScreen(MainWindow main) {
             JLabel lblVersion = new JLabel("Dwarf Organizer version " + VERSION);
@@ -160,91 +260,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             this.setLocationRelativeTo(main);
         }
     }
-
-    public MainWindow() {
-        super();
-
-        mvLabors = new Vector<Labor>();
-        mvLaborGroups = new Vector<LaborGroup>();
-
-        moDesktop = new JDesktopPane();
-        //this.getContentPane().add(desktop);
-
-        loadPreferences();
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                exit();
-            }
-        });
-
-        try {
-            readFiles();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Failed to read at least one critical file.");
-        }
-
-        // Combine exclusions from preferences with data from file
-        setExclusionsActive();
-
-        // Create rules editor (hidden until shown)
-        createRulesEditorScreen(moDesktop);
-
-        // Create exclusions manager (hidden until shown)
-        createExclusionScreen(moDesktop);
-
-        // Create view manager (hidden until shown)
-        createViewManager(moDesktop);
-
-        // Create dwarf list window
-        moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
-                , mhtMetaSkill, mvLaborGroups, mvViews);
-        moDwarfListWindow.loadData(mvDwarves, mvExclusions);
-        moExclusionManager.getAppliedBroadcaster().addListener(moDwarfListWindow); // Listen for exclusions applied
-        moDwarfListWindow.getBroadcaster().addListener(this);
-
-        try {
-            // Display a grid of the dwarves
-            mitlDwarfList = new JInternalFrame("Dwarf List", true
-                    , false, true, true);
-            mitlDwarfList.setLayout(new BorderLayout());
-            mitlDwarfList.add(moDwarfListWindow);
-            updateDwarfListMenu();
-
-            mitlDwarfList.pack();
-            mitlDwarfList.setVisible(true);
-            moDesktop.add(mitlDwarfList);
-
-            // Display a grid of the jobs to assign
-            moJobListPanel = new JobListPanel(mvLabors
-                    , mvLaborGroups, moJobBlacklist, moIO);   // final JobListPanel jobListPanel
-            createChoosers();   // (Must be done after initializing JobListPanel)
-            mitlJobList = new JInternalFrame("Job Settings", true, false, true, true);
-            mitlJobList.setJMenuBar(createJobListMenu(moJobListPanel));
-            mitlJobList.setLayout(new BorderLayout());
-            mitlJobList.add(moJobListPanel);
-            mitlJobList.pack();
-            mitlJobList.setVisible(true);
-            moDesktop.add(mitlJobList);
-            int width = (int) (moJobListPanel.getPreferredSize().getWidth() * 1.2);
-            int height = (int) (moJobListPanel.getPreferredSize().getHeight() * 1.42);
-            moDesktop.setPreferredSize(new Dimension(width, height));
-
-            this.setJMenuBar(createMenu(moJobListPanel));
-            //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
-
-            this.setLayout(new BorderLayout());
-            this.add(moDesktop, BorderLayout.CENTER);
-
-            this.setTitle("Dwarf Organizer");
-            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // WindowConstants.DISPOSE_ON_CLOSE
-            this.pack();
-            this.setVisible(true);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    private interface ListenerAdder {
+        public void addListeners();
     }
 
     // Takes care of confirmations to save, disposal of objects, and
@@ -258,9 +275,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         if (! moDwarfListWindow.exit()) {
             return;
         }
-        MyHandyWindow.clickClose(mitlViewManager);
-        MyHandyWindow.clickClose(mitlRulesEditor);
-        MyHandyWindow.clickClose(mitlExclusions);
+
+        String[] windowList = new String[] { INTERNAL_VIEW_MANAGER
+                , INTERNAL_RULES_EDITOR, INTERNAL_EXCLUSIONS };
+        for (String key : windowList) {
+            MyHandyWindow.clickClose(getInternalFrame(key));
+        }
 
         // Destroy "about" screen
         moAboutScreen.dispose();
@@ -270,11 +290,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         this.dispose();
     }
-    private void updateDwarfListMenu() {
-        JMenuBar menuBar = appendMenuBar(createDwarfListMenuBar()
-            , moDwarfListWindow.getMenu());
-        mitlDwarfList.setJMenuBar(menuBar); // mvLaborGroups
-        MenuMnemonicSetter.setMnemonics(menuBar);
+    private JInternalFrame getInternalFrame(String key) {
+        return mhmInternalFrames.get(key).getInternalFrame();
     }
 
     // Returns a JMenuBar made of the menus in the first menu bar, followed
@@ -295,84 +312,59 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return jmbReturn;
     }
 
-    private abstract class AbstractEditorFrameCreator {
+    private abstract class AbstractFrameCreator {
         public abstract Container createUIObject();
-        public abstract DirtyForm getDirtyForm();
         public abstract void addListeners();
 
         public JInternalFrame createInternalFrame(JDesktopPane desktop
-                , String dirtyTitle, String cleanTitle
+                , String title
                 , boolean resizable, boolean closable, boolean maximizable
-                , boolean iconifiable, int closeBehavior, JMenuBar jMenuBar
-                , FrameClosingFunction fcf) {
+                , boolean iconifiable, int closeBehavior) { //, JMenuBar jMenuBar) {
 
             final JInternalFrame frameToCreate;
 
             Container uiObject = createUIObject();
             addListeners();
 
-            frameToCreate = new JInternalFrame(cleanTitle, resizable, closable
+            frameToCreate = new JInternalFrame(title, resizable, closable
                     , maximizable, iconifiable);
             frameToCreate.setDefaultCloseOperation(closeBehavior);
-            frameToCreate.setJMenuBar(jMenuBar);
+            //frameToCreate.setJMenuBar(jMenuBar);
             frameToCreate.setLayout(new BorderLayout());
             frameToCreate.add(uiObject);
             //frameToCreate.pack();  <-Done by Window menu
 
-            // Update title when dirty state changes
-            DirtyListener dirtyListener = createDirtyListener(
-                dirtyTitle, cleanTitle, new FrameTitleSetter() {
-                @Override
-                public void setFrameTitle(String title) {
-                    if (! title.equals(frameToCreate.getTitle()))
-                        frameToCreate.setTitle(title);
-                }
-            });
-            getDirtyForm().addDirtyListener(dirtyListener);
-            frameToCreate.addInternalFrameListener(
-                    new InternalFrameClosingAdapter(fcf));
             desktop.add(frameToCreate);
 
             return frameToCreate;
         }
     }
+    private abstract class AbstractEditorFrameCreator
+            extends AbstractFrameCreator {
 
-    private void createViewManager(JDesktopPane desktop) {
+        public abstract DirtyForm getDirtyForm();
 
-        final MainWindow mainWindow = this;
+        public JInternalFrame createInternalFrame(JDesktopPane desktop
+                , String cleanTitle
+                , boolean resizable, boolean closable, boolean maximizable
+                , boolean iconifiable, int closeBehavior
+                , String dirtyTitle, FrameClosingFunction fcf) { //, JMenuBar jMenuBar
 
-        final AbstractEditorFrameCreator creator
-                = new AbstractEditorFrameCreator() {
+            JInternalFrame frameToCreate = super.createInternalFrame(desktop
+                    , cleanTitle, resizable, closable
+                    , maximizable, iconifiable, closeBehavior); //, jMenuBar);
 
-            @Override
-            public Container createUIObject() {
-                moViewManager = new ViewManagerUI();
-                return moViewManager.getUIPanel();
-            }
-            @Override
-            public DirtyForm getDirtyForm() {
-                return moViewManager;
-            }
-            @Override
-            public void addListeners() {
-                moViewManager.getBroadcaster().addListener(mainWindow);
-            }
-        };
+            // Update title when dirty state changes
+            DirtyListener dirtyListener = createDirtyListener(
+                dirtyTitle, cleanTitle, frameToCreate);
+            getDirtyForm().addDirtyListener(dirtyListener);
+            frameToCreate.addInternalFrameListener(
+                    new InternalFrameClosingAdapter(fcf));
 
-        mitlViewManager = creator.createInternalFrame(desktop
-                , VIEW_MGR_TITLE_DIRTY
-                , VIEW_MGR_TITLE, true, true, true, true
-                , WindowConstants.HIDE_ON_CLOSE, new JMenuBar()
-                , new FrameClosingFunction() {
-
-            @Override
-            public void doFrameClosing(InternalFrameEvent e) {
-                doViewMgrWindowClosing(mainWindow, moViewManager);
-            }
-        });
-
-        setDefaultButton(moViewManager.getDefaultButton(), mitlViewManager);
+            return frameToCreate;
+        }
     }
+
     private Point getCenteringPoint(JDesktopPane desktop
             , JInternalFrame frame) {
 
@@ -388,8 +380,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , new ConfirmFunction() {
             @Override
             public void doConfirm() {
-                saveViewManagerViews(); // viewManagerUI.getViews()
-                //viewManagerUI.setClean();
+                saveViewManagerViews();
             }
         }
                 , "Save Views?"
@@ -400,45 +391,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mvViews = views;            // Update local copy
         // (Don't set anything clean here since we don't know which window
         // initiated the save.)
-    }
-    private void createExclusionScreen(JDesktopPane desktop) {
-
-        final MainWindow main = this;
-
-        // Update title of window when dirty state changes
-        DirtyListener dirtyListener = createDirtyListener(
-                EXCLUSIONS_TITLE_DIRTY, EXCLUSIONS_TITLE
-                , new FrameTitleSetter() {
-            @Override
-            public void setFrameTitle(String title) {
-                if (! title.equals(mitlExclusions.getTitle()))
-                    mitlExclusions.setTitle(title);
-            }
-        });
-
-        moExclusionManager = new ExclusionPanel(moIO); // moDwarfListWindow.getDwarves() // mvExclusions, mvDwarves, moIO, mhtActiveExclusions
-
-        moExclusionManager.getDefaultButtonBroadcaster().addListener(this);
-        //moExclusionManager.getExclusionActiveBroadcaster().addListener(this);
-        moExclusionManager.getCloseBroadcaster().addListener(this);
-        moExclusionManager.getAppliedBroadcaster().addListener(this);
-
-        mitlExclusions = new JInternalFrame(EXCLUSIONS_TITLE, true, true, true, true);
-        mitlExclusions.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        mitlExclusions.setJMenuBar(createExclusionMgrMenu());
-        mitlExclusions.setLayout(new BorderLayout());
-        mitlExclusions.add(moExclusionManager);
-        //mitlExclusions.pack();  <-Done by Window menu now
-
-        moExclusionManager.addDirtyListener(dirtyListener);
-        mitlExclusions.addInternalFrameListener(new InternalFrameClosingAdapter(
-                new FrameClosingFunction() {
-            @Override
-            public void doFrameClosing(InternalFrameEvent e) {
-                doExclWindowClosing(main, moExclusionManager);
-            }
-        }));
-        desktop.add(mitlExclusions);
     }
 
     private interface FrameClosingFunction {
@@ -467,11 +419,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         public void internalFrameDeactivated(InternalFrameEvent e) {}
     }
 
-    private interface FrameTitleSetter {
-        public void setFrameTitle(String title);
-    }
     private DirtyListener createDirtyListener(final String dirtyTitle
-            , final String cleanTitle, final FrameTitleSetter fts) {
+            , final String cleanTitle, final JInternalFrame frame) {
         return new DirtyListener(){
             @Override
             public void dirtyChanged(boolean newDirtyState) {
@@ -483,49 +432,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 else
                     strTitle = cleanTitle;
 
-                fts.setFrameTitle(strTitle);
+                frame.setTitle(strTitle);
             }
         };
-    }
-
-    private void createRulesEditorScreen(JDesktopPane desktop) {
-
-        final MainWindow main = this;
-        moRulesEditor = new RulesEditorUI(mvLabors);
-        moRulesEditor.getDefaultButtonBroadcaster().addListener(this);
-        // Update title of Rules Editor when dirty state changes
-        DirtyListener dirtyListener = createDirtyListener(
-                RULES_EDITOR_TITLE_DIRTY, RULES_EDITOR_TITLE_CLEAN
-                , new FrameTitleSetter() {
-
-            @Override
-            public void setFrameTitle(String title) {
-                if (! title.equals(mitlRulesEditor.getTitle()))
-                    mitlRulesEditor.setTitle(title);
-            }
-        });
-
-        mitlRulesEditor = new JInternalFrame(RULES_EDITOR_TITLE_CLEAN, true, true, true
-                , true);
-        mitlRulesEditor.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        mitlRulesEditor.setJMenuBar(createRulesEditorMenu(moRulesEditor));
-        //DefaultFocus.alwaysFocusOnActivate(mitlRulesEditor
-        //        , moRulesEditor.getDefaultFocusComp());
-
-        mitlRulesEditor.setLayout(new BorderLayout());
-        mitlRulesEditor.add(moRulesEditor);
-        mitlRulesEditor.pack();
-
-        moRulesEditor.addDirtyListener(dirtyListener);
-        mitlRulesEditor.addInternalFrameListener(new InternalFrameClosingAdapter(
-            new FrameClosingFunction() {
-            @Override
-            public void doFrameClosing(InternalFrameEvent e) {
-                doRulesWindowClosing(main, moRulesEditor);
-            }
-        }));
-
-        desktop.add(mitlRulesEditor);
     }
 
     private interface ConfirmFunction { public void doConfirm(); }
@@ -548,21 +457,26 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 editor.setClean();
         }
     }
-    private void doRulesWindowClosing(MainWindow main, final RulesEditorUI rulesEditor) {
+    private void doRulesWindowClosing(MainWindow main
+            , final RulesEditorUI rulesEditor) {
+
         doWindowClosing(main, rulesEditor, new ConfirmFunction() {
             @Override
             public void doConfirm() {
                 saveRuleFile(rulesEditor);
             }
-        }, "Save rules?", "Would you like to save your changes?");
+        }, "Save rules?", "Would you like to save your changes to rules?");
     }
-    private void doExclWindowClosing(MainWindow main, final ExclusionPanel exclMgr) {
+    private void doExclWindowClosing(MainWindow main
+            , final ExclusionPanel exclMgr) {
+
         doWindowClosing(main, exclMgr, new ConfirmFunction() {
             @Override
             public void doConfirm() {
                 saveExclusions(exclMgr);
             }
-        }, "Save exclusions?", "Would you like to save and apply your changes?");
+        }, "Save exclusions?", "Would you like to save and apply your changes"
+                + " to exclusions?");
     }
     private void saveExclusions(ExclusionPanel exclMgr) {
         exclMgr.saveExclusions();       // Also notifies Dwarf List, and sets clean
@@ -576,171 +490,21 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         setBlacklistStructures();
         moJobListPanel.setBlacklist(moJobBlacklist);
     }
-    private JMenuBar createRulesEditorMenu(final RulesEditorUI rulesEditor) {
-        final MainWindow main = this;
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("File");
-        menuBar.add(menu);
-
-        JMenuItem menuItem = new JMenuItem("Save", KeyEvent.VK_S);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke("control S"));
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveRuleFile(rulesEditor);
-            }
-        });
-        menu.add(menuItem);
-
-        // ----------------------------------
-        menu.add(new JSeparator());
-
-        // ----------------------------------
-        menuItem = new JMenuItem("Close", KeyEvent.VK_C);
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                closeRules(rulesEditor);
-            }
-        });
-        menu.add(menuItem);
-
-        return menuBar;
-    }
 
     private void closeRules(RulesEditorUI rulesEditor) {
         doRulesWindowClosing(this, rulesEditor);
-        mitlRulesEditor.setVisible(false);
+        getInternalFrame(INTERNAL_RULES_EDITOR).setVisible(false);
     }
 
-    private JMenuBar createExclusionMgrMenu() {
-        final MainWindow main = this;
-
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(menu);
-
-        JMenuItem menuItem = new JMenuItem("Save and Apply");
-        menuItem.setMnemonic(KeyEvent.VK_S);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke("control S"));
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                moExclusionManager.saveExclusions();
-            }
-        });
-        menu.add(menuItem);
-
-        menu.add(new JSeparator());
-
-        menuItem = new JMenuItem("Close");
-        menuItem.setMnemonic(KeyEvent.VK_C);
-        menuItem.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                closeExclusions();
-            }
-        });
-        menu.add(menuItem);
-
-        return menuBar;
-    }
     private void closeExclusions() {
         doExclWindowClosing(this, moExclusionManager);
-        mitlExclusions.setVisible(false);
+        //mitlExclusions.setVisible(false);
+        getInternalFrame(INTERNAL_EXCLUSIONS).setVisible(false);
     }
     private void closeViewManager() {
         doViewMgrWindowClosing(this, moViewManager);
-        mitlViewManager.setVisible(false);
-    }
-    private JMenuBar createDwarfListMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(menu);
-
-        JMenuItem menuItem = new JMenuItem("Set Location of Dwarves.xml..."
-                , KeyEvent.VK_L);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(
-                KeyEvent.VK_L, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setDwarves();
-            }
-        });
-        menu.add(menuItem);
-        return menuBar;
-    }
-
-    private JMenuBar createJobListMenu(final JobListPanel jobListPanel) {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu menu = new JMenu("File");
-        menu.setMnemonic(KeyEvent.VK_F);
-        menuBar.add(menu);
-
-        JMenuItem menuItem = new JMenuItem("Open...", KeyEvent.VK_O);
-        menuItem.setAccelerator(JobListMenuAccelerator.OPEN.getKeyStroke()); //  KeyStroke.getKeyStroke(
-            //KeyEvent.VK_O, ActionEvent.CTRL_MASK)
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loadJobSettings(jobListPanel);
-            }
-        });
-        menu.add(menuItem);
-
-        menu.addSeparator();
-
-        menuItem = new JMenuItem("Save", KeyEvent.VK_S);
-        menuItem.setAccelerator(JobListMenuAccelerator.SAVE.getKeyStroke()); // KeyStroke.getKeyStroke(
-                //KeyEvent.VK_S, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveJobSettingsAs(jobListPanel, true);
-            }
-        });
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Save As...", KeyEvent.VK_A);
-        menuItem.setAccelerator(JobListMenuAccelerator.SAVE_AS.getKeyStroke()); // KeyStroke.getKeyStroke(
-                //KeyEvent.VK_A, ActionEvent.ALT_MASK));
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveJobSettingsAs(jobListPanel, false);
-            }
-        });
-        menu.add(menuItem);
-
-        menu.addSeparator();
-
-        menuItem = new JMenuItem("Reset to My Defaults", KeyEvent.VK_R);
-        //menuItem.setAccelerator(JobListMenuAccelerator.RESET.getKeyStroke()); // KeyStroke.getKeyStroke(
-                //KeyEvent.VK_R, ActionEvent.CTRL_MASK));
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resetJobSettings(jobListPanel);
-            }
-        });
-        menu.add(menuItem);
-
-        // -------------------------------------
-        menu = new JMenu("Edit");
-        menu.setMnemonic(KeyEvent.VK_E);
-        menuBar.add(menu);
-
-        jobListPanel.createEditMenu(menu);
-
-        return menuBar;
-
+        getInternalFrame(INTERNAL_VIEW_MANAGER).setVisible(false);
+        //mitlViewManager.setVisible(false);
     }
 
     // Creates file choosers for save and load operations. This is a time-consuming
@@ -783,7 +547,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         mjfcDwarves.setDialogTitle("Select location of Dwarves.xml");
         mjfcDwarves.setCurrentDirectory(file);
         mjfcDwarves.setSelectedFile(file);
-
     }
 
     private void readFiles() throws Exception {
@@ -812,15 +575,48 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // (Post-processing must be done after mvLabors is set)
         addWhitelistToBlacklist(moJobBlacklist, moJobWhitelist, mvLabors);
     }
-    private JMenuBar createMenu(final JobListPanel jobListPanel) {
-        JMenuBar menuBar = new JMenuBar();
+    private ActionListener createShowListener(final String frameKey) {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    getInternalFrame(frameKey).setSelected(true);
+                } catch (PropertyVetoException ex) {
+                    Logger.getLogger(MainWindow.class.getName()).log(
+                            Level.SEVERE, null, ex);
+                }
+            }
+        };
+    }
+    private ActionListener createShowOrLoadListener(final String frameKey
+            , final DataLoader dataLoader) {
 
-        JMenu menu = new JMenu("Process");
-        menu.setMnemonic(KeyEvent.VK_P);
-        menuBar.add(menu);
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showOrLoad(getInternalFrame(frameKey), dataLoader);
+            }
+        };
+    }
+    private SwingWorker createOptimizeWorker(final JobListPanel jobListPanel) {
+        return new SwingWorker() {
+                @Override
+                protected Object doInBackground() throws Exception {
+                    // Optimizer
+                    Vector<Job> vJobs = jobListPanel.getJobs();
+                    Vector<Dwarf> vDwarves = getDwarves();
 
-        final JMenuItem optimizeItem = new JMenuItem("Optimize Now!", KeyEvent.VK_O);
-        optimizeItem.addActionListener(new ActionListener() {
+                    setBalancedPotentials(vDwarves, vJobs);
+                    JobOptimizer opt = new JobOptimizer(vJobs, vDwarves
+                            , moJobBlacklist);
+                    return opt.optimize();
+                }
+            };
+    }
+    private ActionListener createOptimizeAL(final JMenuItem optimizeItem
+            , final JobListPanel jobListPanel) {
+
+        return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // Disable the menu item while running
@@ -828,123 +624,52 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
                 // Do this lengthy processing on a background thread, maintaining
                 // UI responsiveness.
-                final SwingWorker worker = new SwingWorker() {
-                    @Override
-                    protected Object doInBackground() throws Exception {
-                        // Optimizer
-                        Vector<Job> vJobs = jobListPanel.getJobs();
-                        Vector<Dwarf> vDwarves = getDwarves();
-                        //JobBlacklist blacklist = jobListPanel.getBlacklist();
-
-                        setBalancedPotentials(vDwarves, vJobs);
-                        JobOptimizer opt = new JobOptimizer(vJobs, vDwarves
-                                , moJobBlacklist);
-                        return opt.optimize();
-                    }
-                };
+                final SwingWorker worker = createOptimizeWorker(jobListPanel);
                 worker.execute();
 
-                optimizeItem.setEnabled(true);            }
-
-        });
-        menu.add(optimizeItem);
-
-        menu.addSeparator();
-        JMenuItem menuItem = new JMenuItem("Exit", KeyEvent.VK_X);
-        menuItem.addActionListener(new ActionListener() {
+                optimizeItem.setEnabled(true);
+            }
+        };
+    }
+    private ActionListener createExitAL() {
+        return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose();
-                System.exit(0);
+                exit();
             }
-        });
-        menu.add(menuItem);
-
-        // -------------------------------
-        menu = new JMenu("Window");
-        menu.setMnemonic(KeyEvent.VK_W);
-        menuBar.add(menu);
-
-        // -------------------------------
-        menuItem = new JMenuItem("Dwarf List", KeyEvent.VK_D);
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    mitlDwarfList.setSelected(true);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        menu.add(menuItem);
-
-        // -------------------------------
-        menuItem = new JMenuItem("Job Settings", KeyEvent.VK_J);
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    mitlJobList.setSelected(true);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });
-        menu.add(menuItem);
-
-        // -------------------------------
-        menuItem = new JMenuItem("Rules Editor", KeyEvent.VK_R);
-        final DataLoader rulesLoader = new DataLoader() {
-                    @Override
-                    public void loadData() {
-                        // Use a clone for the table model. Otherwise
-                        // unsaved changes will persist when window is closed
-                        // and reopened.
-                        DeepCloneableVector<LaborRule> vRulesClone
-                                = (DeepCloneableVector<LaborRule>)
-                                new DeepCloneableVector<LaborRule>(
-                                moIO.getRuleFileContents()).deepClone();
-                        moRulesEditor.loadData(vRulesClone);
-                    }
-                };
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showOrLoad(mitlRulesEditor, rulesLoader);
-            }
-        });
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Exclusion Manager", KeyEvent.VK_E);
-        // (We need to deep-clone mvExclusions
-        // and loadData on that, not on mvExclusions directly.
-        // Otherwise the "active" checkbox states will carry over
-        // between sessions)
-        final DataLoader exclLoader = new DataLoader() {
-                    @Override
-                    public void loadData() {
-                        DeepCloneableVector<Exclusion> exclDeepClone
-                                = (DeepCloneableVector<Exclusion>)
-                                mvExclusions.deepClone();
-                        moExclusionManager.loadData(exclDeepClone, mvDwarves);
-                    }
-                };
-        menuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showOrLoad(mitlExclusions, exclLoader);
-            }
-        });
-        menu.add(menuItem);
-
-        // -------------------------------
-        menu = new JMenu("Help");
-        menu.setMnemonic(KeyEvent.VK_H);
-        menuBar.add(menu);
-
-        menuItem = new JMenuItem("Tutorial", KeyEvent.VK_T);
-        menuItem.addActionListener(new ActionListener() {
+        };
+    }
+    private interface DataLoader {
+        public void loadData();
+    }
+    private class RulesLoader implements DataLoader {
+        @Override
+        public void loadData() {
+            // Use a clone for the table model. Otherwise
+            // unsaved changes will persist when window is closed
+            // and reopened.
+            DeepCloneableVector<LaborRule> vRulesClone
+                    = (DeepCloneableVector<LaborRule>)
+                    new DeepCloneableVector<LaborRule>(
+                    moIO.getRuleFileContents()).deepClone();
+            moRulesEditor.loadData(vRulesClone);
+        }
+    }
+    // (We need to deep-clone mvExclusions
+    // and loadData on that, not on mvExclusions directly.
+    // Otherwise the "active" checkbox states will carry over
+    // between sessions)
+    private class ExclLoader implements DataLoader {
+        @Override
+        public void loadData() {
+            DeepCloneableVector<Exclusion> exclDeepClone
+                    = (DeepCloneableVector<Exclusion>)
+                    mvExclusions.deepClone();
+            moExclusionManager.loadData(exclDeepClone, mvDwarves);
+        }
+    }
+    private ActionListener createTutorialAL() {
+        return new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -955,33 +680,79 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     BareBonesBrowserLaunch.openURL(new File(
                             TUTORIAL_FILE).toURI().toURL().toString());
                 } catch (Exception ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(MainWindow.class.getName()).log(
+                            Level.SEVERE, null, ex);
                     ex.printStackTrace();
                     System.err.println("Failed to open " + TUTORIAL_FILE
                             + " with default browser.");
                 }
             }
-        });
-        menu.add(menuItem);
-
-        menu.addSeparator();
-
-        menuItem = new JMenuItem("About", KeyEvent.VK_A);
-        menuItem.addActionListener(new ActionListener() {
-
+        };
+    }
+    private ActionListener createAboutAL() {
+        return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 moAboutScreen.setVisible(true);
             }
+        };
+    }
+    private void createProcessMenu(JMenuBar menuBar
+            , JobListPanel jobListPanel) {
 
-        });
-        menu.add(menuItem);
+        JMenu menu = MenuHelper.createMenu("Process", KeyEvent.VK_P);
+        menuBar.add(menu);
+
+        final JMenuItem optimizeItem = MenuHelper.createMenuItem(
+                "Optimize Now!", KeyEvent.VK_O);
+        optimizeItem.addActionListener(createOptimizeAL(optimizeItem
+                , jobListPanel));
+        menu.add(optimizeItem);
+
+        // ---------------------------------------------------------------------
+        menu.addSeparator();
+        menu.add(MenuHelper.createMenuItem("Exit", createExitAL()
+                , KeyEvent.VK_X));
+    }
+    private void createWindowMenu(JMenuBar menuBar) {
+        JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
+        menuBar.add(menu);
+
+        menu.add(MenuHelper.createMenuItem("Dwarf List"
+                , createShowListener(INTERNAL_DWARF_LIST), KeyEvent.VK_D));
+        menu.add(MenuHelper.createMenuItem("Job Settings"
+                , createShowListener(INTERNAL_JOB_LIST), KeyEvent.VK_J));
+        menu.add(MenuHelper.createMenuItem("Rules Editor"
+                , createShowOrLoadListener(INTERNAL_RULES_EDITOR
+                , new RulesLoader()), KeyEvent.VK_R));
+        menu.add(MenuHelper.createMenuItem("Exclusion Manager"
+                , createShowOrLoadListener(INTERNAL_EXCLUSIONS
+                , new ExclLoader()), KeyEvent.VK_E));
+    }
+    private void createHelpMenu(JMenuBar menuBar) {
+        JMenu menu = MenuHelper.createMenu("Help", KeyEvent.VK_H);
+        menuBar.add(menu);
+
+        menu.add(MenuHelper.createMenuItem("Tutorial", createTutorialAL()
+                , KeyEvent.VK_T));
+        //----------------------------------------------------------------------
+        menu.addSeparator();
+
+        menu.add(MenuHelper.createMenuItem("About", createAboutAL()
+                , KeyEvent.VK_A));
+    }
+    private JMenuBar createMenu(final JobListPanel jobListPanel) {
+        JMenuBar menuBar = new JMenuBar();
+
+        createProcessMenu(menuBar, jobListPanel);
+        createWindowMenu(menuBar);
+        createHelpMenu(menuBar);
 
         return menuBar;
     }
-
-    private interface DataLoader {
-        public void loadData();
+    // Must be kept in sync with menu entries created by createMenu()
+    private int[] createMenuOrdering() {
+        return new int[] { 10, 80, 90 };
     }
 
     // Reload if invisible; show if visible.
@@ -998,27 +769,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         } catch (PropertyVetoException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null
                     , ex);
-        }
-    }
-
-    // More non-functional internet garbage (slow and only works for Serializable objects)
-    private Object deepClone(Object source) {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(source);
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bais);
-            Object deepCopy = ois.readObject();
-            return deepCopy;
-        } catch (IOException e) {
-            System.err.println(e.getMessage() + " [MainWindow] Failed to deepClone object");
-            e.printStackTrace();
-            return null;
-        } catch (ClassNotFoundException e) {
-            System.err.println(e.getMessage() + " [MainWindow] Failed to deepClone object");
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -1063,7 +813,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             file = new File(file.getParentFile(), fileName);
         }
         mfilLastFile = file;
-        mitlJobList.setTitle(fileName.replace(".txt", "") + " Job Settings");
+        getInternalFrame(INTERNAL_JOB_LIST).setTitle(
+                fileName.replace(".txt", "") + " Job Settings"); // mitlJobList
     }
 
     // Returns the text after (not including) the dot if the given file name
@@ -1213,7 +964,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private Vector<Dwarf> getDwarves() {
         // Get included dwarves and reset all dwarf.time
         // TODO clone() probably isn't doing what it's supposed to
-        Vector<Dwarf> vIncluded = (Vector<Dwarf>) moDwarfListWindow.getIncludedDwarves().clone();
+        Vector<Dwarf> vIncluded = (Vector<Dwarf>)
+                moDwarfListWindow.getIncludedDwarves().clone();
         for (Dwarf dwarf : vIncluded) {
             dwarf.setTime(JobOptimizer.MAX_TIME);
         }
@@ -1270,13 +1022,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     public void broadcast(BroadcastMessage message) {
         //System.out.println("Broadcast message received");
         if (message.getSource().equals("ExclusionPanelDefaultButton")) {
-            setDefaultButton(message, mitlExclusions);
+            //setDefaultButton(message, mitlExclusions);
+            setDefaultButton(message
+                    , getInternalFrame(INTERNAL_EXCLUSIONS));
         }
         else if (message.getSource().equals("RulesEditorDefaultButton")) {
-            setDefaultButton(message, mitlRulesEditor);
+            //setDefaultButton(message, mitlRulesEditor);
+            setDefaultButton(message, getInternalFrame(INTERNAL_RULES_EDITOR));
         }
         else if (message.getSource().equals("ViewManagerDefaultButton")) {
-            setDefaultButton(message, mitlViewManager);
+            setDefaultButton(message, getInternalFrame(INTERNAL_VIEW_MANAGER)); //mitlViewManager);
         }
         else if (message.getSource().equals("ExclusionPanelActiveExclusions")) {
             try {
@@ -1339,7 +1094,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                         moViewManager.loadData(vViewClone);
                     }
                 };
-        showOrLoad(mitlViewManager, loader);
+        //showOrLoad(mitlViewManager, loader);
+        showOrLoad(getInternalFrame(INTERNAL_VIEW_MANAGER), loader);
     }
 
     // Attempts to set the default button in the given internal frame
@@ -1363,12 +1119,476 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void setDefaultButton(JButton btn, JInternalFrame frame) {
         frame.getRootPane().setDefaultButton(btn);
     }
-    private void updateActiveExclusions(DeepCloneableVector<Exclusion> colExclusion) {
+    private void updateActiveExclusions(
+            DeepCloneableVector<Exclusion> colExclusion) {
+
         // Rebuild mhtActiveExclusions
         mhtActiveExclusions = new Hashtable<Integer, Boolean>();
         for (Exclusion excl : colExclusion) {
             mhtActiveExclusions.put(excl.getID(), excl.isActive());
         }
         mvExclusions = colExclusion;
+    }
+    private abstract class MyAbstractInternalFrame {
+        private JInternalFrame internalFrame;
+        private MainWindow mainWindow;
+        private JMenu[] menus;
+
+        private MyAbstractInternalFrame(MainWindow mainWindow) {
+            this.mainWindow = mainWindow;
+        }
+        public JInternalFrame getInternalFrame() {
+            return internalFrame;
+        }
+
+        public void setInternalFrame(JInternalFrame internalFrame) {
+            this.internalFrame = internalFrame;
+        }
+
+        public MainWindow getMainWindow() {
+            return mainWindow;
+        }
+
+        public JMenu[] getMenus() {
+            return menus;
+        }
+
+        public abstract JInternalFrame createFrame();
+        public abstract JMenuBar createMenuBar();
+        public abstract int[] getMenuPriority();
+
+        public JInternalFrame create(MenuCombiner combiner) {
+            this.menus = menuBarToMenuArray(createMenuBar());
+            JInternalFrame frame = createFrame();
+            addCombiner(frame, combiner);
+            setInternalFrame(frame);
+            return frame;
+        }
+
+        // TODO: Close, save(?), and load could be options
+
+        // Called by create()
+        private void addCombiner(JInternalFrame frame
+                , MenuCombiner combiner) {
+
+            InternalFrameListener listener
+                    = combiner.createInternalFrameListener(mainWindow
+                    , getMenus(), getMenuPriority());
+            frame.addInternalFrameListener(listener);
+        }
+        private JMenu[] menuBarToMenuArray(JMenuBar menuBar) {
+            int size = menuBar.getMenuCount();
+            JMenu[] array = new JMenu[size];
+            for (int iCount = 0; iCount < size; iCount++) {
+                array[iCount] = menuBar.getMenu(iCount);
+            }
+            return array;
+        }
+    }
+    private abstract class MyAbstractSimpleFrame
+            extends MyAbstractInternalFrame {
+
+        private JDesktopPane desktop;
+        private Container ui;
+        private String title;
+
+        private MyAbstractSimpleFrame(MainWindow main, JDesktopPane desktop
+                , Container ui, String title) { // , JMenuBar menuBar
+
+            super(main);
+            this.desktop = desktop;
+            this.ui = ui;
+            this.title = title;
+        }
+
+        @Override
+        public JInternalFrame createFrame() {
+            return createAlwaysShownFrame(desktop, ui, title); //, menuBar);
+        }
+        private JInternalFrame createAlwaysShownFrame(JDesktopPane desktop
+                , final Container ui, String title) { //, JMenuBar menuBar) {
+            AbstractFrameCreator creator = new AbstractFrameCreator() {
+                @Override
+                public Container createUIObject() {
+                    return ui;
+                }
+
+                @Override
+                public void addListeners() { // Do nothing
+                }
+            };
+            JInternalFrame frame = creator.createInternalFrame(desktop
+                    , title
+                    , true, false, true, true
+                    , WindowConstants.DISPOSE_ON_CLOSE); //, menuBar);
+            frame.pack();
+            frame.setVisible(true);
+            return frame;
+        }
+    }
+    private abstract class MyAbstractEditorFrame
+            extends MyAbstractInternalFrame {
+
+        public MyAbstractEditorFrame(MainWindow mainWindow) {
+            super(mainWindow);
+        }
+
+        protected JInternalFrame createEditorFrame(JDesktopPane desktop
+                , final Container ui, String cleanTitle
+                , final DirtyForm dirtyForm, final ListenerAdder la
+                , String dirtyTitle, FrameClosingFunction fcf) { //, JMenuBar menuBar
+
+            final AbstractEditorFrameCreator creator
+                    = new AbstractEditorFrameCreator() {
+
+                @Override
+                public Container createUIObject() {
+                    return ui;
+                }
+                @Override
+                public DirtyForm getDirtyForm() {
+                    return dirtyForm;
+                }
+                @Override
+                public void addListeners() {
+                    la.addListeners();
+                }
+            };
+
+            JInternalFrame frame = creator.createInternalFrame(desktop
+                    , cleanTitle, true, true, true, true
+                    , WindowConstants.HIDE_ON_CLOSE
+                    , dirtyTitle, fcf); // , menuBar
+
+            return frame;
+        }
+    }
+    private class ExclusionFrame extends MyAbstractEditorFrame {
+        private JDesktopPane desktop;
+        private ExclusionPanel exclusionPanel;
+
+        public ExclusionFrame(MainWindow main, JDesktopPane desktop
+                , ExclusionPanel exclusionPanel) {
+            super(main);
+            this.desktop = desktop;
+            this.exclusionPanel = exclusionPanel;
+        }
+
+        @Override
+        public JInternalFrame createFrame() {
+            ListenerAdder la = new ListenerAdder() {
+                @Override
+                public void addListeners() {
+                    exclusionPanel.getDefaultButtonBroadcaster().addListener(
+                            getMainWindow());
+                    exclusionPanel.getCloseBroadcaster().addListener(
+                            getMainWindow());
+                    exclusionPanel.getAppliedBroadcaster().addListener(
+                            getMainWindow());
+                }
+            };
+            FrameClosingFunction fcf = new FrameClosingFunction() {
+                @Override
+                public void doFrameClosing(InternalFrameEvent e) {
+                    doExclWindowClosing(getMainWindow(), exclusionPanel);
+                }
+            };
+
+            setInternalFrame(createEditorFrame(desktop, exclusionPanel
+                    , EXCLUSIONS_TITLE
+                    , exclusionPanel, la, EXCLUSIONS_TITLE_DIRTY, fcf)); //, createExclusionMgrMenu()
+            return getInternalFrame();
+        }
+        private ActionListener createSaveAL() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    exclusionPanel.saveExclusions();
+                }
+            };
+        }
+        private ActionListener createCloseAL() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    closeExclusions();
+                }
+            };
+        }
+        private void createFileMenu(JMenuBar menuBar) {
+            JMenu menu = MenuHelper.createMenu("File", KeyEvent.VK_F);
+            menuBar.add(menu);
+
+            menu.add(MenuHelper.createMenuItem("Save and Apply", createSaveAL()
+                    , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S")));
+
+            //------------------------------------------------------------------
+            menu.add(new JSeparator());
+
+            menu.add(MenuHelper.createMenuItem("Close Exclusion Manager"
+                    , createCloseAL(), KeyEvent.VK_C));
+        }
+        @Override
+        public JMenuBar createMenuBar() {
+            JMenuBar menuBar = new JMenuBar();
+            createFileMenu(menuBar);
+            return menuBar;
+        }
+
+        @Override
+        public int[] getMenuPriority() {
+            return new int[] { 1 };
+        }
+    }
+    private class RulesEditorFrame extends MyAbstractEditorFrame {
+        private JDesktopPane desktop;
+        private RulesEditorUI rulesEditor;
+
+        public RulesEditorFrame(MainWindow main, JDesktopPane desktop
+                , RulesEditorUI rulesEditor) {
+            super(main);
+            this.desktop = desktop;
+            this.rulesEditor = rulesEditor;
+        }
+
+        @Override
+        public JInternalFrame createFrame() {
+            ListenerAdder la = new ListenerAdder() {
+                @Override
+                public void addListeners() {
+                    rulesEditor.getDefaultButtonBroadcaster().addListener(
+                            getMainWindow());
+                }
+            };
+            FrameClosingFunction fcf = new FrameClosingFunction() {
+                @Override
+                public void doFrameClosing(InternalFrameEvent e) {
+                    doRulesWindowClosing(getMainWindow(), rulesEditor);
+                }
+            };
+
+            setInternalFrame(createEditorFrame(desktop, rulesEditor
+                    , RULES_EDITOR_TITLE_CLEAN
+                    , rulesEditor, la
+                    , RULES_EDITOR_TITLE_DIRTY, fcf)); //, createRulesEditorMenu(rulesEditor)
+            return getInternalFrame();
+        }
+
+        private ActionListener createSaveAL() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    saveRuleFile(rulesEditor);
+                }
+            };
+        }
+        private ActionListener createCloseAL() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    closeRules(rulesEditor);
+                }
+            };
+        }
+        private void createFileMenu(JMenuBar menuBar) {
+            JMenu menu = MenuHelper.createMenu("File");
+            //JMenu menu = new JMenu("File");
+            menuBar.add(menu);
+
+            menu.add(MenuHelper.createMenuItem("Save", createSaveAL()
+                    , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S")));
+
+            // -----------------------------------------------------------------
+            menu.add(new JSeparator());
+
+            // ----------------------------------
+            menu.add(MenuHelper.createMenuItem("Close Rules Editor"
+                    , createCloseAL(), KeyEvent.VK_C));
+        }
+        @Override
+        public JMenuBar createMenuBar() {
+            JMenuBar menuBar = new JMenuBar();
+            createFileMenu(menuBar);
+            return menuBar;
+        }
+
+        @Override
+        public int[] getMenuPriority() {
+            return new int[] { 1 };
+        }
+    }
+    private class ViewManagerFrame extends MyAbstractEditorFrame {
+        private JDesktopPane desktop;
+        private ViewManagerUI viewManagerUI;
+
+        public ViewManagerFrame(MainWindow mainWindow, JDesktopPane desktop
+                , ViewManagerUI viewManagerUI) {
+            super(mainWindow);
+            this.desktop = desktop;
+            this.viewManagerUI = viewManagerUI;
+        }
+
+        @Override
+        public JInternalFrame createFrame() {
+            ListenerAdder la = new ListenerAdder() {
+                @Override
+                public void addListeners() {
+                    viewManagerUI.getBroadcaster().addListener(getMainWindow());
+                }
+            };
+            FrameClosingFunction fcf = new FrameClosingFunction() {
+                @Override
+                public void doFrameClosing(InternalFrameEvent e) {
+                    doViewMgrWindowClosing(getMainWindow(), viewManagerUI);
+                }
+            };
+
+            JInternalFrame frame = createEditorFrame(desktop
+                    , viewManagerUI.getUIPanel(), VIEW_MGR_TITLE
+                    , viewManagerUI, la, VIEW_MGR_TITLE_DIRTY, fcf);
+
+            setDefaultButton(viewManagerUI.getDefaultButton(), frame);
+            setInternalFrame(frame);
+            return getInternalFrame();
+        }
+
+        @Override
+        public int[] getMenuPriority() {
+            return new int[0];
+        }
+
+        @Override
+        public JMenuBar createMenuBar() {
+            return new JMenuBar();
+        }
+    }
+    private class DwarfListFrame extends MyAbstractSimpleFrame {
+        //private static final int MENU_START_PRIORITY = 11;
+        private DwarfListWindow dwarfListWindow;
+
+        public DwarfListFrame(MainWindow mainWindow, JDesktopPane desktop
+                , DwarfListWindow dwarfListWindow, String title) {
+
+            super(mainWindow, desktop, dwarfListWindow, title);
+
+            this.dwarfListWindow = dwarfListWindow;
+        }
+
+        @Override
+        public int[] getMenuPriority() {
+            return new int[] { 1, 13, 14, 31 };
+        }
+
+        @Override
+        public JMenuBar createMenuBar() {
+            JMenuBar menuBar = new JMenuBar();
+
+            createFileMenu(menuBar);
+            menuBar = appendMenuBar(menuBar, dwarfListWindow.getMenu());
+
+            MenuMnemonicSetter.setMnemonics(menuBar);
+            return menuBar;
+        }
+        private void createFileMenu(JMenuBar menuBar) {
+            JMenu menu = MenuHelper.createMenu("File");
+            menuBar.add(menu);
+
+            menu.add(MenuHelper.createMenuItem("Set Location of Dwarves.xml..."
+                    , createSetLocListener()
+                    , KeyStroke.getKeyStroke(KeyEvent.VK_L
+                    , ActionEvent.CTRL_MASK)));
+        }
+        private ActionListener createSetLocListener() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setDwarves();
+                }
+            };
+        }
+    }
+    private class JobListFrame extends MyAbstractSimpleFrame {
+        private JobListPanel jobListPanel;
+
+        public JobListFrame(MainWindow mainWindow, JDesktopPane desktop
+                , JobListPanel jobListPanel
+                , String title) {
+
+            super(mainWindow, desktop, jobListPanel, title);
+
+            this.jobListPanel = jobListPanel;
+        }
+
+        @Override
+        public int[] getMenuPriority() {
+            return new int[] { 1, 2 };
+        }
+        @Override
+        public JMenuBar createMenuBar() {
+            JMenuBar menuBar = new JMenuBar();
+
+            createFileMenu(menuBar);
+            createEditMenu(menuBar);
+
+            return menuBar;
+
+        }
+        private ActionListener createLoadActionListener() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    loadJobSettings(jobListPanel);
+                }
+            };
+        }
+        private ActionListener createSaveActionListener(
+                final boolean quickSave) {
+
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    saveJobSettingsAs(jobListPanel, quickSave);
+                }
+            };
+        }
+        private ActionListener createResetActionListener() {
+            return new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    resetJobSettings(jobListPanel);
+                }
+            };
+        }
+        private void createFileMenu(JMenuBar menuBar) {
+
+            JMenu menu = MenuHelper.createMenu("File", KeyEvent.VK_F);
+            menuBar.add(menu);
+
+            menu.add(MenuHelper.createMenuItem("Open..."
+                    , createLoadActionListener(), KeyEvent.VK_O
+                    , JobListMenuAccelerator.OPEN.getKeyStroke()));
+
+            // -----------------------------------------------------------------
+            menu.addSeparator();
+
+            menu.add(MenuHelper.createMenuItem("Save"
+                    , createSaveActionListener(true), KeyEvent.VK_S
+                    , JobListMenuAccelerator.SAVE.getKeyStroke()));
+            menu.add(MenuHelper.createMenuItem("Save As..."
+                    , createSaveActionListener(false), KeyEvent.VK_A
+                    , JobListMenuAccelerator.SAVE_AS.getKeyStroke()));
+
+            // -----------------------------------------------------------------
+            menu.addSeparator();
+
+            menu.add(MenuHelper.createMenuItem("Reset to My Defaults"
+                    , createResetActionListener(), KeyEvent.VK_R));
+        }
+        private void createEditMenu(JMenuBar menuBar) {
+            JMenu menu = MenuHelper.createMenu("Edit", KeyEvent.VK_E);
+            menuBar.add(menu);
+
+            menu = jobListPanel.createEditMenuItems(menu);
+        }
     }
 }
