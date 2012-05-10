@@ -13,7 +13,7 @@ import dwarforganizer.deepclone.DeepCloneable;
  * See MIT license in license.txt
  */
 public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
-    , DeepCloneable {
+    , DeepCloneable<Exclusion> {
 
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
         "id", "name" };

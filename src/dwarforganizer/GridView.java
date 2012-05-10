@@ -16,7 +16,7 @@ import javax.swing.table.TableColumnModel;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class GridView implements MyPropertyGetter, DeepCloneable {
+public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
 
     public static final String UNSAVED_VIEW_NAME = "Unsaved View";
 
@@ -203,7 +203,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable {
     }
 
     @Override
-    public Object deepClone() {
+    public GridView deepClone() {
         // NOTE: mlstColOrder is not deep-cloned
         // moKey, moKeyAxis, mbLabelY,
         return new GridView(mstrName, mlstColOrder);

@@ -14,7 +14,8 @@ import java.util.Vector;
  * @author Tamara Orr
  * MIT license: Refer to license.txt
  */
-public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
+public class Dwarf implements MyPropertyGetter, Comparable
+        , DeepCloneable<Dwarf> {
 
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
             "Name", "Nickname", "Gender", "Age", "JobText" };
@@ -163,7 +164,7 @@ public class Dwarf implements MyPropertyGetter, Comparable, DeepCloneable {
     }
 
     @Override
-    public Object deepClone() {
+    public Dwarf deepClone() {
         //NOTE: We are not deepcloning the following:
         // statValues, statPercents, skillPotentials, skillLevels, balancedPotentials,
         // and labors

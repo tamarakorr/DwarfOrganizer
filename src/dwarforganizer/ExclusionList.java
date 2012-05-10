@@ -5,6 +5,7 @@
 
 package dwarforganizer;
 
+import dwarforganizer.deepclone.DeepCloneable;
 import java.util.Vector;
 
 /**
@@ -12,7 +13,8 @@ import java.util.Vector;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class ExclusionList extends Exclusion {
+public class ExclusionList extends Exclusion
+        implements DeepCloneable<Exclusion> {
 
     //private DeepCloneableVector<Dwarf> moCitizenList;
     private Vector<String> mvCitizenNames;
@@ -42,7 +44,7 @@ public class ExclusionList extends Exclusion {
     }
 
     @Override
-    public Object deepClone() {
+    public ExclusionList deepClone() {
         Vector<String> vNames = new Vector<String>(mvCitizenNames.size());
         for (String name : mvCitizenNames) {
             vNames.add(name);

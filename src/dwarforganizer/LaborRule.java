@@ -12,7 +12,7 @@ import dwarforganizer.deepclone.DeepCloneable;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class LaborRule implements MyPropertyGetter, DeepCloneable {
+public class LaborRule implements MyPropertyGetter, DeepCloneable<LaborRule> {
     private String type;
     private String firstLabor;
     private String secondLabor;
@@ -85,7 +85,7 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable {
     }
 
     @Override
-    public Object deepClone() {
+    public LaborRule deepClone() {
         return new LaborRule(type, firstLabor, secondLabor, comment);
     }
 

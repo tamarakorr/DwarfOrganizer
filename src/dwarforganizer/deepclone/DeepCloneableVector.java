@@ -35,8 +35,8 @@ public class DeepCloneableVector<T extends DeepCloneable> extends Vector<T>
     @Override
     public Object deepClone() {
         DeepCloneableVector<T> vReturn = new DeepCloneableVector<T>();
-        for (T item : this) {
-            vReturn.add((T) item.deepClone());
+        for (DeepCloneable<T> item : this) { // T
+            vReturn.add(item.deepClone()); // (T)
         }
         return vReturn;
     }

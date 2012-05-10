@@ -5,12 +5,15 @@
 
 package dwarforganizer;
 
+import dwarforganizer.deepclone.DeepCloneable;
+
 /**
  *
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class ExclusionRule extends Exclusion {
+public class ExclusionRule extends Exclusion
+        implements DeepCloneable<Exclusion> {
 
     private String propertyName;
     private String comparator;
@@ -122,7 +125,7 @@ public class ExclusionRule extends Exclusion {
     }
 
     @Override
-    public Object deepClone() {
+    public ExclusionRule deepClone() {
         return new ExclusionRule(this.getID(), this.getName(), this.isActive()
             , this.getPropertyName(), this.getComparator()
             , this.getValue());
