@@ -109,7 +109,7 @@ public class DwarfOrganizerIO {
         return USER_FILES_DIR + fileName;
     }
 
-    protected Vector<LaborGroup> readLaborGroups() throws Exception {
+    protected Vector<LaborGroup> readLaborGroups() {
         final int EXPECTED_COLUMNS = 5;
         Vector<LaborGroup> vReturn = new Vector<LaborGroup>();
 
@@ -119,7 +119,8 @@ public class DwarfOrganizerIO {
             Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
             for (String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
-                    System.err.println("A line in group-list.txt contains an inappropriate"
+                    System.err.println("A line in group-list.txt contains an"
+                            + " inappropriate"
                             + " number of columns: " + array.length);
                 else
                     vReturn.add(new LaborGroup(array[0], array[1]
@@ -128,16 +129,15 @@ public class DwarfOrganizerIO {
             }
 
             in.close();
-
         } catch (Exception ex) {
-            System.err.println("Could not process group-list.txt. All results are invalid.");
-            throw ex;
+            final String message = "Failed to process group-list.txt."
+                    + " The application will shut down.";
+            Main.crash(message, ex);
         }
-
         return vReturn;
     }
 
-    protected Vector<Labor> readLabors() throws Exception {
+    protected Vector<Labor> readLabors() {
         final int EXPECTED_COLUMNS = 3;
         Vector<Labor> vReturn = new Vector<Labor>();
 
@@ -156,23 +156,26 @@ public class DwarfOrganizerIO {
             }
 
             in.close();
-        } catch (Exception ex) {
-            System.err.println("Could not read labor-list.txt. All results will be invalid.");
-            throw ex;
+        } catch (Exception e) {
+            final String message = "Failed to read the critical file"
+                + " labor-list.txt."
+                + " The application will terminate.";
+            Main.crash(message, e);
         }
         return vReturn;
     }
-
     // Reads the rule file
     // Results can be obtained with getWhitelist() and getBlacklist()
     // Raw file data is stored in mvRuleFile
-    protected void readRuleFile() throws Exception {
+    protected void readRuleFile() {
+        final String ERROR_MESSAGE = "Failed to process rules.txt."
+            + " Job whitelist/blacklist will be incorrect.";
+
         String line;
         String strCommentFix = "";
         String[] jobs = new String[LABOR_RULE_MAX_COLS]; // 4
         moBlacklist = new JobBlacklist();
         moWhitelist = new JobList();
-        //mvRuleFile = new Vector<String[]>();
         mvRuleFile = new Vector<LaborRule>();
 
         try {
@@ -199,7 +202,6 @@ public class DwarfOrganizerIO {
 
                 if (! jobs[LABOR_RULE_INDEX_TYPE].equals("COMMENT")) {
                     //System.out.println(jobs.length);
-                    //mvRuleFile.add(jobs);
                     if (jobs.length < LABOR_RULE_MIN_COLS)
                         System.err.println("Warning: A line in "
                                 + RULE_FILE_NAME + " is improperly formatted.");
@@ -235,18 +237,16 @@ public class DwarfOrganizerIO {
             // Create the rule structures
             createRuleStructures(mvRuleFile);
 
-            // Post-process the whitelist
-            //addWhitelistToBlacklist(moWhitelist, moBlacklist, jobSettings);
-
+            // (Do not post-process the whitelist here)
+        } catch (FileNotFoundException e) {
+            Main.warn(ERROR_MESSAGE, e);
         } catch (Exception e) {
-            System.err.println("Error when processing rule file."
-                    + " Job blacklist/whitelist will not be correct.");
-            throw e;
+            Main.warn(ERROR_MESSAGE, e);
+            e.printStackTrace();
         }
     }
     protected JobBlacklist getBlacklist() { return moBlacklist; }
     protected JobList getWhitelist() { return moWhitelist; }
-    //protected Vector<String[]> getRuleFileContents() { return mvRuleFile; }
     protected Vector<LaborRule> getRuleFileContents() { return mvRuleFile; }
 
     // Appends old COMMENT entries (comment) to the given non-comment line (jobs)
@@ -388,7 +388,7 @@ public class DwarfOrganizerIO {
             return mhtStats;
         }
 
-        public void readDwarves(String filePath) { //throws Exception { // NodeList
+        public void readDwarves(String filePath) {
 
             mvDwarves = new Vector<Dwarf>(); // Initialize before reading anything
 
@@ -408,7 +408,8 @@ public class DwarfOrganizerIO {
                         + " creatures.");
                 parseDwarves(nodes);
             } catch (Exception e) {
-                System.err.println(e.getMessage() + " Failed to read dwarves.XML");
+                //System.err.println(e.getMessage() + " Failed to read dwarves.XML");
+                Main.warn("Failed to read the last dwarves.XML", e);
             }
         }
 
@@ -424,11 +425,13 @@ public class DwarfOrganizerIO {
             try {
                 mhtSkills = getLaborSkills();
             } catch (URISyntaxException e) {
-                System.err.println("URI syntax exception: could not read labor-skills.XML");
-                e.printStackTrace();
+                final String message = "URI syntax exception: failed to read"
+                        + " labor-skills.XML";
+                Main.crash(message, e);
             } catch (FileNotFoundException e) {
-                System.err.println("Labor skills file not found");
-                e.printStackTrace();
+                final String message = "labor-skills.xml not found."
+                        + " The application will shut down.";
+                Main.crash(message, e);
             }
 
             // TODO: Remove this hard-coding. Put meta skills in XML file.
@@ -502,12 +505,12 @@ public class DwarfOrganizerIO {
 
         // Reads the trait hints file (needed for Runesmith style XML traits)
         private void readTraitHints() {
+            final String ERROR_MESSAGE = "Error when reading file"
+                    + " trait-hints.txt."
+                    + " Dwarf traits may not have correct values.";
             String strLine;
 
             try {
-                // Open the file
-                //InputStream in =
-                //        this.getClass().getResourceAsStream(TRAITS_FILE_NAME);
                 FileInputStream in = new FileInputStream(getInputFile(
                         TRAITS_FILE_NAME));
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -520,9 +523,10 @@ public class DwarfOrganizerIO {
                             , Integer.parseInt(data[2]));
                 }
                 in.close();
+            } catch (FileNotFoundException e) {
+                Main.warn(ERROR_MESSAGE, e);
             } catch (Exception e) {
-                System.err.println("Error when reading file trait-hints.txt."
-                        + " Dwarf traits may not have correct values.");
+                Main.warn(ERROR_MESSAGE, e);
                 e.printStackTrace();
             }
         }
@@ -533,9 +537,10 @@ public class DwarfOrganizerIO {
         private Hashtable<String, Skill> getLaborSkills() throws URISyntaxException
                 , FileNotFoundException {
 
-            Hashtable<String, Vector<Stat>> htStatGroup = new Hashtable<String
-                    , Vector<Stat>>();
-            Hashtable<String, Skill> htReturn = new Hashtable<String, Skill>();
+            final Hashtable<String, Vector<Stat>> htStatGroup
+                    = new Hashtable<String, Vector<Stat>>();
+            final Hashtable<String, Skill> htReturn
+                    = new Hashtable<String, Skill>();
             Vector<Stat> vStat;
             Element thisStat;
             NodeList stat;
@@ -916,11 +921,13 @@ public class DwarfOrganizerIO {
             in.close();
 
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
+                    , null, ex);
             ex.printStackTrace();
             strReturn += "Error: License not found.";
         } catch (IOException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
+                    , null, ex);
             ex.printStackTrace();
             strReturn += "Error: Failed to read license.";
         }
@@ -930,6 +937,7 @@ public class DwarfOrganizerIO {
     // Loads job settings from file
     public void readJobSettings(File file, Vector<Job> vLaborSettings
             , String defaultReminder) {
+        final String ERROR_MESSAGE = "Failed to load job file.";
 
         try {
             FileInputStream fstream = new FileInputStream(file.getAbsolutePath());
@@ -953,10 +961,13 @@ public class DwarfOrganizerIO {
                 else
                     System.err.println("WARNING: Job '" + job.getName()
                             + "' was not found"
-                            + " in the file. Its settings will be the defaults.");
+                            + " in the file. Its settings will be the"
+                            + " defaults.");
             }
+        } catch (FileNotFoundException ignore) {
+            System.err.println(ERROR_MESSAGE);
         } catch (Exception e) {
-            System.err.println("Failed to load job file.");
+            System.err.println(ERROR_MESSAGE);
             e.printStackTrace();
         }
     }
@@ -1103,7 +1114,8 @@ public class DwarfOrganizerIO {
             }
 
         };
-        return reader.readFile(getInputFile(VIEW_FILE_NAME));
+        return reader.readFile(getInputFile(VIEW_FILE_NAME), "Failed to read "
+                + VIEW_FILE_NAME + ". Cannot load Dwarf List view data.");
     }
     private abstract class AbstractXMLReader<T> {
         // Returns the initialized object to be processed and returned after
@@ -1114,7 +1126,7 @@ public class DwarfOrganizerIO {
         // given the initialized return object
         public abstract T processDocument(Document doc, T initializedObject);
 
-        public T readFile(String fileName) {
+        public T readFile(String fileName, String errorMessage) {
             T returnObject = getDefaultReturnObject();
 
             File file = new File(fileName);
@@ -1131,12 +1143,15 @@ public class DwarfOrganizerIO {
             } catch (ParserConfigurationException ex) {
                 Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
                         Level.SEVERE, null, ex);
+                Main.warn(errorMessage, ex);
             } catch (SAXException ex) {
                 Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
                         Level.SEVERE, null, ex);
+                Main.warn(errorMessage, ex);
             } catch (IOException ex) {
                 Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
                         Level.SEVERE, null, ex);
+                Main.warn(errorMessage, ex);
             }
 
             return returnObject;
@@ -1378,11 +1393,14 @@ public class DwarfOrganizerIO {
                     , version));
 
         } catch (ParserConfigurationException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
+                    , null, ex);
         } catch (SAXException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
+                    , null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
+                    , null, ex);
         }
 
         return vReturn;

@@ -222,7 +222,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         btnClose.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                closeBroadcaster.notifyListeners(new BroadcastMessage("CloseExclusions"
+                closeBroadcaster.notifyListeners(new BroadcastMessage(
+                        "ExclusionPanelClose"
                         , null, "Exclusions panel requests to be closed"));
             }
         });
@@ -526,7 +527,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         moMasterDirtyHandler.setClean();
 
         // Send the update to listeners
-        appliedBroadcaster.notifyListeners(new BroadcastMessage("ExclusionsApplied"
+        appliedBroadcaster.notifyListeners(new BroadcastMessage(
+                "ExclusionPanelApply"
                 , lstExclusion, "Exclusions were applied"));
 
         setMessage("Save complete.");

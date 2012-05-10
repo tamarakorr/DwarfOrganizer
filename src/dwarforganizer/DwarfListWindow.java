@@ -122,10 +122,10 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         , "Legendary +3", "Legendary +4", "Legendary +5" };
     private int[] maiSkillLevelBracket = MyArrayUtils.createCountingArray(21); // (int) MainWindow.MAX_SKILL_LEVEL + 1
 
-    private Hashtable<String, Stat> mhtStats;
-    private Hashtable<String, Skill> mhtSkills;
+    private Map<String, Stat> mhtStats;
+    private Map<String, Skill> mhtSkills;
     private Vector<Dwarf> mvDwarves;
-    private Hashtable<String, MetaSkill> mhtMetaSkills;
+    private Map<String, MetaSkill> mhtMetaSkills;
 
     private CompositeTable moTable; // JTable
     private MyEditableTableModel<DwarfListItem> moModel;
@@ -189,8 +189,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     private PrefsRecaller moPrefs;
 
-    public DwarfListWindow(Vector<Labor> vLabors, Hashtable<String, Stat> htStat
-            , Hashtable<String, Skill> htSkill, Hashtable<String, MetaSkill> htMeta
+    public DwarfListWindow(Vector<Labor> vLabors, Map<String, Stat> htStat
+            , Map<String, Skill> htSkill, Map<String, MetaSkill> htMeta
             , Vector<LaborGroup> vLaborGroups, List<GridView> lstViews) {
 
         // Parent constructor---------------------------------------------------

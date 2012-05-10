@@ -133,7 +133,7 @@ public class JobListPanel extends JPanel {
         }
     }
 
-    private class CouldntProcessFileException extends Exception {
+    public class CouldntProcessFileException extends Exception {
         public CouldntProcessFileException() { super(); }
     };
 

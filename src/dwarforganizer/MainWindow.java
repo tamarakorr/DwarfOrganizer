@@ -67,7 +67,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     private static final String VERSION = "1.21";
 
-    protected static final long MAX_SKILL_LEVEL = 20l;    // That's an "L", not a one
+    protected static final long MAX_SKILL_LEVEL = 20L;
     //private static final String DEFAULT_DWARVES_XML
     //        = "C://DwarfFortress//DwarfGuidanceCounselor//0.0.6//Dwarves.xml";
     private static final String DEFAULT_DWARVES_XML = "samples/dwarves/sample-7-dwarves.xml";
@@ -79,58 +79,37 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private static final String INTERNAL_RULES_EDITOR = "Rules Editor";
     private static final String INTERNAL_EXCLUSIONS = "Exclusions";
     private static final String INTERNAL_VIEW_MANAGER = "View Manager";
-    private static final int NUM_INTERNAL_FRAMES = 5;
+    private Map<String, MyAbstractInternalFrame> mhmInternalFrames;
+    private JFrame moAboutScreen;
+    private JDesktopPane moDesktop;
+
+    private static final String DIRTY_TITLE = " (Unsaved Changes)";
 
     private static final int EXIT_MENU_PRIORITY = 100;
     private static final int FILE_MENU_MNEMONIC = KeyEvent.VK_F;
 
-    private Map<String, MyAbstractInternalFrame> mhmInternalFrames;
-
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
     private RulesEditorUI moRulesEditor;
+    private ExclusionPanel moExclusionManager;
+    private ViewManagerUI moViewManager;
 
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
     private File mfilLastFile;
-    private MyFileChooser mjfcSave; //= new JFileChooser(); JFileChooser
-    private MyFileChooser mjfcOpen; //= new JFileChooser();
-    private MyFileChooser mjfcDwarves;
+    private static final String FILE_CHOOSER_SAVE = "Save"; // Keys for file choosers
+    private static final String FILE_CHOOSER_OPEN = "Open";
+    private static final String FILE_CHOOSER_DWARVES = "Dwarves";
+    private Map<String, MyFileChooser> mmFileChoosers;
 
     private Vector<Labor> mvLabors;
     private Vector<LaborGroup> mvLaborGroups;
-
-    private static final String DIRTY_TITLE = " (Unsaved Changes)";
-
-    private static final String RULES_EDITOR_TITLE_CLEAN = "Edit Rules";
-    private static final String RULES_EDITOR_TITLE_DIRTY
-            = RULES_EDITOR_TITLE_CLEAN + DIRTY_TITLE;
-    private JobBlacklist moJobBlacklist = new JobBlacklist();
-    private JobList moJobWhitelist = new JobList();
-
-    private DwarfOrganizerIO moIO = new DwarfOrganizerIO();
+    private JobBlacklist moJobBlacklist;
+    private JobList moJobWhitelist;
+    private DwarfOrganizerIO moIO;
     private Vector<Dwarf> mvDwarves;
     private Vector<Exclusion> mvExclusions;
     private Hashtable<Integer, Boolean> mhtActiveExclusions;
-
-    private JFrame moAboutScreen = new AboutScreen(this);
-
-    private static final String EXCLUSIONS_TITLE = "Manage Exclusions";
-    private static final String EXCLUSIONS_TITLE_DIRTY = EXCLUSIONS_TITLE + DIRTY_TITLE;
-    private static final String VIEW_MGR_TITLE = "Manage Views";
-    private static final String VIEW_MGR_TITLE_DIRTY = VIEW_MGR_TITLE + DIRTY_TITLE;
-
-    private ExclusionPanel moExclusionManager;
-
-    private Hashtable<String, Stat> mhtStat;
-    private Hashtable<String, Skill> mhtSkill;
-    private Hashtable<String, MetaSkill> mhtMetaSkill;
-
     private Vector<GridView> mvViews; // TODO: This really shouldn't be messed with in MainWindow
-
-    private ViewManagerUI moViewManager;
-    private JDesktopPane moDesktop;
-
-    private MenuCombiner moCombiner;
 
     private static enum JobListMenuAccelerator {
         SAVE(KeyStroke.getKeyStroke("control S"))
@@ -145,98 +124,167 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         public KeyStroke getKeyStroke() { return keyStroke; }
     }
 
+    private static final int DESKTOP_WIDTH = 800;
+    private static final int DESKTOP_HEIGHT = 600;
+    private static final String MAIN_TITLE = "Dwarf Organizer";
+
     public MainWindow() {
         super();
 
-        mvLabors = new Vector<Labor>();
-        mvLaborGroups = new Vector<LaborGroup>();
-        moDesktop = new JDesktopPane();
+        FileData fileData = new FileData(new HashMap<String, Stat>()
+                    , new HashMap<String, Skill>()
+                    , new HashMap<String, MetaSkill>()); // dummy value
 
-        loadPreferences();
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                exit();
-            }
-        });
+        initVariables();    // Initialize variables that must be created
+        loadPreferences();  // Load user prefs
 
+        // Read files, and don't necessarily crash if we fail
         try {
-            readFiles();
+            fileData = readFiles();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Failed to read at least one critical file.");
         }
+        setExclusionsActive();      // Combine exclusions from user prefs with data from file
+        prepareFrameUIs(fileData);  // Prepare data objects
 
-        // Combine exclusions from preferences with data from file
-        setExclusionsActive();
+        mmFileChoosers = createChoosers(); // (Must be done after initializing JobListPanel)
 
-        // Create rules editor (hidden until shown)
-        moRulesEditor = new RulesEditorUI(mvLabors);
+        // Use JobListPanel to create main menu
+        final MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel);
+        final MenuCombiner combiner = new MenuCombiner(menuInfo); // Must be done after createMenu
 
-        // Create exclusions manager (hidden until shown)
-        moExclusionManager = new ExclusionPanel(moIO);
+        // Create frame maps and internal frames; must be done after
+        // MenuCombiner is created
+        mhmInternalFrames = createFrameMap();
+        createFrames(mhmInternalFrames, combiner);
 
-        // Create view manager (hidden until shown)
-        moViewManager = new ViewManagerUI();
+        setUpMainWindow(moDesktop, menuInfo);   // Set frame properties and show
 
-        // Create dwarf list window
-        moDwarfListWindow = new DwarfListWindow(mvLabors, mhtStat, mhtSkill
-                , mhtMetaSkill, mvLaborGroups, mvViews);
-        moDwarfListWindow.loadData(mvDwarves, mvExclusions);
-        moExclusionManager.getAppliedBroadcaster().addListener(
-                moDwarfListWindow); // Listen for exclusions applied
-        moDwarfListWindow.getBroadcaster().addListener(this);
+        // Dwarf List on top (must be done after setting main window visible)
+        frameToTop(INTERNAL_DWARF_LIST);
+    }
+    private class FileData {
+        private Map<String, Stat> mapStat;
+        private Map<String, Skill> mapSkill;
+        private Map<String, MetaSkill> mapMetaSkill;
 
-        try {
-            // Display a grid of the jobs to assign
-            moJobListPanel = new JobListPanel(mvLabors
-                    , mvLaborGroups, moJobBlacklist, moIO);
-            createChoosers();   // (Must be done after initializing JobListPanel)
+        public FileData(Map<String, Stat> mapStat, Map<String, Skill> mapSkill
+                , Map<String, MetaSkill> mapMetaSkill) {
+            this.mapStat = mapStat;
+            this.mapSkill = mapSkill;
+            this.mapMetaSkill = mapMetaSkill;
+        }
 
-            // Use JobListPanel to create main menu
-            MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel);
-            this.setJMenuBar(menuInfo.getMenuBar());
-            moCombiner = new MenuCombiner(menuInfo); // Must be done after createMenu
-            //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
-
-            // Create frame maps and internal frames
-            // Must be done after MenuCombiner is created
-            mhmInternalFrames = createFrameMap();
-            for (String key : mhmInternalFrames.keySet()) {
-                MyAbstractInternalFrame frame = mhmInternalFrames.get(key);
-                //System.out.println("Creating frame " + key);
-                if (frame instanceof MyAbstractMenuFrame) {
-                    MyAbstractMenuFrame menuFrame = (MyAbstractMenuFrame) frame;
-                    menuFrame.create(moCombiner);
-                }
-                else {
-                    frame.create();
-                }
-            }
-
-            int width = (int) (moJobListPanel.getPreferredSize().getWidth() * 1.2);
-            int height = (int) (moJobListPanel.getPreferredSize().getHeight() * 1.42);
-            moDesktop.setPreferredSize(new Dimension(width, height));
-
-            this.setLayout(new BorderLayout());
-            this.add(moDesktop, BorderLayout.CENTER);
-
-            this.setTitle("Dwarf Organizer");
-            this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE); // WindowConstants.DISPOSE_ON_CLOSE
-            this.pack();
-            this.setVisible(true);
-
-            // Dwarf List on top (must be done after setting main window visible)
-            getInternalFrame(INTERNAL_DWARF_LIST).setSelected(true);
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        public Map<String, MetaSkill> getMetaSkillMap() {
+            return mapMetaSkill;
+        }
+        public Map<String, Skill> getSkillMap() {
+            return mapSkill;
+        }
+        public Map<String, Stat> getStatMap() {
+            return mapStat;
         }
     }
+    private void initVariables() {
+        moJobBlacklist = new JobBlacklist();
+        moJobWhitelist = new JobList();
+        moIO = new DwarfOrganizerIO();
+        moAboutScreen = new AboutScreen(this);
+        mvLabors = new Vector<Labor>();
+        mvLaborGroups = new Vector<LaborGroup>();
+        moDesktop = new JDesktopPane();
+        moDesktop.setPreferredSize(new Dimension(DESKTOP_WIDTH
+                , DESKTOP_HEIGHT));
+    }
+    // Creates and returns the frame map, and creates the internal frames
+    private void createFrames(final Map<String, MyAbstractInternalFrame> map
+            , final MenuCombiner combiner) {
+
+        for (String key : map.keySet()) {
+            MyAbstractInternalFrame frame = map.get(key);
+            if (frame instanceof MyAbstractMenuFrame) {
+                MyAbstractMenuFrame menuFrame = (MyAbstractMenuFrame) frame;
+                menuFrame.create(combiner);
+            }
+            else {
+                frame.create();
+            }
+        }
+    }
+    private void setUpMainWindow(JDesktopPane desktop
+            , MenuCombiner.MenuInfo menuInfo) {
+
+        this.setLayout(new BorderLayout());
+        this.add(desktop, BorderLayout.CENTER);
+        this.pack();
+
+        this.setJMenuBar(menuInfo.getMenuBar());
+        this.addWindowListener(createExitListener());
+        this.setTitle(MAIN_TITLE);
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.setVisible(true);
+    }
+    private void frameToTop(String frameKey) {
+        try {
+            getInternalFrame(frameKey).setSelected(true);
+        } catch (PropertyVetoException ignore) {
+            System.out.println("[MainWindow.frameToTop] Failed to activate"
+                    + " frame " + frameKey);
+        }
+    }
+    private WindowAdapter createExitListener() {
+        return new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                exit();
+            }
+        };
+    }
+    private void prepareFrameUIs(final FileData fileData) {
+        moRulesEditor = new RulesEditorUI(mvLabors);    // Create rules editor
+        moExclusionManager = new ExclusionPanel(moIO);  // Create exclusions manager
+        moViewManager = new ViewManagerUI(); // Create view manager
+
+        // Create dwarf list window
+        try {
+            moDwarfListWindow = createDwarfListWindow(mvLabors, fileData
+                    , mvLaborGroups, mvViews, mvDwarves, mvExclusions
+                    , moExclusionManager);
+        } catch (NullPointerException e) {
+            System.err.println("Failed to create Dwarf List interface:"
+                    + " NullPointerException");
+            e.printStackTrace();
+        }
+
+        // Display a grid of the jobs to assign
+        try {
+            moJobListPanel = new JobListPanel(mvLabors
+                , mvLaborGroups, moJobBlacklist, moIO);
+        } catch (JobListPanel.CouldntProcessFileException e) {
+            System.err.println("JobListPanel.CouldntProcessFileException");
+            e.printStackTrace();
+        }
+    }
+    // Create Dwarf List window
+    private DwarfListWindow createDwarfListWindow(Vector<Labor> vLabors
+            , FileData fileData, Vector<LaborGroup> vLaborGroup
+            , Vector<GridView> vViews, Vector<Dwarf> vDwarves
+            , Vector<Exclusion> vExclusions, ExclusionPanel ePanel) {
+
+        DwarfListWindow win = new DwarfListWindow(vLabors, fileData.getStatMap()
+                , fileData.getSkillMap(), fileData.getMetaSkillMap()
+                , vLaborGroup, vViews);
+        win.loadData(vDwarves, vExclusions);
+        ePanel.getAppliedBroadcaster().addListener(win); // Listen for exclusions applied
+        win.getBroadcaster().addListener(this);
+
+        return win;
+    }
     private HashMap<String, MyAbstractInternalFrame> createFrameMap() {
+        final int NUM_FRAMES = 5;
         HashMap<String, MyAbstractInternalFrame> map
-                = new HashMap<String, MyAbstractInternalFrame>(
-                NUM_INTERNAL_FRAMES);
+                = new HashMap<String, MyAbstractInternalFrame>(NUM_FRAMES);
 
         map.put(INTERNAL_RULES_EDITOR, new RulesEditorFrame(this, moDesktop
                 , moRulesEditor));
@@ -521,12 +569,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     // Creates file choosers for save and load operations. This is a time-consuming
     // operation and only needs to be done once.
-    private void createChoosers() {
+    private Map<String, MyFileChooser> createChoosers() {
+        final HashMap<String, MyFileChooser> map
+                = new HashMap<String, MyFileChooser>(3);
+
         // File chooser for Job Settings->Save
-        mjfcSave = new MyFileChooser(this); //JFileChooser();
-        mjfcSave.setDialogTitle("Save Job Settings");
-        mjfcSave.setDialogType(MyFileChooser.SAVE_DIALOG);
-        FileFilter ffText = new FileFilter() {
+        MyFileChooser chooser = new MyFileChooser(this); //JFileChooser();
+        chooser.setDialogTitle("Save Job Settings");
+        chooser.setDialogType(MyFileChooser.SAVE_DIALOG);
+        final FileFilter ffText = new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 String ext = getExtension(pathname.getName());
@@ -537,48 +588,47 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 return "Dwarf Organizer text files (.txt)";
             }
         };
-        mjfcSave.setAcceptAllFileFilterUsed(true);
-        mjfcSave.setFileFilter(ffText);
-        mjfcSave.setCurrentDirectory(moJobListPanel.getDirectory());
-
-        //System.out.println(mjfcSave.getFocusTraversalPolicy().getFirstComponent(mjfcSave.getFocusCycleRootAncestor()).getName());
-//        System.out.println(mjfcSave.getFocusTraversalPolicy().getInitialComponent(this));
-        //new MyFileChooser(this, mjfcSave);
-        //MyFileChooser fc = new MyFileChooser();
-        //fc.focusFileNameWhenShown(this, mjfcSave);
+        chooser.setAcceptAllFileFilterUsed(true);
+        chooser.setFileFilter(ffText);
+        chooser.setCurrentDirectory(moJobListPanel.getDirectory());
+        map.put(FILE_CHOOSER_SAVE, chooser);
 
         // File chooser for Job Settings->Open...
-        mjfcOpen = new MyFileChooser(this);
-        mjfcOpen.setDialogTitle("Load Job Settings");
-        mjfcOpen.setDialogType(MyFileChooser.OPEN_DIALOG);
-        mjfcOpen.setCurrentDirectory(moJobListPanel.getDirectory());
+        chooser = new MyFileChooser(this);
+        chooser.setDialogTitle("Load Job Settings");
+        chooser.setDialogType(MyFileChooser.OPEN_DIALOG);
+        chooser.setCurrentDirectory(moJobListPanel.getDirectory());
+        map.put(FILE_CHOOSER_OPEN, chooser);
 
         // File chooser for Dwarves.xml
-        File file = new File(mstrDwarvesXML);
-        mjfcDwarves = new MyFileChooser(this);
-        mjfcDwarves.setDialogTitle("Select location of Dwarves.xml");
-        mjfcDwarves.setCurrentDirectory(file);
-        mjfcDwarves.setSelectedFile(file);
+        final File file = new File(mstrDwarvesXML);
+        chooser = new MyFileChooser(this);
+        chooser.setDialogTitle("Select location of Dwarves.xml");
+        chooser.setCurrentDirectory(file);
+        chooser.setSelectedFile(file);
+        map.put(FILE_CHOOSER_DWARVES, chooser);
+
+        return map;
     }
 
-    private void readFiles() throws Exception {
+    private FileData readFiles() {
         // Try to read group-list.txt, labor-list.txt, rules.txt, Dwarves.xml,
         // and exclusions
-        try {
-            mvLaborGroups = moIO.readLaborGroups();
-            mvLabors = moIO.readLabors();           // Read labor-list.txt
+        FileData fileData;
 
-            moIO.readRuleFile();
-            setBlacklistStructures();
+        mvLaborGroups = moIO.readLaborGroups();
+        mvLabors = moIO.readLabors();           // Read labor-list.txt
 
-            readDwarves();
+        moIO.readRuleFile();
+        setBlacklistStructures();
 
-            mvExclusions = moIO.readExclusions(mvDwarves); // mhtActiveExclusions
+        fileData = readDwarves();
 
-            mvViews = moIO.readViews();
-        } catch (Exception e) {
-            throw e;
-        }
+        mvExclusions = moIO.readExclusions(mvDwarves); // mhtActiveExclusions
+
+        mvViews = moIO.readViews();
+
+        return fileData;
     }
     private void setBlacklistStructures() {
         moJobBlacklist = moIO.getBlacklist();
@@ -833,10 +883,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
 
     private void loadJobSettings(JobListPanel jobListPanel) {
-        int input = mjfcOpen.showOpenDialog(this);
+        int input = getFileChooser(FILE_CHOOSER_OPEN).showOpenDialog(this);
 
         if (input == MyFileChooser.APPROVE_OPTION) {
-            File file = mjfcOpen.getSelectedFile();
+            File file = getFileChooser(FILE_CHOOSER_OPEN).getSelectedFile();
             jobListPanel.load(file);
             updateCurrentJobSettings(file);
         }
@@ -863,7 +913,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         int dot = fileName.lastIndexOf(".");
         return fileName.substring(dot + 1);
     }
-
+    private MyFileChooser getFileChooser(String key) {
+        return mmFileChoosers.get(key);
+    }
     private void saveJobSettingsAs(JobListPanel jobListPanel, boolean quickSave) {
 
         boolean bConfirm = false;
@@ -873,11 +925,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             bConfirm = true;
         }
         else {
-
-            int input = mjfcSave.showSaveDialog(this);
+            int input = getFileChooser(FILE_CHOOSER_SAVE).showSaveDialog(this);
 
             if (input == MyFileChooser.APPROVE_OPTION) {
-                file = mjfcSave.getSelectedFile();
+                file = getFileChooser(FILE_CHOOSER_SAVE).getSelectedFile();
                 // If the user enters no extension, append ".txt"
                 if (! fileHasExtension(file))
                     file = addExtension(file, ".txt");
@@ -914,10 +965,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     // Returns the user's input to the file dialog
     private int setDwarvesLocation() {
-        int input = mjfcDwarves.showOpenDialog(this);
+        final MyFileChooser chooser = getFileChooser(FILE_CHOOSER_DWARVES);
+        int input = chooser.showOpenDialog(this);
         if (input == MyFileChooser.APPROVE_OPTION) {
-            String strSelectedLoc = mjfcDwarves.getCurrentDirectory() + "\\"
-                + mjfcDwarves.getSelectedFile().getName();
+            String strSelectedLoc = chooser.getCurrentDirectory() + "\\"
+                + chooser.getSelectedFile().getName();
             strSelectedLoc = strSelectedLoc.replace("\\", "//");
             System.out.println("Selected Dwarves.xml location: " +
                 strSelectedLoc);
@@ -981,23 +1033,22 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // (Do nothing if there is no exclusion with this ID)
     }
 
-    private void readDwarves() throws Exception {
-        //NodeList nodes = null;
+    private FileData readDwarves() {
+        // Set dummy values:
         mvDwarves = new Vector<Dwarf>();
-        try {
+        Map<String, Stat> mapStat = new Hashtable<String, Stat>();
+        Map<String, Skill> mapSkill = new Hashtable<String, Skill>();
+        Map<String, MetaSkill> mapMetaSkill
+                = new Hashtable<String, MetaSkill>();
 
-            DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
-            dwarfIO.readDwarves(mstrDwarvesXML);
-            mvDwarves = dwarfIO.getDwarves();
-            mhtStat = dwarfIO.getStats();
-            mhtSkill = dwarfIO.getSkills();
-            mhtMetaSkill = dwarfIO.getMetaSkills();
+        DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
+        dwarfIO.readDwarves(mstrDwarvesXML);
+        mvDwarves = dwarfIO.getDwarves();
+        mapStat = dwarfIO.getStats();
+        mapSkill = dwarfIO.getSkills();
+        mapMetaSkill = dwarfIO.getMetaSkills();
 
-        } catch (Exception e) {
-            System.err.println("DwarfIO failed to read dwarves.xml");
-            throw e;
-        }
-
+        return new FileData(mapStat, mapSkill, mapMetaSkill);
     }
 
     private Vector<Dwarf> getDwarves() {
@@ -1035,12 +1086,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
     private double skillLevelToPercent(long skillLevel) {
-
         if (skillLevel >= MAX_SKILL_LEVEL)
             return 100.0d;
         else
             return ((double) skillLevel) * 100.0d / ((double) MAX_SKILL_LEVEL);
-
     }
 
     private void addWhitelistToBlacklist(JobBlacklist blacklist
@@ -1055,44 +1104,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         }
     }
-
-    // For receiving broadcast messages
-    @Override
-    public void broadcast(BroadcastMessage message) {
-        //System.out.println("Broadcast message received");
-        if (message.getSource().equals("ExclusionPanelDefaultButton")) {
-            //setDefaultButton(message, mitlExclusions);
-            setDefaultButton(message
-                    , getInternalFrame(INTERNAL_EXCLUSIONS));
-        }
-        else if (message.getSource().equals("RulesEditorDefaultButton")) {
-            //setDefaultButton(message, mitlRulesEditor);
-            setDefaultButton(message, getInternalFrame(INTERNAL_RULES_EDITOR));
-        }
-        else if (message.getSource().equals("ViewManagerDefaultButton")) {
-            setDefaultButton(message, getInternalFrame(INTERNAL_VIEW_MANAGER)); //mitlViewManager);
-        }
-        else if (message.getSource().equals("ExclusionPanelActiveExclusions")) {
-            try {
-                mhtActiveExclusions = (Hashtable<Integer, Boolean>) message.getTarget();
-            } catch (Exception e) {
-                System.err.println(e.getMessage() + " Failed to set active exclusions");
-            }
-        }
-        else if (message.getSource().equals("CloseExclusions")) {
-            closeExclusions();
-        }
-        else if (message.getSource().equals("ExclusionsApplied")) {
-            Vector<Exclusion> colExclusion
-                    = (Vector<Exclusion>) message.getTarget();
-            updateActiveExclusions(colExclusion);
-        }
-        else if (message.getSource().equals("DwarfListSaveViews")) {
-            List<GridView> views = (List<GridView>) message.getTarget();
-            saveViews(new Vector(views));
-        }
-        else if (message.getSource().equals("DwarfListManageViews")) {
-            loadViewManager();
+    private void handleViewManagerMessage(final BroadcastMessage message) {
+        if (message.getSource().equals("ViewManagerDefaultButton")) {
+            setDefaultButton(message, getInternalFrame(INTERNAL_VIEW_MANAGER));
         }
         else if (message.getSource().equals("ViewManagerSave")) {
             saveViewManagerViews();
@@ -1100,7 +1114,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         else if (message.getSource().equals("ViewManagerClose"))
             closeViewManager();
         else if (message.getSource().equals("ViewManagerRequestFocus")) {
-            System.out.println("ViewMgrReqFoc");
+            //System.out.println("ViewMgrReqFoc");
             final JComponent comp = (JComponent) message.getTarget();
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -1111,7 +1125,74 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             });
         }
         else
-            System.out.println("[MainWindow] Unknown broadcast message received");
+            System.out.println("[MainWindow.handleViewManagerMessage]"
+                    + " Unknown broadcast message received.");
+    }
+    private void handleDwarfListMessage(final BroadcastMessage message) {
+        if (message.getSource().equals("DwarfListSaveViews")) {
+            List<GridView> views = (List<GridView>) message.getTarget();
+            saveViews(new Vector(views));
+        }
+        else if (message.getSource().equals("DwarfListManageViews")) {
+            loadViewManager();
+        }
+        else
+            System.out.println("[MainWindow.handleDwarfListMessage]"
+                    + " Unknown broadcast message received");
+    }
+    private void handleExclusionMessage(final BroadcastMessage message) {
+        if (message.getSource().equals("ExclusionPanelDefaultButton")) {
+            setDefaultButton(message
+                    , getInternalFrame(INTERNAL_EXCLUSIONS));
+        }
+        else if (message.getSource().equals("ExclusionPanelActiveExclusions")) {
+            try {
+                mhtActiveExclusions
+                        = (Hashtable<Integer, Boolean>) message.getTarget();
+            } catch (Exception e) {
+                System.err.println(e.getMessage()
+                        + " Failed to set active exclusions");
+            }
+        }
+        else if (message.getSource().equals("ExclusionPanelClose")) {
+            closeExclusions();
+        }
+        else if (message.getSource().equals("ExclusionPanelApply")) {
+            Vector<Exclusion> colExclusion
+                    = (Vector<Exclusion>) message.getTarget();
+            updateActiveExclusions(colExclusion);
+        }
+        else
+            System.out.println("[MainWindow.handleExclusionMessage]"
+                    + " Unknown broadcast message received");
+    }
+    private void handleRulesEditorMessage(final BroadcastMessage message) {
+        if (message.getSource().equals("RulesEditorDefaultButton")) {
+            setDefaultButton(message, getInternalFrame(INTERNAL_RULES_EDITOR));
+        }
+        else
+            System.out.println("[MainWindow.handleRulesEditorMessage]"
+                    + " Unknown broadcast message received");
+    }
+    // For receiving broadcast messages
+    @Override
+    public void broadcast(BroadcastMessage message) {
+        //System.out.println("Broadcast message received");
+        if (message.getSource().startsWith("ViewManager")) {
+            handleViewManagerMessage(message);
+        }
+        else if (message.getSource().startsWith("DwarfList")) {
+            handleDwarfListMessage(message);
+        }
+        else if (message.getSource().startsWith("ExclusionPanel")) {
+            handleExclusionMessage(message);
+        }
+        else if (message.getSource().startsWith("RulesEditor")) {
+            handleRulesEditorMessage(message);
+        }
+        else
+            System.out.println("[MainWindow]"
+                    + " Unknown broadcast message received");
     }
     private void saveViewManagerViews() {
         Vector<GridView> vView = moViewManager.getViews();
@@ -1296,6 +1377,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return frame;
     }
     private class ExclusionFrame extends MyAbstractMenuFrame {
+        private static final String TITLE = "Manage Exclusions";
+        private static final String TITLE_DIRTY = TITLE + DIRTY_TITLE;
+
         private JDesktopPane desktop;
         private ExclusionPanel exclusionPanel;
 
@@ -1327,8 +1411,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             };
 
             setInternalFrame(createEditorFrame(desktop, exclusionPanel
-                    , EXCLUSIONS_TITLE
-                    , exclusionPanel, la, EXCLUSIONS_TITLE_DIRTY, fcf)); //, createExclusionMgrMenu()
+                    , TITLE, exclusionPanel, la, TITLE_DIRTY, fcf));
             return getInternalFrame();
         }
         private ActionListener createSaveAL() {
@@ -1386,6 +1469,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
     private class RulesEditorFrame extends MyAbstractMenuFrame {
+        private static final String RULES_EDITOR_TITLE_CLEAN = "Edit Rules";
+        private static final String RULES_EDITOR_TITLE_DIRTY
+                = RULES_EDITOR_TITLE_CLEAN + DIRTY_TITLE;
         private JDesktopPane desktop;
         private RulesEditorUI rulesEditor;
 
@@ -1473,11 +1559,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
     private class ViewManagerFrame extends MyAbstractInternalFrame {
+        private static final String VIEW_MGR_TITLE = "Manage Views";
+        private static final String VIEW_MGR_TITLE_DIRTY = VIEW_MGR_TITLE
+                + DIRTY_TITLE;
+
         private JDesktopPane desktop;
         private ViewManagerUI viewManagerUI;
 
         public ViewManagerFrame(MainWindow mainWindow, JDesktopPane desktop
                 , ViewManagerUI viewManagerUI) {
+
             super(mainWindow);
             this.desktop = desktop;
             this.viewManagerUI = viewManagerUI;
