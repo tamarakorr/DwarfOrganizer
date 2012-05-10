@@ -25,6 +25,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -43,7 +44,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -80,24 +80,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private static final String INTERNAL_EXCLUSIONS = "Exclusions";
     private static final String INTERNAL_VIEW_MANAGER = "View Manager";
     private static final int NUM_INTERNAL_FRAMES = 5;
+
+    private static final int EXIT_MENU_PRIORITY = 100;
+    private static final int FILE_MENU_MNEMONIC = KeyEvent.VK_F;
+
     private Map<String, MyAbstractInternalFrame> mhmInternalFrames;
 
     private DwarfListWindow moDwarfListWindow;
     private JobListPanel moJobListPanel;
     private RulesEditorUI moRulesEditor;
-
-    protected static enum JobListMenuAccelerator {
-        SAVE(KeyStroke.getKeyStroke("control S"))
-            , SAVE_AS(KeyStroke.getKeyStroke("control shift S"))
-            , OPEN(KeyStroke.getKeyStroke("control O"))
-            , RESET(KeyStroke.getKeyStroke("control R"));
-
-        private final KeyStroke keyStroke;
-        private JobListMenuAccelerator(KeyStroke keyStroke) {
-            this.keyStroke = keyStroke;
-        }
-        public KeyStroke getKeyStroke() { return keyStroke; }
-    }
 
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
     private File mfilLastFile;
@@ -140,6 +131,19 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private JDesktopPane moDesktop;
 
     private MenuCombiner moCombiner;
+
+    private static enum JobListMenuAccelerator {
+        SAVE(KeyStroke.getKeyStroke("control S"))
+            , SAVE_AS(KeyStroke.getKeyStroke("control shift S"))
+            , OPEN(KeyStroke.getKeyStroke("control O"))
+            , RESET(KeyStroke.getKeyStroke("control R"));
+
+        private final KeyStroke keyStroke;
+        private JobListMenuAccelerator(KeyStroke keyStroke) {
+            this.keyStroke = keyStroke;
+        }
+        public KeyStroke getKeyStroke() { return keyStroke; }
+    }
 
     public MainWindow() {
         super();
@@ -190,16 +194,24 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             createChoosers();   // (Must be done after initializing JobListPanel)
 
             // Use JobListPanel to create main menu
-            JMenuBar menuBar = createMenu(moJobListPanel);
-            this.setJMenuBar(menuBar);
-            moCombiner = new MenuCombiner(menuBar, this.createMenuOrdering()); // Must be done after createMenu
+            MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel);
+            this.setJMenuBar(menuInfo.getMenuBar());
+            moCombiner = new MenuCombiner(menuInfo); // Must be done after createMenu
             //MenuMnemonicsSetter.setMnemonics(this.getJMenuBar());
 
             // Create frame maps and internal frames
             // Must be done after MenuCombiner is created
             mhmInternalFrames = createFrameMap();
-            for (MyAbstractInternalFrame frame : mhmInternalFrames.values()) {
-                frame.create(moCombiner);
+            for (String key : mhmInternalFrames.keySet()) {
+                MyAbstractInternalFrame frame = mhmInternalFrames.get(key);
+                //System.out.println("Creating frame " + key);
+                if (frame instanceof MyAbstractMenuFrame) {
+                    MyAbstractMenuFrame menuFrame = (MyAbstractMenuFrame) frame;
+                    menuFrame.create(moCombiner);
+                }
+                else {
+                    frame.create();
+                }
             }
 
             int width = (int) (moJobListPanel.getPreferredSize().getWidth() * 1.2);
@@ -694,62 +706,92 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         };
     }
-    private void createProcessMenu(JMenuBar menuBar
-            , JobListPanel jobListPanel) {
+    private void addMenuItem(final JMenu toMenu, final JMenuItem menuItem
+            , final ArrayList<Integer> priorityList, final int priority) {
+        toMenu.add(menuItem);
+        priorityList.add(priority);
+    }
+    private void addSeparator(final JMenu toMenu
+            , final ArrayList<Integer> priorityList, final int priority) {
+        toMenu.addSeparator();
+        priorityList.add(priority);
+    }
+    private ArrayList<Integer> createProcessMenu(final JMenuBar menuBar
+            , final JobListPanel jobListPanel) {
 
-        JMenu menu = MenuHelper.createMenu("Process", KeyEvent.VK_P);
+        final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+
+        final JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC); // "Process", VK_P
         menuBar.add(menu);
 
         final JMenuItem optimizeItem = MenuHelper.createMenuItem(
                 "Optimize Now!", KeyEvent.VK_O);
         optimizeItem.addActionListener(createOptimizeAL(optimizeItem
                 , jobListPanel));
-        menu.add(optimizeItem);
-
+        addMenuItem(menu, optimizeItem, lstReturn, 80);
         // ---------------------------------------------------------------------
-        menu.addSeparator();
-        menu.add(MenuHelper.createMenuItem("Exit", createExitAL()
-                , KeyEvent.VK_X));
+        addSeparator(menu, lstReturn, 90);
+
+        JMenuItem menuItem = MenuHelper.createMenuItem("Exit", createExitAL()
+                , KeyEvent.VK_X);
+        addMenuItem(menu, menuItem, lstReturn, EXIT_MENU_PRIORITY);
+
+        return lstReturn;
     }
-    private void createWindowMenu(JMenuBar menuBar) {
+    private ArrayList<Integer> createWindowMenu(JMenuBar menuBar) {
+        final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+
         JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
         menuBar.add(menu);
 
-        menu.add(MenuHelper.createMenuItem("Dwarf List"
-                , createShowListener(INTERNAL_DWARF_LIST), KeyEvent.VK_D));
-        menu.add(MenuHelper.createMenuItem("Job Settings"
-                , createShowListener(INTERNAL_JOB_LIST), KeyEvent.VK_J));
-        menu.add(MenuHelper.createMenuItem("Rules Editor"
+        JMenuItem menuItem = MenuHelper.createMenuItem("Dwarf List"
+                , createShowListener(INTERNAL_DWARF_LIST), KeyEvent.VK_D);
+        addMenuItem(menu, menuItem, lstReturn, 10);
+        menuItem = MenuHelper.createMenuItem("Job Settings"
+                , createShowListener(INTERNAL_JOB_LIST), KeyEvent.VK_J);
+        addMenuItem(menu, menuItem, lstReturn, 20);
+        menuItem = MenuHelper.createMenuItem("Rules Editor"
                 , createShowOrLoadListener(INTERNAL_RULES_EDITOR
-                , new RulesLoader()), KeyEvent.VK_R));
-        menu.add(MenuHelper.createMenuItem("Exclusion Manager"
+                , new RulesLoader()), KeyEvent.VK_R);
+        addMenuItem(menu, menuItem, lstReturn, 30);
+        menuItem = MenuHelper.createMenuItem("Exclusion Manager"
                 , createShowOrLoadListener(INTERNAL_EXCLUSIONS
-                , new ExclLoader()), KeyEvent.VK_E));
+                , new ExclLoader()), KeyEvent.VK_E);
+        addMenuItem(menu, menuItem, lstReturn, 40);
+
+        return lstReturn;
     }
-    private void createHelpMenu(JMenuBar menuBar) {
+    private ArrayList<Integer> createHelpMenu(JMenuBar menuBar) {
+        final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+
         JMenu menu = MenuHelper.createMenu("Help", KeyEvent.VK_H);
         menuBar.add(menu);
 
-        menu.add(MenuHelper.createMenuItem("Tutorial", createTutorialAL()
-                , KeyEvent.VK_T));
+        JMenuItem menuItem = MenuHelper.createMenuItem("Tutorial"
+                , createTutorialAL(), KeyEvent.VK_T);
+        addMenuItem(menu, menuItem, lstReturn, 10);
         //----------------------------------------------------------------------
-        menu.addSeparator();
+        addSeparator(menu, lstReturn, 20);
 
-        menu.add(MenuHelper.createMenuItem("About", createAboutAL()
-                , KeyEvent.VK_A));
+        menuItem = MenuHelper.createMenuItem("About", createAboutAL()
+                , KeyEvent.VK_A);
+        addMenuItem(menu, menuItem, lstReturn, 30);
+
+        return lstReturn;
     }
-    private JMenuBar createMenu(final JobListPanel jobListPanel) {
+    private MenuCombiner.MenuInfo createMenu(final JobListPanel jobListPanel) {
         JMenuBar menuBar = new JMenuBar();
 
-        createProcessMenu(menuBar, jobListPanel);
-        createWindowMenu(menuBar);
-        createHelpMenu(menuBar);
+        int[] menuPriority = { 10, 80, 90 };
+        ArrayList<Integer>[] menuItemPriority
+                = new ArrayList[menuPriority.length];
 
-        return menuBar;
-    }
-    // Must be kept in sync with menu entries created by createMenu()
-    private int[] createMenuOrdering() {
-        return new int[] { 10, 80, 90 };
+        menuItemPriority[0] = createProcessMenu(menuBar, jobListPanel);
+        menuItemPriority[1] = createWindowMenu(menuBar);
+        menuItemPriority[2] = createHelpMenu(menuBar);
+
+        return new MenuCombiner.MenuInfo(menuBar, menuPriority
+                , menuItemPriority);
     }
 
     // Reload if invisible; show if visible.
@@ -1126,7 +1168,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private abstract class MyAbstractInternalFrame {
         private JInternalFrame internalFrame;
         private MainWindow mainWindow;
-        private JMenu[] menus;
 
         private MyAbstractInternalFrame(MainWindow mainWindow) {
             this.mainWindow = mainWindow;
@@ -1143,44 +1184,49 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return mainWindow;
         }
 
-        public JMenu[] getMenus() {
-            return menus;
-        }
-
         public abstract JInternalFrame createFrame();
-        public abstract JMenuBar createMenuBar();
-        public abstract int[] getMenuPriority();
 
-        public JInternalFrame create(MenuCombiner combiner) {
-            this.menus = menuBarToMenuArray(createMenuBar());
+        public JInternalFrame create() {
             JInternalFrame frame = createFrame();
-            addCombiner(frame, combiner);
             setInternalFrame(frame);
             return frame;
         }
-
         // TODO: Close, save(?), and load could be options
+    }
+    private abstract class MyAbstractMenuFrame extends MyAbstractInternalFrame {
+        private MenuCombiner.MenuInfo menuInfo;
+
+        private MyAbstractMenuFrame(MainWindow mainWindow) {
+            super(mainWindow);
+        }
+
+        public abstract MenuCombiner.MenuInfo createMenuInfo();
+
+        public MenuCombiner.MenuInfo getMenuInfo() {
+            return menuInfo;
+        }
+
+        public JInternalFrame create(MenuCombiner combiner) {
+            JInternalFrame frame = super.create();
+            this.menuInfo = createMenuInfo();
+            addCombiner(frame, combiner);
+            return frame;
+        }
 
         // Called by create()
         private void addCombiner(JInternalFrame frame
                 , MenuCombiner combiner) {
 
-            InternalFrameListener listener
-                    = combiner.createInternalFrameListener(mainWindow
-                    , getMenus(), getMenuPriority());
-            frame.addInternalFrameListener(listener);
-        }
-        private JMenu[] menuBarToMenuArray(JMenuBar menuBar) {
-            int size = menuBar.getMenuCount();
-            JMenu[] array = new JMenu[size];
-            for (int iCount = 0; iCount < size; iCount++) {
-                array[iCount] = menuBar.getMenu(iCount);
+            if (menuInfo.getMenuBar().getMenuCount() > 0) {
+                InternalFrameListener listener
+                        = combiner.createInternalFrameListener(getMainWindow()
+                        , getMenuInfo());
+                frame.addInternalFrameListener(listener);
             }
-            return array;
         }
     }
     private abstract class MyAbstractSimpleFrame
-            extends MyAbstractInternalFrame {
+            extends MyAbstractMenuFrame {
 
         private JDesktopPane desktop;
         private Container ui;
@@ -1220,44 +1266,36 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return frame;
         }
     }
-    private abstract class MyAbstractEditorFrame
-            extends MyAbstractInternalFrame {
+    private JInternalFrame createEditorFrame(JDesktopPane desktop
+            , final Container ui, String cleanTitle
+            , final DirtyForm dirtyForm, final ListenerAdder la
+            , String dirtyTitle, FrameClosingFunction fcf) {
 
-        public MyAbstractEditorFrame(MainWindow mainWindow) {
-            super(mainWindow);
-        }
+        final AbstractEditorFrameCreator creator
+                = new AbstractEditorFrameCreator() {
 
-        protected JInternalFrame createEditorFrame(JDesktopPane desktop
-                , final Container ui, String cleanTitle
-                , final DirtyForm dirtyForm, final ListenerAdder la
-                , String dirtyTitle, FrameClosingFunction fcf) { //, JMenuBar menuBar
+            @Override
+            public Container createUIObject() {
+                return ui;
+            }
+            @Override
+            public DirtyForm getDirtyForm() {
+                return dirtyForm;
+            }
+            @Override
+            public void addListeners() {
+                la.addListeners();
+            }
+        };
 
-            final AbstractEditorFrameCreator creator
-                    = new AbstractEditorFrameCreator() {
+        JInternalFrame frame = creator.createInternalFrame(desktop
+                , cleanTitle, true, true, true, true
+                , WindowConstants.HIDE_ON_CLOSE
+                , dirtyTitle, fcf);
 
-                @Override
-                public Container createUIObject() {
-                    return ui;
-                }
-                @Override
-                public DirtyForm getDirtyForm() {
-                    return dirtyForm;
-                }
-                @Override
-                public void addListeners() {
-                    la.addListeners();
-                }
-            };
-
-            JInternalFrame frame = creator.createInternalFrame(desktop
-                    , cleanTitle, true, true, true, true
-                    , WindowConstants.HIDE_ON_CLOSE
-                    , dirtyTitle, fcf); // , menuBar
-
-            return frame;
-        }
+        return frame;
     }
-    private class ExclusionFrame extends MyAbstractEditorFrame {
+    private class ExclusionFrame extends MyAbstractMenuFrame {
         private JDesktopPane desktop;
         private ExclusionPanel exclusionPanel;
 
@@ -1309,32 +1347,45 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 }
             };
         }
-        private void createFileMenu(JMenuBar menuBar) {
-            JMenu menu = MenuHelper.createMenu("File", KeyEvent.VK_F);
+        private ArrayList<Integer> createFileMenu(final JMenuBar menuBar) {
+            final int SAVE_PRIO = 31;
+            final int SEP_PRIO = 62;
+            final int EXIT_PRIO = EXIT_MENU_PRIORITY - 1;
+
+            final ArrayList<Integer> aReturn = new ArrayList<Integer>();
+
+            JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
-            menu.add(MenuHelper.createMenuItem("Save and Apply", createSaveAL()
-                    , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S")));
-
+            JMenuItem menuItem = MenuHelper.createMenuItem("Save and Apply"
+                    , createSaveAL()
+                    , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S"));
+            addMenuItem(menu, menuItem, aReturn, SAVE_PRIO);
             //------------------------------------------------------------------
-            menu.add(new JSeparator());
+            addSeparator(menu, aReturn, SEP_PRIO);
 
-            menu.add(MenuHelper.createMenuItem("Close Exclusion Manager"
-                    , createCloseAL(), KeyEvent.VK_C));
+            menuItem = MenuHelper.createMenuItem("Close Exclusion Manager"
+                    , createCloseAL(), KeyEvent.VK_C);
+            addMenuItem(menu, menuItem, aReturn, EXIT_PRIO);
+            return aReturn;
         }
+
         @Override
-        public JMenuBar createMenuBar() {
+        public MenuCombiner.MenuInfo createMenuInfo() {
+            final int NUM_MENUS = 1;
+            final int[] menuPriority = new int[] { 1 };
+            final ArrayList<Integer>[] menuItemPriority
+                    = new ArrayList[NUM_MENUS];
+
             JMenuBar menuBar = new JMenuBar();
-            createFileMenu(menuBar);
-            return menuBar;
-        }
 
-        @Override
-        public int[] getMenuPriority() {
-            return new int[] { 1 };
+            menuItemPriority[0] = createFileMenu(menuBar);
+
+            return new MenuCombiner.MenuInfo(menuBar, menuPriority
+                    , menuItemPriority);
         }
     }
-    private class RulesEditorFrame extends MyAbstractEditorFrame {
+    private class RulesEditorFrame extends MyAbstractMenuFrame {
         private JDesktopPane desktop;
         private RulesEditorUI rulesEditor;
 
@@ -1364,10 +1415,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             setInternalFrame(createEditorFrame(desktop, rulesEditor
                     , RULES_EDITOR_TITLE_CLEAN
                     , rulesEditor, la
-                    , RULES_EDITOR_TITLE_DIRTY, fcf)); //, createRulesEditorMenu(rulesEditor)
+                    , RULES_EDITOR_TITLE_DIRTY, fcf));
             return getInternalFrame();
         }
-
         private ActionListener createSaveAL() {
             return new ActionListener() {
                 @Override
@@ -1384,34 +1434,45 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 }
             };
         }
-        private void createFileMenu(JMenuBar menuBar) {
-            JMenu menu = MenuHelper.createMenu("File");
-            //JMenu menu = new JMenu("File");
+        private ArrayList<Integer> createFileMenu(final JMenuBar menuBar) {
+            final int SAVE_PRIO = 31;
+            final int SEP_PRIO = 62;
+            final int CLOSE_PRIO = EXIT_MENU_PRIORITY - 1;
+
+            final ArrayList<Integer> lstPriority = new ArrayList<Integer>();
+
+            final JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
-            menu.add(MenuHelper.createMenuItem("Save", createSaveAL()
-                    , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S")));
-
+            JMenuItem menuItem = MenuHelper.createMenuItem("Save", createSaveAL()
+                    , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S"));
+            addMenuItem(menu, menuItem, lstPriority, SAVE_PRIO);
             // -----------------------------------------------------------------
-            menu.add(new JSeparator());
+            addSeparator(menu, lstPriority, SEP_PRIO);
 
             // ----------------------------------
-            menu.add(MenuHelper.createMenuItem("Close Rules Editor"
-                    , createCloseAL(), KeyEvent.VK_C));
-        }
-        @Override
-        public JMenuBar createMenuBar() {
-            JMenuBar menuBar = new JMenuBar();
-            createFileMenu(menuBar);
-            return menuBar;
-        }
+            menuItem = MenuHelper.createMenuItem("Close Rules Editor"
+                    , createCloseAL(), KeyEvent.VK_C);
+            addMenuItem(menu, menuItem, lstPriority, CLOSE_PRIO);
 
+            return lstPriority;
+        }
         @Override
-        public int[] getMenuPriority() {
-            return new int[] { 1 };
+        public MenuCombiner.MenuInfo createMenuInfo() {
+            final int NUM_MENUS = 1;
+            final int[] menuPriority = new int[] { 1 };
+            final ArrayList<Integer>[] menuItemPriority
+                    = new ArrayList[NUM_MENUS];
+
+            JMenuBar menuBar = new JMenuBar();
+
+            menuItemPriority[0] = createFileMenu(menuBar);
+
+            return new MenuCombiner.MenuInfo(menuBar, menuPriority
+                    , menuItemPriority);
         }
     }
-    private class ViewManagerFrame extends MyAbstractEditorFrame {
+    private class ViewManagerFrame extends MyAbstractInternalFrame {
         private JDesktopPane desktop;
         private ViewManagerUI viewManagerUI;
 
@@ -1445,19 +1506,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             setInternalFrame(frame);
             return getInternalFrame();
         }
-
-        @Override
-        public int[] getMenuPriority() {
-            return new int[0];
-        }
-
-        @Override
-        public JMenuBar createMenuBar() {
-            return new JMenuBar();
-        }
     }
     private class DwarfListFrame extends MyAbstractSimpleFrame {
-        //private static final int MENU_START_PRIORITY = 11;
         private DwarfListWindow dwarfListWindow;
 
         public DwarfListFrame(MainWindow mainWindow, JDesktopPane desktop
@@ -1469,22 +1519,40 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
 
         @Override
-        public int[] getMenuPriority() {
-            return new int[] { 1, 13, 14, 31 };
-        }
-
-        @Override
-        public JMenuBar createMenuBar() {
+        public MenuCombiner.MenuInfo createMenuInfo() {
             JMenuBar menuBar = new JMenuBar();
+            final int[] menuPriority = new int[] { 1, 13, 14, 31 }; // TODO hard-coded but dynamically created
 
             createFileMenu(menuBar);
             menuBar = appendMenuBar(menuBar, dwarfListWindow.getMenu());
 
+            final ArrayList<Integer>[] menuItemPriority = createPriorities(
+                    menuBar);
+
             MenuMnemonicSetter.setMnemonics(menuBar);
-            return menuBar;
+
+            return new MenuCombiner.MenuInfo(menuBar, menuPriority
+                    , menuItemPriority);
+        }
+        private ArrayList<Integer>[] createPriorities(JMenuBar menuBar) {
+            final int NUM_MENUS = menuBar.getMenuCount();
+            ArrayList<Integer>[] menuItemPriority = new ArrayList[NUM_MENUS];
+
+            final int STARTING_PRIO = 51;
+            for (int iCount = 0; iCount < NUM_MENUS; iCount++) {
+                final JMenu menu = menuBar.getMenu(iCount);
+                final int numItems = menu.getMenuComponentCount();
+                ArrayList<Integer> lstItem = new ArrayList<Integer>(numItems);
+                int priority = STARTING_PRIO;
+                for (int jCount = 0; jCount < numItems; jCount++) {
+                    lstItem.add(priority++);
+                }
+                menuItemPriority[iCount] = lstItem;
+            }
+            return menuItemPriority;
         }
         private void createFileMenu(JMenuBar menuBar) {
-            JMenu menu = MenuHelper.createMenu("File");
+            JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
             menu.add(MenuHelper.createMenuItem("Set Location of Dwarves.xml..."
@@ -1514,18 +1582,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
 
         @Override
-        public int[] getMenuPriority() {
-            return new int[] { 1, 2 };
-        }
-        @Override
-        public JMenuBar createMenuBar() {
+        public MenuCombiner.MenuInfo createMenuInfo() {
+            final int NUM_MENUS = 2;
+            int[] menuPriority = new int[] { 1, 2 };
+            ArrayList<Integer>[] menuItemPriority = new ArrayList[NUM_MENUS];
+
             JMenuBar menuBar = new JMenuBar();
 
-            createFileMenu(menuBar);
-            createEditMenu(menuBar);
+            menuItemPriority[0] = createFileMenu(menuBar);
+            menuItemPriority[1] = createEditMenu(menuBar);
 
-            return menuBar;
-
+            return new MenuCombiner.MenuInfo(menuBar, menuPriority
+                    , menuItemPriority);
         }
         private ActionListener createLoadActionListener() {
             return new ActionListener() {
@@ -1553,36 +1621,65 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 }
             };
         }
-        private void createFileMenu(JMenuBar menuBar) {
+        private ArrayList<Integer> createFileMenu(final JMenuBar menuBar) {
 
-            JMenu menu = MenuHelper.createMenu("File", KeyEvent.VK_F);
+            final int OPEN_PRIO = 24;
+            final int SEP1_PRIO = 25;
+            final int SAVE_PRIO = 26;
+            final int SAVEAS_PRIO = 27;
+            final int SEP2_PRIO = 28;
+            final int RESET_PRIO = 29;
+
+            final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+
+            final JMenu menu = MenuHelper.createMenu("File"
+                    , FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
-            menu.add(MenuHelper.createMenuItem("Open..."
+            JMenuItem menuItem = MenuHelper.createMenuItem("Open..."
                     , createLoadActionListener(), KeyEvent.VK_O
-                    , JobListMenuAccelerator.OPEN.getKeyStroke()));
-
+                    , JobListMenuAccelerator.OPEN.getKeyStroke());
+            addMenuItem(menu, menuItem, lstReturn, OPEN_PRIO);
             // -----------------------------------------------------------------
-            menu.addSeparator();
+            addSeparator(menu, lstReturn, SEP1_PRIO);
 
-            menu.add(MenuHelper.createMenuItem("Save"
+            menuItem = MenuHelper.createMenuItem("Save"
                     , createSaveActionListener(true), KeyEvent.VK_S
-                    , JobListMenuAccelerator.SAVE.getKeyStroke()));
-            menu.add(MenuHelper.createMenuItem("Save As..."
+                    , JobListMenuAccelerator.SAVE.getKeyStroke());
+            addMenuItem(menu, menuItem, lstReturn, SAVE_PRIO);
+            menuItem = MenuHelper.createMenuItem("Save As..."
                     , createSaveActionListener(false), KeyEvent.VK_A
-                    , JobListMenuAccelerator.SAVE_AS.getKeyStroke()));
-
+                    , JobListMenuAccelerator.SAVE_AS.getKeyStroke());
+            addMenuItem(menu, menuItem, lstReturn, SAVEAS_PRIO);
             // -----------------------------------------------------------------
-            menu.addSeparator();
+            addSeparator(menu, lstReturn, SEP2_PRIO);
 
-            menu.add(MenuHelper.createMenuItem("Reset to My Defaults"
-                    , createResetActionListener(), KeyEvent.VK_R));
+            menuItem = MenuHelper.createMenuItem("Reset to My Defaults"
+                    , createResetActionListener(), KeyEvent.VK_R);
+            addMenuItem(menu, menuItem, lstReturn, RESET_PRIO);
+
+            return lstReturn;
         }
-        private void createEditMenu(JMenuBar menuBar) {
+        private ArrayList<Integer> createEditMenu(final JMenuBar menuBar) {
+            ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+
             JMenu menu = MenuHelper.createMenu("Edit", KeyEvent.VK_E);
             menuBar.add(menu);
 
             menu = jobListPanel.createEditMenuItems(menu);
+            lstReturn.addAll(createMenuItemPriority(menu));
+
+            return lstReturn;
+        }
+        private ArrayList<Integer> createMenuItemPriority(final JMenu menu) {
+            final int NUM_ITEMS = menu.getMenuComponentCount();
+            ArrayList<Integer> list = new ArrayList<Integer>(NUM_ITEMS);
+
+            int priority = 51;
+            for (int iCount = 0; iCount < NUM_ITEMS; iCount++) {
+                list.add(priority++);
+            }
+            return list;
         }
     }
 }
