@@ -24,8 +24,8 @@ public class DeepCloneUtils {
 
         final PriorityQueue<T> queueReturn = new PriorityQueue<T>(
                 queueToClone.size(), queueToClone.comparator());
-        for (final T e : queueToClone) {
-            queueReturn.add((T) e.deepClone());
+        for (final DeepCloneable<T> e : queueToClone) {
+            queueReturn.add(e.deepClone());
         }
         return queueReturn;
     }
@@ -34,8 +34,8 @@ public class DeepCloneUtils {
     public static <T extends DeepCloneable> ArrayList<T> deepClone(
             final Collection<T> colToClone) {
         final ArrayList<T> lstReturn = new ArrayList<T>(colToClone.size());
-        for (final T e : colToClone) {
-            lstReturn.add((T) e.deepClone());
+        for (final DeepCloneable<T> e : colToClone) {
+            lstReturn.add(e.deepClone());
         }
         return lstReturn;
     }
@@ -43,8 +43,8 @@ public class DeepCloneUtils {
     public static <T extends DeepCloneable> Vector<T> deepClone(
             final Vector<T> vector) {
         final Vector<T> vReturn = new Vector<T>(vector.size());
-        for (final T e : vector) {
-            vReturn.add((T) e.deepClone());
+        for (final DeepCloneable<T> e : vector) {
+            vReturn.add(e.deepClone());
         }
         return vReturn;
     }

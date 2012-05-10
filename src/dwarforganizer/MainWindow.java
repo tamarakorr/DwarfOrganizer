@@ -9,9 +9,9 @@ import dwarforganizer.dirty.DirtyListener;
 import dwarforganizer.dirty.DirtyForm;
 import dwarforganizer.swing.MenuMnemonicSetter;
 import dwarforganizer.swing.MyFileChooser;
-import dwarforganizer.deepclone.DeepCloneableVector;
 import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.BroadcastListener;
+import dwarforganizer.deepclone.DeepCloneUtils;
 import dwarforganizer.swing.MenuCombiner;
 import dwarforganizer.swing.MenuHelper;
 import java.awt.BorderLayout;
@@ -118,7 +118,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     private DwarfOrganizerIO moIO = new DwarfOrganizerIO();
     private Vector<Dwarf> mvDwarves;
-    private DeepCloneableVector<Exclusion> mvExclusions;
+    private Vector<Exclusion> mvExclusions;
     private Hashtable<Integer, Boolean> mhtActiveExclusions;
 
     private JFrame moAboutScreen = new AboutScreen(this);
@@ -648,10 +648,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             // Use a clone for the table model. Otherwise
             // unsaved changes will persist when window is closed
             // and reopened.
-            DeepCloneableVector<LaborRule> vRulesClone
-                    = (DeepCloneableVector<LaborRule>)
-                    new DeepCloneableVector<LaborRule>(
-                    moIO.getRuleFileContents()).deepClone();
+            Vector<LaborRule> vRulesClone = DeepCloneUtils.deepClone(
+                    moIO.getRuleFileContents());
             moRulesEditor.loadData(vRulesClone);
         }
     }
@@ -662,9 +660,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private class ExclLoader implements DataLoader {
         @Override
         public void loadData() {
-            DeepCloneableVector<Exclusion> exclDeepClone
-                    = (DeepCloneableVector<Exclusion>)
-                    mvExclusions.deepClone();
+            Vector<Exclusion> exclDeepClone = DeepCloneUtils.deepClone(
+                    mvExclusions);
             moExclusionManager.loadData(exclDeepClone, mvDwarves);
         }
     }
@@ -1044,8 +1041,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             closeExclusions();
         }
         else if (message.getSource().equals("ExclusionsApplied")) {
-            DeepCloneableVector<Exclusion> colExclusion
-                    = (DeepCloneableVector<Exclusion>) message.getTarget();
+            Vector<Exclusion> colExclusion
+                    = (Vector<Exclusion>) message.getTarget();
             updateActiveExclusions(colExclusion);
         }
         else if (message.getSource().equals("DwarfListSaveViews")) {
@@ -1087,10 +1084,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                         // Use a clone for the table model. Otherwise
                         // unsaved changes will persist when window is closed
                         // and reopened.
-                        DeepCloneableVector<GridView> vViewClone
-                                = (DeepCloneableVector<GridView>)
-                                new DeepCloneableVector<GridView>(
-                                mvViews).deepClone();
+                        Vector<GridView> vViewClone = DeepCloneUtils.deepClone(
+                                mvViews);
                         moViewManager.loadData(vViewClone);
                     }
                 };
@@ -1119,8 +1114,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void setDefaultButton(JButton btn, JInternalFrame frame) {
         frame.getRootPane().setDefaultButton(btn);
     }
-    private void updateActiveExclusions(
-            DeepCloneableVector<Exclusion> colExclusion) {
+    private void updateActiveExclusions(Vector<Exclusion> colExclusion) {
 
         // Rebuild mhtActiveExclusions
         mhtActiveExclusions = new Hashtable<Integer, Boolean>();

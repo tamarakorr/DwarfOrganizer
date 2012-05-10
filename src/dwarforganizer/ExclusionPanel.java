@@ -12,7 +12,6 @@ import dwarforganizer.swing.MyEditableTableModel;
 import dwarforganizer.swing.MyTableModel;
 import dwarforganizer.swing.SortKeySwapper;
 import dwarforganizer.swing.PlaceholderTextField;
-import dwarforganizer.deepclone.DeepCloneableVector;
 import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.Broadcaster;
 import java.awt.BorderLayout;
@@ -508,7 +507,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         setMessage("(Saving...)");
 
         // Translate list contents to a list of exclusions
-        DeepCloneableVector<Exclusion> lstExclusion = new DeepCloneableVector<Exclusion>();
+        Vector<Exclusion> lstExclusion = new Vector<Exclusion>();
         AbstractExclusionEditor[] editors = new AbstractExclusionEditor[] {
             moRuleTable, moListTable
         };

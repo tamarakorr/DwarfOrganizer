@@ -16,7 +16,6 @@ import java.util.Vector;
 public class ExclusionList extends Exclusion
         implements DeepCloneable<Exclusion> {
 
-    //private DeepCloneableVector<Dwarf> moCitizenList;
     private Vector<String> mvCitizenNames;
 
     public ExclusionList(Integer ID, String name, boolean active

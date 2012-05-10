@@ -6,7 +6,6 @@
 package dwarforganizer;
 
 import dwarforganizer.Stat.StatHint;
-import dwarforganizer.deepclone.DeepCloneableVector;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -1293,14 +1292,13 @@ public class DwarfOrganizerIO {
         return vReturn;
     }
 
-    public DeepCloneableVector<Exclusion> readExclusions(
-            final Vector<Dwarf> citizens) {
+    public Vector<Exclusion> readExclusions(final Vector<Dwarf> citizens) {
 
         Node node;
         Element ele;
         String version;
 
-        DeepCloneableVector<Exclusion> vReturn = new DeepCloneableVector<Exclusion>();
+        Vector<Exclusion> vReturn = new Vector<Exclusion>();
 
         File file = new File(getInputFile(EXCLUSION_FILE_NAME));
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -1346,7 +1344,6 @@ public class DwarfOrganizerIO {
 
             // Exclusion Lists---------------
             SectionReader exclusionListReader = new SectionReader() {
-                //private DeepCloneableVector<Dwarf> vCitizen;
                 Vector<String> vCitizenName;
 
                 @Override
@@ -1425,10 +1422,10 @@ public class DwarfOrganizerIO {
         else
             return false;
     }
-    private DeepCloneableVector<Dwarf> getCitizensFromNames(Vector<String> names
+    private Vector<Dwarf> getCitizensFromNames(Vector<String> names
             , Vector<Dwarf> citizens) {
 
-        DeepCloneableVector<Dwarf> vReturn = new DeepCloneableVector<Dwarf>();
+        Vector<Dwarf> vReturn = new Vector<Dwarf>();
 
         for (String name : names) {
             //System.out.println("Looking for " + name);
