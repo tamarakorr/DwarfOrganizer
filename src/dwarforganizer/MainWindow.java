@@ -49,6 +49,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.WindowConstants;
+import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
@@ -169,8 +170,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private Map<String, Skill> mapSkill;
         private Map<String, MetaSkill> mapMetaSkill;
 
-        public FileData(Map<String, Stat> mapStat, Map<String, Skill> mapSkill
-                , Map<String, MetaSkill> mapMetaSkill) {
+        public FileData(final Map<String, Stat> mapStat
+                , final Map<String, Skill> mapSkill
+                , final Map<String, MetaSkill> mapMetaSkill) {
             this.mapStat = mapStat;
             this.mapSkill = mapSkill;
             this.mapMetaSkill = mapMetaSkill;
@@ -201,10 +203,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void createFrames(final Map<String, MyAbstractInternalFrame> map
             , final MenuCombiner combiner) {
 
-        for (String key : map.keySet()) {
-            MyAbstractInternalFrame frame = map.get(key);
+        for (final String key : map.keySet()) {
+            final MyAbstractInternalFrame frame = map.get(key);
             if (frame instanceof MyAbstractMenuFrame) {
-                MyAbstractMenuFrame menuFrame = (MyAbstractMenuFrame) frame;
+                final MyAbstractMenuFrame menuFrame
+                        = (MyAbstractMenuFrame) frame;
                 menuFrame.create(combiner);
             }
             else {
@@ -212,8 +215,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         }
     }
-    private void setUpMainWindow(JDesktopPane desktop
-            , MenuCombiner.MenuInfo menuInfo) {
+    private void setUpMainWindow(final JDesktopPane desktop
+            , final MenuCombiner.MenuInfo menuInfo) {
 
         this.setLayout(new BorderLayout());
         this.add(desktop, BorderLayout.CENTER);
@@ -225,10 +228,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.setVisible(true);
     }
-    private void frameToTop(String frameKey) {
+    private void frameToTop(final String frameKey) {
         try {
             getInternalFrame(frameKey).setSelected(true);
-        } catch (PropertyVetoException ignore) {
+        } catch (final PropertyVetoException ignore) {
             System.out.println("[MainWindow.frameToTop] Failed to activate"
                     + " frame " + frameKey);
         }
@@ -236,7 +239,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private WindowAdapter createExitListener() {
         return new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent e) {
+            public void windowClosing(final WindowEvent e) {
                 exit();
             }
         };
@@ -251,7 +254,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             moDwarfListWindow = createDwarfListWindow(mvLabors, fileData
                     , mvLaborGroups, mvViews, mvDwarves, mvExclusions
                     , moExclusionManager);
-        } catch (NullPointerException e) {
+        } catch (final NullPointerException e) {
             System.err.println("Failed to create Dwarf List interface:"
                     + " NullPointerException");
             e.printStackTrace();
@@ -261,18 +264,20 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         try {
             moJobListPanel = new JobListPanel(mvLabors
                 , mvLaborGroups, moJobBlacklist, moIO);
-        } catch (JobListPanel.CouldntProcessFileException e) {
+        } catch (final JobListPanel.CouldntProcessFileException e) {
             System.err.println("JobListPanel.CouldntProcessFileException");
             e.printStackTrace();
         }
     }
     // Create Dwarf List window
-    private DwarfListWindow createDwarfListWindow(Vector<Labor> vLabors
-            , FileData fileData, Vector<LaborGroup> vLaborGroup
-            , Vector<GridView> vViews, Vector<Dwarf> vDwarves
-            , Vector<Exclusion> vExclusions, ExclusionPanel ePanel) {
+    private DwarfListWindow createDwarfListWindow(final Vector<Labor> vLabors
+            , final FileData fileData, final Vector<LaborGroup> vLaborGroup
+            , final Vector<GridView> vViews, final Vector<Dwarf> vDwarves
+            , final Vector<Exclusion> vExclusions
+            , final ExclusionPanel ePanel) {
 
-        DwarfListWindow win = new DwarfListWindow(vLabors, fileData.getStatMap()
+        final DwarfListWindow win = new DwarfListWindow(vLabors
+                , fileData.getStatMap()
                 , fileData.getSkillMap(), fileData.getMetaSkillMap()
                 , vLaborGroup, vViews);
         win.loadData(vDwarves, vExclusions);
@@ -283,7 +288,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private HashMap<String, MyAbstractInternalFrame> createFrameMap() {
         final int NUM_FRAMES = 5;
-        HashMap<String, MyAbstractInternalFrame> map
+        final HashMap<String, MyAbstractInternalFrame> map
                 = new HashMap<String, MyAbstractInternalFrame>(NUM_FRAMES);
 
         map.put(INTERNAL_RULES_EDITOR, new RulesEditorFrame(this, moDesktop
@@ -299,16 +304,19 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return map;
     }
     private class AboutScreen extends JFrame {
-        public AboutScreen(MainWindow main) {
-            JLabel lblVersion = new JLabel("Dwarf Organizer version " + VERSION);
+        private final String TITLE = "Dwarf Organizer License";
 
-            JTextArea txtLicense = new JTextArea(moIO.getLicense());
+        public AboutScreen(final MainWindow main) {
+            final JLabel lblVersion = new JLabel("Dwarf Organizer version "
+                    + VERSION);
+
+            final JTextArea txtLicense = new JTextArea(moIO.getLicense());
             txtLicense.setEditable(false);
             txtLicense.setLineWrap(true);
             txtLicense.setWrapStyleWord(true);
-            JScrollPane sp = new JScrollPane(txtLicense);
+            final JScrollPane sp = new JScrollPane(txtLicense);
 
-            this.setTitle("Dwarf Organizer License");
+            this.setTitle(TITLE);
             this.setPreferredSize(new Dimension(500, 400));
             this.setLayout(new BorderLayout());
             this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
@@ -335,35 +343,32 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         if (! moDwarfListWindow.exit()) {
             return;
         }
-
-        String[] windowList = new String[] { INTERNAL_VIEW_MANAGER
+        final String[] windowList = new String[] { INTERNAL_VIEW_MANAGER
                 , INTERNAL_RULES_EDITOR, INTERNAL_EXCLUSIONS };
-        for (String key : windowList) {
+        for (final String key : windowList) {
             MyHandyWindow.clickClose(getInternalFrame(key));
         }
-
-        // Destroy "about" screen
-        moAboutScreen.dispose();
-
-        // Save preferences
-        savePreferences();
-
+        moAboutScreen.dispose();    // Destroy "about" screen
+        savePreferences();          // Save preferences
         this.dispose();
     }
-    private JInternalFrame getInternalFrame(String key) {
+    private JInternalFrame getInternalFrame(final String key) {
         return mhmInternalFrames.get(key).getInternalFrame();
     }
 
     // Returns a JMenuBar made of the menus in the first menu bar, followed
     // by the menus in the second menu bar.
-    private JMenuBar appendMenuBar(JMenuBar menuBar1, JMenuBar menuBar2) {
-        JMenuBar jmbReturn = new JMenuBar();
-        int firstMenuCount = menuBar1.getMenuCount();
+    private JMenuBar appendMenuBar(final JMenuBar menuBar1
+            , final JMenuBar menuBar2) {
+
+        final JMenuBar jmbReturn = new JMenuBar();
+        final int firstMenuCount = menuBar1.getMenuCount();
 
         // (We run the loops backwards because getMenuCount() decrements
         // each time we add a menu to jmbReturn.)
-        for (int iCount = menuBar1.getMenuCount() - 1; iCount >= 0; iCount--)
+        for (int iCount = menuBar1.getMenuCount() - 1; iCount >= 0; iCount--) {
             jmbReturn.add(menuBar1.getMenu(iCount), 0);
+        }
         for (int iCount = menuBar2.getMenuCount() - 1; iCount >= 0; iCount--) {
             //System.out.println("Menu count: " + menuBar2.getMenuCount());
             //System.out.println("Adding " + menuBar2.getMenu(iCount).getText());
@@ -376,14 +381,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         public abstract Container createUIObject();
         public abstract void addListeners();
 
-        public JInternalFrame createInternalFrame(JDesktopPane desktop
-                , String title
-                , boolean resizable, boolean closable, boolean maximizable
-                , boolean iconifiable, int closeBehavior) { //, JMenuBar jMenuBar) {
+        public JInternalFrame createInternalFrame(final JDesktopPane desktop
+                , final String title, final boolean resizable
+                , final boolean closable, final boolean maximizable
+                , final boolean iconifiable, final int closeBehavior) {
 
             final JInternalFrame frameToCreate;
 
-            Container uiObject = createUIObject();
+            final Container uiObject = createUIObject();
             addListeners();
 
             frameToCreate = new JInternalFrame(title, resizable, closable
@@ -393,7 +398,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             frameToCreate.setLayout(new BorderLayout());
             frameToCreate.add(uiObject);
             //frameToCreate.pack();  <-Done by Window menu
-
             desktop.add(frameToCreate);
 
             return frameToCreate;
@@ -404,18 +408,19 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         public abstract DirtyForm getDirtyForm();
 
-        public JInternalFrame createInternalFrame(JDesktopPane desktop
-                , String cleanTitle
-                , boolean resizable, boolean closable, boolean maximizable
-                , boolean iconifiable, int closeBehavior
-                , String dirtyTitle, FrameClosingFunction fcf) { //, JMenuBar jMenuBar
+        public JInternalFrame createInternalFrame(final JDesktopPane desktop
+                , final String cleanTitle, final boolean resizable
+                , final boolean closable, final boolean maximizable
+                , final boolean iconifiable, final int closeBehavior
+                , final String dirtyTitle, final FrameClosingFunction fcf) {
 
-            JInternalFrame frameToCreate = super.createInternalFrame(desktop
+            final JInternalFrame frameToCreate = super.createInternalFrame(
+                    desktop
                     , cleanTitle, resizable, closable
-                    , maximizable, iconifiable, closeBehavior); //, jMenuBar);
+                    , maximizable, iconifiable, closeBehavior);
 
             // Update title when dirty state changes
-            DirtyListener dirtyListener = createDirtyListener(
+            final DirtyListener dirtyListener = createDirtyListener(
                 dirtyTitle, cleanTitle, frameToCreate);
             getDirtyForm().addDirtyListener(dirtyListener);
             frameToCreate.addInternalFrameListener(
@@ -425,15 +430,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
 
-    private Point getCenteringPoint(JDesktopPane desktop
-            , JInternalFrame frame) {
+    private static Point getCenteringPoint(final JDesktopPane desktop
+            , final JInternalFrame frame) {
 
-        Dimension desktopSize = desktop.getSize();
-        Dimension frameSize = frame.getSize();
+        final Dimension desktopSize = desktop.getSize();
+        final Dimension frameSize = frame.getSize();
         return new Point((desktopSize.width - frameSize.width) / 2
                 , (desktopSize.height - frameSize.height) / 2);
     }
-    private void doViewMgrWindowClosing(MainWindow mainWindow
+    private void doViewMgrWindowClosing(final MainWindow mainWindow
             , final ViewManagerUI viewManagerUI) {
 
         doWindowClosing(mainWindow, viewManagerUI
@@ -446,7 +451,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , "Save Views?"
                 , "Would you like to save your changes to views?");
     }
-    private void saveViews(Vector<GridView> views) {
+    private void saveViews(final Vector<GridView> views) {
         moIO.writeViews(views);
         mvViews = views;            // Update local copy
         // (Don't set anything clean here since we don't know which window
@@ -456,35 +461,23 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private interface FrameClosingFunction {
         public void doFrameClosing(InternalFrameEvent e);
     }
-    private class InternalFrameClosingAdapter implements InternalFrameListener {
+    private class InternalFrameClosingAdapter extends InternalFrameAdapter {
         private FrameClosingFunction f;
-        public InternalFrameClosingAdapter(FrameClosingFunction f) {
+        public InternalFrameClosingAdapter(final FrameClosingFunction f) {
             this.f = f;
         }
         @Override
-        public void internalFrameClosing(InternalFrameEvent e) {
+        public void internalFrameClosing(final InternalFrameEvent e) {
             f.doFrameClosing(e);
         }
-        @Override
-        public void internalFrameOpened(InternalFrameEvent e) {}
-        @Override
-        public void internalFrameClosed(InternalFrameEvent e) {}
-        @Override
-        public void internalFrameIconified(InternalFrameEvent e) {}
-        @Override
-        public void internalFrameDeiconified(InternalFrameEvent e) {}
-        @Override
-        public void internalFrameActivated(InternalFrameEvent e) {}
-        @Override
-        public void internalFrameDeactivated(InternalFrameEvent e) {}
     }
 
     private DirtyListener createDirtyListener(final String dirtyTitle
             , final String cleanTitle, final JInternalFrame frame) {
         return new DirtyListener(){
             @Override
-            public void dirtyChanged(boolean newDirtyState) {
-                String strTitle;
+            public void dirtyChanged(final boolean newDirtyState) {
+                final String strTitle;
 
                 // If dirty
                 if (newDirtyState)
@@ -497,27 +490,32 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         };
     }
 
-    private interface ConfirmFunction { public void doConfirm(); }
-    private void doWindowClosing(MainWindow main, DirtyForm editor
-            , ConfirmFunction cf, String strMessageTitle, String strQuestion) {
+    private interface ConfirmFunction {
+        public void doConfirm();
+    }
+    private void doWindowClosing(final MainWindow main, final DirtyForm editor
+            , final ConfirmFunction cf, final String strMessageTitle
+            , final String strQuestion) {
         if (editor.isDirty()) {
-            MyHandyOptionPane optionPane = new MyHandyOptionPane();
-            Object[] options = { "Yes", "No" };
-            Object result = optionPane.yesNoDialog(main
+            final MyHandyOptionPane optionPane = new MyHandyOptionPane();
+            final Object[] options = { "Yes", "No" };
+            final Object result = optionPane.yesNoDialog(main
                     , options, "Yes", ""
                     , strQuestion
                     , strMessageTitle);
-            if ("Yes".equals(result.toString()))
+            if ("Yes".equals(result.toString())) {
                 cf.doConfirm();
-            else    // "No"
+            }
+            else {   // "No"
                 // TODO this makes me uncomfortable. The form has dirty data on
                 // it.
                 // But if we don't set it to clean here, then the user could be
                 // asked again on app shutdown whether to save.
                 editor.setClean();
+            }
         }
     }
-    private void doRulesWindowClosing(MainWindow main
+    private void doRulesWindowClosing(final MainWindow main
             , final RulesEditorUI rulesEditor) {
 
         doWindowClosing(main, rulesEditor, new ConfirmFunction() {
@@ -527,7 +525,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         }, "Save rules?", "Would you like to save your changes to rules?");
     }
-    private void doExclWindowClosing(MainWindow main
+    private void doExclWindowClosing(final MainWindow main
             , final ExclusionPanel exclMgr) {
 
         doWindowClosing(main, exclMgr, new ConfirmFunction() {
@@ -538,33 +536,32 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }, "Save exclusions?", "Would you like to save and apply your changes"
                 + " to exclusions?");
     }
-    private void saveExclusions(ExclusionPanel exclMgr) {
-        exclMgr.saveExclusions();       // Also notifies Dwarf List, and sets clean
+    private void saveExclusions(final ExclusionPanel exclMgr) {
+        exclMgr.saveExclusions(); // Also notifies Dwarf List, and sets clean
     }
 
-    private void saveRuleFile(RulesEditorUI rulesEditor) {
+    private void saveRuleFile(final RulesEditorUI rulesEditor) {
         moIO.writeRuleFile(rulesEditor.getCurrentFile());
         rulesEditor.setClean();
 
-        // Recreate local blacklist structures & resend blacklist to Job Settings screen
+        // Recreate local blacklist structures & resend blacklist to Job
+        // Settings screen
         setBlacklistStructures();
         moJobListPanel.setBlacklist(moJobBlacklist);
     }
 
-    private void closeRules(RulesEditorUI rulesEditor) {
+    private void closeRules(final RulesEditorUI rulesEditor) {
         doRulesWindowClosing(this, rulesEditor);
         getInternalFrame(INTERNAL_RULES_EDITOR).setVisible(false);
     }
 
     private void closeExclusions() {
         doExclWindowClosing(this, moExclusionManager);
-        //mitlExclusions.setVisible(false);
         getInternalFrame(INTERNAL_EXCLUSIONS).setVisible(false);
     }
     private void closeViewManager() {
         doViewMgrWindowClosing(this, moViewManager);
         getInternalFrame(INTERNAL_VIEW_MANAGER).setVisible(false);
-        //mitlViewManager.setVisible(false);
     }
 
     // Creates file choosers for save and load operations. This is a time-consuming
@@ -574,13 +571,13 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 = new HashMap<String, MyFileChooser>(3);
 
         // File chooser for Job Settings->Save
-        MyFileChooser chooser = new MyFileChooser(this); //JFileChooser();
+        MyFileChooser chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Save Job Settings");
         chooser.setDialogType(MyFileChooser.SAVE_DIALOG);
         final FileFilter ffText = new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                String ext = getExtension(pathname.getName());
+                final String ext = getExtension(pathname.getName());
                 return ext.toUpperCase().equals("TXT");
             }
             @Override
@@ -614,7 +611,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private FileData readFiles() {
         // Try to read group-list.txt, labor-list.txt, rules.txt, Dwarves.xml,
         // and exclusions
-        FileData fileData;
+        final FileData fileData;
 
         mvLaborGroups = moIO.readLaborGroups();
         mvLabors = moIO.readLabors();           // Read labor-list.txt
@@ -640,7 +637,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private ActionListener createShowListener(final String frameKey) {
         return new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 try {
                     getInternalFrame(frameKey).setSelected(true);
                 } catch (PropertyVetoException ex) {
@@ -655,7 +652,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         return new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 showOrLoad(getInternalFrame(frameKey), dataLoader);
             }
         };
@@ -665,11 +662,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 @Override
                 protected Object doInBackground() throws Exception {
                     // Optimizer
-                    Vector<Job> vJobs = jobListPanel.getJobs();
-                    Vector<Dwarf> vDwarves = getDwarves();
+                    final Vector<Job> vJobs = jobListPanel.getJobs();
+                    final Vector<Dwarf> vDwarves = getDwarves();
 
                     setBalancedPotentials(vDwarves, vJobs);
-                    JobOptimizer opt = new JobOptimizer(vJobs, vDwarves
+                    final JobOptimizer opt = new JobOptimizer(vJobs, vDwarves
                             , moJobBlacklist);
                     return opt.optimize();
                 }
@@ -680,7 +677,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         return new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 // Disable the menu item while running
                 optimizeItem.setEnabled(false);
 
@@ -696,7 +693,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private ActionListener createExitAL() {
         return new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 exit();
             }
         };
@@ -710,7 +707,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             // Use a clone for the table model. Otherwise
             // unsaved changes will persist when window is closed
             // and reopened.
-            Vector<LaborRule> vRulesClone = DeepCloneUtils.deepClone(
+            final Vector<LaborRule> vRulesClone = DeepCloneUtils.deepClone(
                     moIO.getRuleFileContents());
             moRulesEditor.loadData(vRulesClone);
         }
@@ -722,7 +719,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private class ExclLoader implements DataLoader {
         @Override
         public void loadData() {
-            Vector<Exclusion> exclDeepClone = DeepCloneUtils.deepClone(
+            final Vector<Exclusion> exclDeepClone = DeepCloneUtils.deepClone(
                     mvExclusions);
             moExclusionManager.loadData(exclDeepClone, mvDwarves);
         }
@@ -731,7 +728,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return new ActionListener() {
 
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 try {
                     // TODO: Find out if this fix worked for users
                     // (for Java 6 Desktop non-implementation on some Linux builds)
@@ -751,7 +748,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private ActionListener createAboutAL() {
         return new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 moAboutScreen.setVisible(true);
             }
         };
@@ -768,6 +765,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private ArrayList<Integer> createProcessMenu(final JMenuBar menuBar
             , final JobListPanel jobListPanel) {
+        final int OPTIMIZE_PRIO = 80;
+        final int SEP_PRIO = 90;
 
         final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
 
@@ -778,9 +777,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 "Optimize Now!", KeyEvent.VK_O);
         optimizeItem.addActionListener(createOptimizeAL(optimizeItem
                 , jobListPanel));
-        addMenuItem(menu, optimizeItem, lstReturn, 80);
+        addMenuItem(menu, optimizeItem, lstReturn, OPTIMIZE_PRIO);
         // ---------------------------------------------------------------------
-        addSeparator(menu, lstReturn, 90);
+        addSeparator(menu, lstReturn, SEP_PRIO);
 
         JMenuItem menuItem = MenuHelper.createMenuItem("Exit", createExitAL()
                 , KeyEvent.VK_X);
@@ -788,52 +787,59 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         return lstReturn;
     }
-    private ArrayList<Integer> createWindowMenu(JMenuBar menuBar) {
+    private ArrayList<Integer> createWindowMenu(final JMenuBar menuBar) {
         final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+        final int PRIO_DWARF = 10;
+        final int PRIO_JOB = 20;
+        final int PRIO_RULES = 30;
+        final int PRIO_EXCL = 40;
 
-        JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
+        final JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
         menuBar.add(menu);
 
         JMenuItem menuItem = MenuHelper.createMenuItem("Dwarf List"
                 , createShowListener(INTERNAL_DWARF_LIST), KeyEvent.VK_D);
-        addMenuItem(menu, menuItem, lstReturn, 10);
+        addMenuItem(menu, menuItem, lstReturn, PRIO_DWARF);
         menuItem = MenuHelper.createMenuItem("Job Settings"
                 , createShowListener(INTERNAL_JOB_LIST), KeyEvent.VK_J);
-        addMenuItem(menu, menuItem, lstReturn, 20);
+        addMenuItem(menu, menuItem, lstReturn, PRIO_JOB);
         menuItem = MenuHelper.createMenuItem("Rules Editor"
                 , createShowOrLoadListener(INTERNAL_RULES_EDITOR
                 , new RulesLoader()), KeyEvent.VK_R);
-        addMenuItem(menu, menuItem, lstReturn, 30);
+        addMenuItem(menu, menuItem, lstReturn, PRIO_RULES);
         menuItem = MenuHelper.createMenuItem("Exclusion Manager"
                 , createShowOrLoadListener(INTERNAL_EXCLUSIONS
                 , new ExclLoader()), KeyEvent.VK_E);
-        addMenuItem(menu, menuItem, lstReturn, 40);
+        addMenuItem(menu, menuItem, lstReturn, PRIO_EXCL);
 
         return lstReturn;
     }
-    private ArrayList<Integer> createHelpMenu(JMenuBar menuBar) {
+    private ArrayList<Integer> createHelpMenu(final JMenuBar menuBar) {
         final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+        final int PRIO_TUTORIAL = 10;
+        final int PRIO_SEP = 20;
+        final int PRIO_ABOUT = 30;
 
-        JMenu menu = MenuHelper.createMenu("Help", KeyEvent.VK_H);
+        final JMenu menu = MenuHelper.createMenu("Help", KeyEvent.VK_H);
         menuBar.add(menu);
 
         JMenuItem menuItem = MenuHelper.createMenuItem("Tutorial"
                 , createTutorialAL(), KeyEvent.VK_T);
-        addMenuItem(menu, menuItem, lstReturn, 10);
+        addMenuItem(menu, menuItem, lstReturn, PRIO_TUTORIAL);
         //----------------------------------------------------------------------
-        addSeparator(menu, lstReturn, 20);
+        addSeparator(menu, lstReturn, PRIO_SEP);
 
         menuItem = MenuHelper.createMenuItem("About", createAboutAL()
                 , KeyEvent.VK_A);
-        addMenuItem(menu, menuItem, lstReturn, 30);
+        addMenuItem(menu, menuItem, lstReturn, PRIO_ABOUT);
 
         return lstReturn;
     }
     private MenuCombiner.MenuInfo createMenu(final JobListPanel jobListPanel) {
-        JMenuBar menuBar = new JMenuBar();
+        final JMenuBar menuBar = new JMenuBar();
 
-        int[] menuPriority = { 10, 80, 90 };
-        ArrayList<Integer>[] menuItemPriority
+        final int[] menuPriority = { 10, 80, 90 };
+        final ArrayList<Integer>[] menuItemPriority
                 = new ArrayList[menuPriority.length];
 
         menuItemPriority[0] = createProcessMenu(menuBar, jobListPanel);
@@ -845,7 +851,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
 
     // Reload if invisible; show if visible.
-    private void showOrLoad(JInternalFrame frame, DataLoader loader) {
+    private void showOrLoad(final JInternalFrame frame
+            , final DataLoader loader) {
+
         if (frame.isVisible() == false) {
             loader.loadData();
             frame.pack();
@@ -855,19 +863,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         frame.setVisible(true);
         try {
             frame.setSelected(true);
-        } catch (PropertyVetoException ex) {
+        } catch (final PropertyVetoException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null
                     , ex);
         }
     }
-
     // Set dwarves.xml location & read it
     private void setDwarves() {
-        int response = setDwarvesLocation();
+        final int response = setDwarvesLocation();
         if (response == MyFileChooser.APPROVE_OPTION) {
             try {
                 readDwarves();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 e.printStackTrace();
                 System.err.println("Failed to read dwarves.xml.");
             }
@@ -878,20 +885,23 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
 
     // Reset job settings to user defaults
-    private void resetJobSettings(JobListPanel jobPanel) {
+    private void resetJobSettings(final JobListPanel jobPanel) {
         jobPanel.load(new File(JobListPanel.MY_DEFAULT_SETTINGS_FILE));
     }
 
-    private void loadJobSettings(JobListPanel jobListPanel) {
-        int input = getFileChooser(FILE_CHOOSER_OPEN).showOpenDialog(this);
+    private void loadJobSettings(final JobListPanel jobListPanel) {
+        final int input = getFileChooser(FILE_CHOOSER_OPEN).showOpenDialog(
+                this);
 
         if (input == MyFileChooser.APPROVE_OPTION) {
-            File file = getFileChooser(FILE_CHOOSER_OPEN).getSelectedFile();
+            final File file = getFileChooser(
+                    FILE_CHOOSER_OPEN).getSelectedFile();
             jobListPanel.load(file);
             updateCurrentJobSettings(file);
         }
     }
 
+    // TODO Are comments below true? Cleanup needed if so
     // If saving as "DEFAULT SETTINGS", change name to "MY DEFAULT SETTINGS"
     // (That logic is now unused since .txt is added to file names, and we don't load from
     // default settings in this way anymore)
@@ -903,20 +913,21 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         mfilLastFile = file;
         getInternalFrame(INTERNAL_JOB_LIST).setTitle(
-                fileName.replace(".txt", "") + " Job Settings"); // mitlJobList
+                fileName.replace(".txt", "") + " Job Settings");
     }
 
     // Returns the text after (not including) the dot if the given file name
     // has an extension.
     // Returns the whole file name if there is no dot.
-    private String getExtension(String fileName) {
-        int dot = fileName.lastIndexOf(".");
+    private String getExtension(final String fileName) {
+        final int dot = fileName.lastIndexOf(".");
         return fileName.substring(dot + 1);
     }
-    private MyFileChooser getFileChooser(String key) {
+    private MyFileChooser getFileChooser(final String key) {
         return mmFileChoosers.get(key);
     }
-    private void saveJobSettingsAs(JobListPanel jobListPanel, boolean quickSave) {
+    private void saveJobSettingsAs(final JobListPanel jobListPanel
+            , final boolean quickSave) {
 
         boolean bConfirm = false;
         File file = mfilLastFile;
@@ -925,7 +936,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             bConfirm = true;
         }
         else {
-            int input = getFileChooser(FILE_CHOOSER_SAVE).showSaveDialog(this);
+            final int input = getFileChooser(FILE_CHOOSER_SAVE).showSaveDialog(
+                    this);
 
             if (input == MyFileChooser.APPROVE_OPTION) {
                 file = getFileChooser(FILE_CHOOSER_SAVE).getSelectedFile();
@@ -935,9 +947,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
                 bConfirm = true;
                 if (file.exists()) {
-                    Object[] options = new Object[] { "Yes", "No" };
-                    Object result = new MyHandyOptionPane().yesNoDialog(this
-                            , options, "No", ""
+                    final Object[] options = new Object[] { "Yes", "No" };
+                    final Object result = new MyHandyOptionPane().yesNoDialog(
+                            this, options, "No", ""
                             , "This file already exists. Overwrite it?"
                             , "Overwrite?");
                     bConfirm = (result.toString().equals("Yes"));
@@ -951,22 +963,22 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
 
-    private boolean fileHasExtension(File file) {
-        String strName = file.getName();
+    private boolean fileHasExtension(final File file) {
+        final String strName = file.getName();
         //System.out.println("Extension is " + getExtension(file.getName()));
         //System.out.println(getExtension(strName).length() + " ?= " + strName.length());
         return (getExtension(strName).length() != strName.length());
     }
 
-    private File addExtension(File file, String ext) {
-        String strNewName = file.getName() + ext;
+    private File addExtension(final File file, final String ext) {
+        final String strNewName = file.getName() + ext;
         return new File(file.getParentFile(), strNewName);
     }
 
     // Returns the user's input to the file dialog
     private int setDwarvesLocation() {
         final MyFileChooser chooser = getFileChooser(FILE_CHOOSER_DWARVES);
-        int input = chooser.showOpenDialog(this);
+        final int input = chooser.showOpenDialog(this);
         if (input == MyFileChooser.APPROVE_OPTION) {
             String strSelectedLoc = chooser.getCurrentDirectory() + "\\"
                 + chooser.getSelectedFile().getName();
@@ -980,16 +992,17 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
 
     private void loadPreferences() {
-        Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+        final Preferences prefs = Preferences.userNodeForPackage(
+                this.getClass());
         mstrDwarvesXML = prefs.get("DwarvesXML", DEFAULT_DWARVES_XML);
 
         // Exclusions active
-        int maxID = prefs.getInt("MaxExclusionID", 0);
+        final int maxID = prefs.getInt("MaxExclusionID", 0);
         mhtActiveExclusions = new Hashtable<Integer, Boolean>();
         for (int iCount = 0; iCount <= maxID; iCount++) { // moIO.getMaxUsedExclusionID() <- not set yet!
             //System.out.println("ExclusionsActive_" + iCount + ", " + DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE);
             // (.active in the mvExclusions object is set later, after exclusions are read)
-            boolean value = prefs.getBoolean("ExclusionsActive_" + iCount
+            final boolean value = prefs.getBoolean("ExclusionsActive_" + iCount
                     , DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE);
             //setExclusionActive(iCount, value);
             mhtActiveExclusions.put(iCount, value);
@@ -997,12 +1010,13 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private void savePreferences() {
         //System.out.println("Saving preferences...");
-        Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+        final Preferences prefs = Preferences.userNodeForPackage(
+                this.getClass());
         prefs.put("DwarvesXML", mstrDwarvesXML);
 
         // Exclusions active
         prefs.putInt("MaxExclusionID", moIO.getMaxUsedExclusionID());
-        for (Integer key : mhtActiveExclusions.keySet()) {
+        for (final int key : mhtActiveExclusions.keySet()) {
             //System.out.println("ExclusionsActive_" + key + " " + mhtActiveExclusions.get(key));
             prefs.putBoolean("ExclusionsActive_" + key
                     , mhtActiveExclusions.get(key));
@@ -1013,18 +1027,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     // Updates the initial active state of the exclusions from mhtActiveExclusions
     // Must be called after loadPreferences() and after readFiles()
     private void setExclusionsActive() {
-        for (int key : mhtActiveExclusions.keySet()) {
+        for (final int key : mhtActiveExclusions.keySet()) {
             //System.out.println("Setting exclusion #" + key + " " + mhtActiveExclusions.get(key));
             setExclusionActive(key, mhtActiveExclusions.get(key));
         }
     }
-    private void setExclusionActive(int ID, boolean active) {
+    private void setExclusionActive(final int ID, final boolean active) {
         if (mvExclusions == null) {
             System.err.println("Could not set active exclusion: exclusion list is null");
             return;
         }
 
-        for (Exclusion excl : mvExclusions) {
+        for (final Exclusion excl : mvExclusions) {
             if (excl.getID() == ID) {
                 excl.setActive(active);
                 return;
@@ -1041,7 +1055,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         Map<String, MetaSkill> mapMetaSkill
                 = new Hashtable<String, MetaSkill>();
 
-        DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
+        final DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
         dwarfIO.readDwarves(mstrDwarvesXML);
         mvDwarves = dwarfIO.getDwarves();
         mapStat = dwarfIO.getStats();
@@ -1054,27 +1068,29 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private Vector<Dwarf> getDwarves() {
         // Get included dwarves and reset all dwarf.time
         // TODO clone() probably isn't doing what it's supposed to
-        Vector<Dwarf> vIncluded = (Vector<Dwarf>)
+        final Vector<Dwarf> vIncluded = (Vector<Dwarf>)
                 moDwarfListWindow.getIncludedDwarves().clone();
-        for (Dwarf dwarf : vIncluded) {
+        for (final Dwarf dwarf : vIncluded) {
             dwarf.setTime(JobOptimizer.MAX_TIME);
         }
         return vIncluded;
     }
 
     // Note that balanced potentials are keyed by job name, not skill name.
-    private void setBalancedPotentials(Vector<Dwarf> vDwarves, Vector<Job> vJobs) {
-        for (Dwarf dwarf : vDwarves) {
-            for (Job job : vJobs) {
+    private void setBalancedPotentials(final Vector<Dwarf> vDwarves
+            , final Vector<Job> vJobs) {
 
-                double dblCurrentSkillPct = ((double)
+        for (final Dwarf dwarf : vDwarves) {
+            for (final Job job : vJobs) {
+
+                final double dblCurrentSkillPct = ((double)
                         job.getCurrentSkillWeight()) / 100.0d;
-                double dblPotentialPct = 1.0d - dblCurrentSkillPct;
-                long skillLevel = 0l;
+                final double dblPotentialPct = 1.0d - dblCurrentSkillPct;
+                long skillLevel = 0L;
                 if (null != dwarf.getSkillLevels().get(job.getSkillName()))
                     skillLevel = dwarf.getSkillLevels().get(job.getSkillName());
 
-                double dblBalancedPotential = (dblCurrentSkillPct
+                final double dblBalancedPotential = (dblCurrentSkillPct
                         * skillLevelToPercent(skillLevel))
                         + (dblPotentialPct
                         * ((double) dwarf.skillPotentials.get(
@@ -1085,17 +1101,17 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         }
     }
-    private double skillLevelToPercent(long skillLevel) {
+    private double skillLevelToPercent(final long skillLevel) {
         if (skillLevel >= MAX_SKILL_LEVEL)
             return 100.0d;
         else
             return ((double) skillLevel) * 100.0d / ((double) MAX_SKILL_LEVEL);
     }
 
-    private void addWhitelistToBlacklist(JobBlacklist blacklist
-            , JobList whitelist, Vector<Labor> labors) {
-        for (String wlJobName : whitelist.keySet()) {
-            for (Labor labor : labors) {
+    private void addWhitelistToBlacklist(final JobBlacklist blacklist
+            , final JobList whitelist, final Vector<Labor> labors) {
+        for (final String wlJobName : whitelist.keySet()) {
+            for (final Labor labor : labors) {
                 // Add all non-whitelisted jobs to the blacklist.
                 if (! wlJobName.equals(labor.getName())) {
                     if (! whitelist.get(wlJobName).contains(labor.getName()))
@@ -1130,7 +1146,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private void handleDwarfListMessage(final BroadcastMessage message) {
         if (message.getSource().equals("DwarfListSaveViews")) {
-            List<GridView> views = (List<GridView>) message.getTarget();
+            final List<GridView> views = (List<GridView>) message.getTarget();
             saveViews(new Vector(views));
         }
         else if (message.getSource().equals("DwarfListManageViews")) {
@@ -1158,7 +1174,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             closeExclusions();
         }
         else if (message.getSource().equals("ExclusionPanelApply")) {
-            Vector<Exclusion> colExclusion
+            final Vector<Exclusion> colExclusion
                     = (Vector<Exclusion>) message.getTarget();
             updateActiveExclusions(colExclusion);
         }
@@ -1176,7 +1192,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     // For receiving broadcast messages
     @Override
-    public void broadcast(BroadcastMessage message) {
+    public void broadcast(final BroadcastMessage message) {
         //System.out.println("Broadcast message received");
         if (message.getSource().startsWith("ViewManager")) {
             handleViewManagerMessage(message);
@@ -1195,7 +1211,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     + " Unknown broadcast message received");
     }
     private void saveViewManagerViews() {
-        Vector<GridView> vView = moViewManager.getViews();
+        final Vector<GridView> vView = moViewManager.getViews();
         saveViews(vView);
         moViewManager.setClean();
         moDwarfListWindow.updateViews(vView);
@@ -1207,26 +1223,25 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                         // Use a clone for the table model. Otherwise
                         // unsaved changes will persist when window is closed
                         // and reopened.
-                        Vector<GridView> vViewClone = DeepCloneUtils.deepClone(
-                                mvViews);
+                        final Vector<GridView> vViewClone
+                                = DeepCloneUtils.deepClone(mvViews);
                         moViewManager.loadData(vViewClone);
                     }
                 };
-        //showOrLoad(mitlViewManager, loader);
         showOrLoad(getInternalFrame(INTERNAL_VIEW_MANAGER), loader);
     }
 
     // Attempts to set the default button in the given internal frame
     // to the JButton object in the message target.
-    private void setDefaultButton(BroadcastMessage message
-            , JInternalFrame frame) {
+    private void setDefaultButton(final BroadcastMessage message
+            , final JInternalFrame frame) {
 
         // Set default button
         try {
             if (message.getTarget() == null)
                 frame.getRootPane().setDefaultButton(null);
             else {
-                JButton btn = (JButton) message.getTarget();
+                final JButton btn = (JButton) message.getTarget();
                 if (! btn.equals(frame.getRootPane().getDefaultButton()))
                     setDefaultButton(btn, frame);
             }
@@ -1234,30 +1249,32 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             System.err.println(e.getMessage() + " Failed to set default button");
         }
     }
-    private void setDefaultButton(JButton btn, JInternalFrame frame) {
+    private void setDefaultButton(final JButton btn
+            , final JInternalFrame frame) {
+
         frame.getRootPane().setDefaultButton(btn);
     }
-    private void updateActiveExclusions(Vector<Exclusion> colExclusion) {
+    private void updateActiveExclusions(final Vector<Exclusion> vExclusion) {
 
         // Rebuild mhtActiveExclusions
         mhtActiveExclusions = new Hashtable<Integer, Boolean>();
-        for (Exclusion excl : colExclusion) {
+        for (final Exclusion excl : vExclusion) {
             mhtActiveExclusions.put(excl.getID(), excl.isActive());
         }
-        mvExclusions = colExclusion;
+        mvExclusions = vExclusion;
     }
     private abstract class MyAbstractInternalFrame {
         private JInternalFrame internalFrame;
         private MainWindow mainWindow;
 
-        private MyAbstractInternalFrame(MainWindow mainWindow) {
+        private MyAbstractInternalFrame(final MainWindow mainWindow) {
             this.mainWindow = mainWindow;
         }
         public JInternalFrame getInternalFrame() {
             return internalFrame;
         }
 
-        public void setInternalFrame(JInternalFrame internalFrame) {
+        public void setInternalFrame(final JInternalFrame internalFrame) {
             this.internalFrame = internalFrame;
         }
 
@@ -1268,7 +1285,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         public abstract JInternalFrame createFrame();
 
         public JInternalFrame create() {
-            JInternalFrame frame = createFrame();
+            final JInternalFrame frame = createFrame();
             setInternalFrame(frame);
             return frame;
         }
@@ -1277,7 +1294,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private abstract class MyAbstractMenuFrame extends MyAbstractInternalFrame {
         private MenuCombiner.MenuInfo menuInfo;
 
-        private MyAbstractMenuFrame(MainWindow mainWindow) {
+        private MyAbstractMenuFrame(final MainWindow mainWindow) {
             super(mainWindow);
         }
 
@@ -1287,19 +1304,19 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return menuInfo;
         }
 
-        public JInternalFrame create(MenuCombiner combiner) {
-            JInternalFrame frame = super.create();
-            this.menuInfo = createMenuInfo();
+        public JInternalFrame create(final MenuCombiner combiner) {
+            final JInternalFrame frame = super.create();
+            menuInfo = createMenuInfo();
             addCombiner(frame, combiner);
             return frame;
         }
 
         // Called by create()
-        private void addCombiner(JInternalFrame frame
-                , MenuCombiner combiner) {
+        private void addCombiner(final JInternalFrame frame
+                , final MenuCombiner combiner) {
 
             if (menuInfo.getMenuBar().getMenuCount() > 0) {
-                InternalFrameListener listener
+                final InternalFrameListener listener
                         = combiner.createInternalFrameListener(getMainWindow()
                         , getMenuInfo());
                 frame.addInternalFrameListener(listener);
@@ -1313,8 +1330,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private Container ui;
         private String title;
 
-        private MyAbstractSimpleFrame(MainWindow main, JDesktopPane desktop
-                , Container ui, String title) { // , JMenuBar menuBar
+        private MyAbstractSimpleFrame(final MainWindow main
+                , final JDesktopPane desktop
+                , final Container ui, final String title) {
 
             super(main);
             this.desktop = desktop;
@@ -1326,19 +1344,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         public JInternalFrame createFrame() {
             return createAlwaysShownFrame(desktop, ui, title); //, menuBar);
         }
-        private JInternalFrame createAlwaysShownFrame(JDesktopPane desktop
-                , final Container ui, String title) { //, JMenuBar menuBar) {
-            AbstractFrameCreator creator = new AbstractFrameCreator() {
+        private JInternalFrame createAlwaysShownFrame(final JDesktopPane desktop
+                , final Container ui, final String title) {
+            final AbstractFrameCreator creator = new AbstractFrameCreator() {
                 @Override
                 public Container createUIObject() {
                     return ui;
                 }
-
                 @Override
                 public void addListeners() { // Do nothing
                 }
             };
-            JInternalFrame frame = creator.createInternalFrame(desktop
+            final JInternalFrame frame = creator.createInternalFrame(desktop
                     , title
                     , true, false, true, true
                     , WindowConstants.DISPOSE_ON_CLOSE); //, menuBar);
@@ -1347,10 +1364,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return frame;
         }
     }
-    private JInternalFrame createEditorFrame(JDesktopPane desktop
-            , final Container ui, String cleanTitle
+    private JInternalFrame createEditorFrame(final JDesktopPane desktop
+            , final Container ui, final String cleanTitle
             , final DirtyForm dirtyForm, final ListenerAdder la
-            , String dirtyTitle, FrameClosingFunction fcf) {
+            , final String dirtyTitle, final FrameClosingFunction fcf) {
 
         final AbstractEditorFrameCreator creator
                 = new AbstractEditorFrameCreator() {
@@ -1369,7 +1386,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         };
 
-        JInternalFrame frame = creator.createInternalFrame(desktop
+        final JInternalFrame frame = creator.createInternalFrame(desktop
                 , cleanTitle, true, true, true, true
                 , WindowConstants.HIDE_ON_CLOSE
                 , dirtyTitle, fcf);
@@ -1383,8 +1400,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private JDesktopPane desktop;
         private ExclusionPanel exclusionPanel;
 
-        public ExclusionFrame(MainWindow main, JDesktopPane desktop
-                , ExclusionPanel exclusionPanel) {
+        public ExclusionFrame(final MainWindow main, final JDesktopPane desktop
+                , final ExclusionPanel exclusionPanel) {
             super(main);
             this.desktop = desktop;
             this.exclusionPanel = exclusionPanel;
@@ -1392,7 +1409,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         @Override
         public JInternalFrame createFrame() {
-            ListenerAdder la = new ListenerAdder() {
+            final ListenerAdder la = new ListenerAdder() {
                 @Override
                 public void addListeners() {
                     exclusionPanel.getDefaultButtonBroadcaster().addListener(
@@ -1403,9 +1420,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                             getMainWindow());
                 }
             };
-            FrameClosingFunction fcf = new FrameClosingFunction() {
+            final FrameClosingFunction fcf = new FrameClosingFunction() {
                 @Override
-                public void doFrameClosing(InternalFrameEvent e) {
+                public void doFrameClosing(final InternalFrameEvent e) {
                     doExclWindowClosing(getMainWindow(), exclusionPanel);
                 }
             };
@@ -1417,7 +1434,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createSaveAL() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     exclusionPanel.saveExclusions();
                 }
             };
@@ -1425,7 +1442,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createCloseAL() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     closeExclusions();
                 }
             };
@@ -1437,7 +1454,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
             final ArrayList<Integer> aReturn = new ArrayList<Integer>();
 
-            JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC);
+            final JMenu menu = MenuHelper.createMenu("File"
+                    , FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
             JMenuItem menuItem = MenuHelper.createMenuItem("Save and Apply"
@@ -1460,7 +1478,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             final ArrayList<Integer>[] menuItemPriority
                     = new ArrayList[NUM_MENUS];
 
-            JMenuBar menuBar = new JMenuBar();
+            final JMenuBar menuBar = new JMenuBar();
 
             menuItemPriority[0] = createFileMenu(menuBar);
 
@@ -1475,8 +1493,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private JDesktopPane desktop;
         private RulesEditorUI rulesEditor;
 
-        public RulesEditorFrame(MainWindow main, JDesktopPane desktop
-                , RulesEditorUI rulesEditor) {
+        public RulesEditorFrame(final MainWindow main
+                , final JDesktopPane desktop, final RulesEditorUI rulesEditor) {
             super(main);
             this.desktop = desktop;
             this.rulesEditor = rulesEditor;
@@ -1484,16 +1502,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         @Override
         public JInternalFrame createFrame() {
-            ListenerAdder la = new ListenerAdder() {
+            final ListenerAdder la = new ListenerAdder() {
                 @Override
                 public void addListeners() {
                     rulesEditor.getDefaultButtonBroadcaster().addListener(
                             getMainWindow());
                 }
             };
-            FrameClosingFunction fcf = new FrameClosingFunction() {
+            final FrameClosingFunction fcf = new FrameClosingFunction() {
                 @Override
-                public void doFrameClosing(InternalFrameEvent e) {
+                public void doFrameClosing(final InternalFrameEvent e) {
                     doRulesWindowClosing(getMainWindow(), rulesEditor);
                 }
             };
@@ -1507,7 +1525,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createSaveAL() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     saveRuleFile(rulesEditor);
                 }
             };
@@ -1515,7 +1533,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createCloseAL() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     closeRules(rulesEditor);
                 }
             };
@@ -1527,10 +1545,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
             final ArrayList<Integer> lstPriority = new ArrayList<Integer>();
 
-            final JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC);
+            final JMenu menu = MenuHelper.createMenu("File"
+                    , FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
-            JMenuItem menuItem = MenuHelper.createMenuItem("Save", createSaveAL()
+            JMenuItem menuItem = MenuHelper.createMenuItem("Save"
+                    , createSaveAL()
                     , KeyEvent.VK_S, KeyStroke.getKeyStroke("control S"));
             addMenuItem(menu, menuItem, lstPriority, SAVE_PRIO);
             // -----------------------------------------------------------------
@@ -1550,7 +1570,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             final ArrayList<Integer>[] menuItemPriority
                     = new ArrayList[NUM_MENUS];
 
-            JMenuBar menuBar = new JMenuBar();
+            final JMenuBar menuBar = new JMenuBar();
 
             menuItemPriority[0] = createFileMenu(menuBar);
 
@@ -1566,8 +1586,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private JDesktopPane desktop;
         private ViewManagerUI viewManagerUI;
 
-        public ViewManagerFrame(MainWindow mainWindow, JDesktopPane desktop
-                , ViewManagerUI viewManagerUI) {
+        public ViewManagerFrame(final MainWindow mainWindow
+                , final JDesktopPane desktop
+                , final ViewManagerUI viewManagerUI) {
 
             super(mainWindow);
             this.desktop = desktop;
@@ -1576,20 +1597,20 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         @Override
         public JInternalFrame createFrame() {
-            ListenerAdder la = new ListenerAdder() {
+            final ListenerAdder la = new ListenerAdder() {
                 @Override
                 public void addListeners() {
                     viewManagerUI.getBroadcaster().addListener(getMainWindow());
                 }
             };
-            FrameClosingFunction fcf = new FrameClosingFunction() {
+            final FrameClosingFunction fcf = new FrameClosingFunction() {
                 @Override
-                public void doFrameClosing(InternalFrameEvent e) {
+                public void doFrameClosing(final InternalFrameEvent e) {
                     doViewMgrWindowClosing(getMainWindow(), viewManagerUI);
                 }
             };
 
-            JInternalFrame frame = createEditorFrame(desktop
+            final JInternalFrame frame = createEditorFrame(desktop
                     , viewManagerUI.getUIPanel(), VIEW_MGR_TITLE
                     , viewManagerUI, la, VIEW_MGR_TITLE_DIRTY, fcf);
 
@@ -1601,8 +1622,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private class DwarfListFrame extends MyAbstractSimpleFrame {
         private DwarfListWindow dwarfListWindow;
 
-        public DwarfListFrame(MainWindow mainWindow, JDesktopPane desktop
-                , DwarfListWindow dwarfListWindow, String title) {
+        public DwarfListFrame(final MainWindow mainWindow
+                , final JDesktopPane desktop
+                , final DwarfListWindow dwarfListWindow, final String title) {
 
             super(mainWindow, desktop, dwarfListWindow, title);
 
@@ -1625,15 +1647,17 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return new MenuCombiner.MenuInfo(menuBar, menuPriority
                     , menuItemPriority);
         }
-        private ArrayList<Integer>[] createPriorities(JMenuBar menuBar) {
+        private ArrayList<Integer>[] createPriorities(final JMenuBar menuBar) {
             final int NUM_MENUS = menuBar.getMenuCount();
-            ArrayList<Integer>[] menuItemPriority = new ArrayList[NUM_MENUS];
+            final ArrayList<Integer>[] menuItemPriority
+                    = new ArrayList[NUM_MENUS];
 
             final int STARTING_PRIO = 51;
             for (int iCount = 0; iCount < NUM_MENUS; iCount++) {
                 final JMenu menu = menuBar.getMenu(iCount);
                 final int numItems = menu.getMenuComponentCount();
-                ArrayList<Integer> lstItem = new ArrayList<Integer>(numItems);
+                final ArrayList<Integer> lstItem = new ArrayList<Integer>(
+                        numItems);
                 int priority = STARTING_PRIO;
                 for (int jCount = 0; jCount < numItems; jCount++) {
                     lstItem.add(priority++);
@@ -1642,8 +1666,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
             return menuItemPriority;
         }
-        private void createFileMenu(JMenuBar menuBar) {
-            JMenu menu = MenuHelper.createMenu("File", FILE_MENU_MNEMONIC);
+        private void createFileMenu(final JMenuBar menuBar) {
+            final JMenu menu = MenuHelper.createMenu("File"
+                    , FILE_MENU_MNEMONIC);
             menuBar.add(menu);
 
             menu.add(MenuHelper.createMenuItem("Set Location of Dwarves.xml..."
@@ -1654,7 +1679,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createSetLocListener() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     setDwarves();
                 }
             };
@@ -1663,9 +1688,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private class JobListFrame extends MyAbstractSimpleFrame {
         private JobListPanel jobListPanel;
 
-        public JobListFrame(MainWindow mainWindow, JDesktopPane desktop
-                , JobListPanel jobListPanel
-                , String title) {
+        public JobListFrame(final MainWindow mainWindow
+                , final JDesktopPane desktop
+                , final JobListPanel jobListPanel, final String title) {
 
             super(mainWindow, desktop, jobListPanel, title);
 
@@ -1675,10 +1700,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         @Override
         public MenuCombiner.MenuInfo createMenuInfo() {
             final int NUM_MENUS = 2;
-            int[] menuPriority = new int[] { 1, 2 };
-            ArrayList<Integer>[] menuItemPriority = new ArrayList[NUM_MENUS];
+            final int[] menuPriority = new int[] { 1, 2 };
+            final ArrayList<Integer>[] menuItemPriority
+                    = new ArrayList[NUM_MENUS];
 
-            JMenuBar menuBar = new JMenuBar();
+            final JMenuBar menuBar = new JMenuBar();
 
             menuItemPriority[0] = createFileMenu(menuBar);
             menuItemPriority[1] = createEditMenu(menuBar);
@@ -1689,7 +1715,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createLoadActionListener() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     loadJobSettings(jobListPanel);
                 }
             };
@@ -1699,7 +1725,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     saveJobSettingsAs(jobListPanel, quickSave);
                 }
             };
@@ -1707,7 +1733,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         private ActionListener createResetActionListener() {
             return new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     resetJobSettings(jobListPanel);
                 }
             };
@@ -1752,7 +1778,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return lstReturn;
         }
         private ArrayList<Integer> createEditMenu(final JMenuBar menuBar) {
-            ArrayList<Integer> lstReturn = new ArrayList<Integer>();
+            final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
 
             JMenu menu = MenuHelper.createMenu("Edit", KeyEvent.VK_E);
             menuBar.add(menu);
@@ -1764,7 +1790,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         private ArrayList<Integer> createMenuItemPriority(final JMenu menu) {
             final int NUM_ITEMS = menu.getMenuComponentCount();
-            ArrayList<Integer> list = new ArrayList<Integer>(NUM_ITEMS);
+            final ArrayList<Integer> list = new ArrayList<Integer>(NUM_ITEMS);
 
             int priority = 51;
             for (int iCount = 0; iCount < NUM_ITEMS; iCount++) {
