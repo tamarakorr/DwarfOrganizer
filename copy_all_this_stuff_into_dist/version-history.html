@@ -6,7 +6,7 @@
     <title>Dwarf Organizer Version History</title>
   </head>
   <body>
-    <h1>Dwarf Organizer Revision History (Current Version: v1.21)</h1>
+    <h1>Dwarf Organizer Revision History (Current Version: v1.3)</h1>
     <table style=" text-align: left; width: 100%;" border="1"
       cellpadding="2" cellspacing="2">
       <tbody>
@@ -90,10 +90,58 @@
             improvements<br>
           </td>
         </tr>
+        <tr>
+          <td style="vertical-align: top;">v1.3<br>
+          </td>
+          <td style="vertical-align: top;">May 11, 2012<br>
+          </td>
+          <td style="vertical-align: top;">Better config directory
+            structure; View Manager; Dwarf List column freezing<br>
+          </td>
+        </tr>
       </tbody>
     </table>
     <br>
     <h2>Revision Details</h2>
+    <h3>v1.3</h3>
+    <h4>New Feature: View Manager</h4>
+    <ul>
+      <li>The current column ordering in the Dwarf List can be saved and
+        given a name using View-&gt;Save Current View As...<br>
+      </li>
+      <li>Views can be renamed and deleted using View-&gt;View Manager</li>
+      <li>Switch between saved views with the View menu<br>
+      </li>
+    </ul>
+    <h4>Dwarf List improvements<br>
+    </h4>
+    <ul>
+      <li>Columns can be frozen by dragging the new divider from the
+        left edge of the table</li>
+      <li>The Columns menu provides finer control over which columns are
+        displayed</li>
+    </ul>
+    <h4>Other improvements</h4>
+    <ul>
+      <li>New "config" directory structure: "config/default" contains
+        installation defaults. User files are still saved to "/config".
+        When reading data files, the application always checks for a
+        user file first, and then resorts to a default file if not
+        found.<br>
+      </li>
+      <li>Menus in the active internal window are combined into the main
+        menu</li>
+      <li>Improved error handling for failure to read files<br>
+      </li>
+    </ul>
+    <h4>Problems fixed</h4>
+    <ul>
+      <li>Columns-&gt;Hide All now lives up to its name, hiding all
+        except the two required columns</li>
+      <li>When the main window is closing, the user is always prompted
+        to save any unsaved changes (except Job Settings)<br>
+      </li>
+    </ul>
     <h3>v1.21</h3>
     <h4>Minor General Improvements</h4>
     <ul>

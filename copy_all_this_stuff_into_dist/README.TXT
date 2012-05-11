@@ -1,4 +1,4 @@
-Dwarf Organizer v1.21
+Dwarf Organizer v1.3
 
 This software is provided under the MIT license. See license.txt for details.
 

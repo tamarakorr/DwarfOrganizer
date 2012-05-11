@@ -38,7 +38,8 @@ import myutils.MyHandyTable;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public abstract class AbstractEditor<T extends MyPropertyGetter> implements DirtyForm {
+public abstract class AbstractEditor<T extends MyPropertyGetter>
+        implements DirtyForm {
 
     private JTable moTable;
     private MyTableModel moModel; // DefaultTableModel

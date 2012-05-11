@@ -66,8 +66,6 @@ import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
  */
 public class MainWindow extends JFrame implements BroadcastListener { // implements DirtyListener
 
-    private static final String VERSION = "1.21";
-
     protected static final long MAX_SKILL_LEVEL = 20L;
     //private static final String DEFAULT_DWARVES_XML
     //        = "C://DwarfFortress//DwarfGuidanceCounselor//0.0.6//Dwarves.xml";
@@ -308,7 +306,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         public AboutScreen(final MainWindow main) {
             final JLabel lblVersion = new JLabel("Dwarf Organizer version "
-                    + VERSION);
+                    + Main.VERSION);
 
             final JTextArea txtLicense = new JTextArea(moIO.getLicense());
             txtLicense.setEditable(false);
