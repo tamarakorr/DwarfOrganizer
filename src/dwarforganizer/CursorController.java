@@ -35,6 +35,7 @@ public final class CursorController {
                 final TimerTask timerTask = new TimerTask() {
                     @Override
                     public void run() {
+                        //System.out.println("Setting cursor to BUSY_CURSOR");
                         component.setCursor(BUSY_CURSOR);
                     }
                 };
@@ -45,6 +46,7 @@ public final class CursorController {
                     mainActionListener.actionPerformed(ae);
                 } finally {
                     timer.cancel();
+                    //System.out.println("Setting cursor to DEFAULT_CURSOR");
                     component.setCursor(DEFAULT_CURSOR);
                 }
             }

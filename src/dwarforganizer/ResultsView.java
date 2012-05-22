@@ -144,19 +144,15 @@ public class ResultsView { //  implements ActionListener {
         //oSP.setPreferredSize(oTable.getPreferredScrollableViewportSize());
 
         // Create view filter buttons
-        final ActionListener filterActionListener = createActionListener();
         final JRadioButton btnViewAll = new JRadioButton("View All");
         btnViewAll.setSelected(true);
         btnViewAll.setActionCommand(ACTION_CMD_ALL);
-        btnViewAll.addActionListener(filterActionListener);
 
         final JRadioButton btnViewNobles = new JRadioButton("Nobles Only");
         btnViewNobles.setActionCommand(ACTION_CMD_NOBLE);
-        btnViewNobles.addActionListener(filterActionListener);
 
         final JRadioButton btnViewReminders = new JRadioButton("Has Reminder");
         btnViewReminders.setActionCommand(ACTION_CMD_REMINDER);
-        btnViewReminders.addActionListener(filterActionListener);
 
         final ButtonGroup optView = new ButtonGroup();
         optView.add(btnViewAll);
@@ -193,6 +189,15 @@ public class ResultsView { //  implements ActionListener {
         frList.setJMenuBar(createMenu());
         frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frList.setVisible(true);
+
+        // Create the actionlistener for the buttons
+        // Must be done after creating frList
+        final ActionListener filterActionListener
+                = createActionListener(frList);
+        btnViewAll.addActionListener(filterActionListener);
+        btnViewNobles.addActionListener(filterActionListener);
+        btnViewReminders.addActionListener(filterActionListener);
+
     }
     private class DisplayableChange {
 
@@ -442,8 +447,8 @@ public class ResultsView { //  implements ActionListener {
         return oModel;
     }
 
-    private ActionListener createActionListener() {
-        return new ActionListener() {
+    private ActionListener createActionListener(final Component parentComp) {
+        final ActionListener al = new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
 
@@ -461,6 +466,7 @@ public class ResultsView { //  implements ActionListener {
                     @Override
                     protected Object doInBackground() throws Exception {
                         // Set the current table filter
+                        parentComp.setCursor(CursorController.BUSY_CURSOR);
                         return setCurrentTableFilter(moTable, rf);
                     }
 
@@ -471,12 +477,17 @@ public class ResultsView { //  implements ActionListener {
                             MyHandyTable.adjustMultiLineRowHeight(moTable
                                     , MULTILINE_GAP);
                         } catch (Exception ignore) {
+                        } finally {
+                            parentComp.setCursor(
+                                    CursorController.DEFAULT_CURSOR);
                         }
                     }
                 };
                 worker.execute();
             }
         };
+        return al;
+        //return CursorController.createListener(parentComp, al); Doesn't work
     }
     // Adjust multiline row height when this setting is changed
     private void updateShowRemoveJobs() {
