@@ -16,8 +16,9 @@ public class BroadcastMessage {
     private Object target;
     private String messageText;
 
-    public BroadcastMessage(String sourceMessage, Object target
-            , String messageText) { // JComponent
+    public BroadcastMessage(final String sourceMessage, final Object target
+            , final String messageText) { // JComponent
+
         super();
 
         this.sourceMessage = sourceMessage;

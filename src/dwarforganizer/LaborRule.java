@@ -18,8 +18,9 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable<LaborRule> {
     private String secondLabor;
     private String comment;
 
-    public LaborRule(String type, String firstLabor, String secondLabor
-            , String comment) {
+    public LaborRule(final String type, final String firstLabor
+            , final String secondLabor, final String comment) {
+
         super();
 
         this.type = type;
@@ -44,25 +45,27 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable<LaborRule> {
         return type;
     }
 
-    public void setComment(String comment) {
+    public void setComment(final String comment) {
         this.comment = comment;
     }
 
-    public void setFirstLabor(String firstLabor) {
+    public void setFirstLabor(final String firstLabor) {
         this.firstLabor = firstLabor;
     }
 
-    public void setSecondLabor(String secondLabor) {
+    public void setSecondLabor(final String secondLabor) {
         this.secondLabor = secondLabor;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 
     @Override
-    public Object getProperty(String propName, boolean humanReadable) {
-        String prop = propName.toLowerCase();
+    public Object getProperty(final String propName
+            , final boolean humanReadable) {
+
+        final String prop = propName.toLowerCase();
 
         if (prop.equals("type"))
             return getType();
@@ -73,7 +76,8 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable<LaborRule> {
         else if (prop.equals("secondlabor"))
             return getSecondLabor();
         else {
-            String strReturn = "[LaborRule] Unknown property: " + propName;
+            final String strReturn = "[LaborRule] Unknown property: "
+                    + propName;
             System.err.println(strReturn);
             return strReturn;
         }

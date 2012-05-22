@@ -19,12 +19,12 @@ import java.util.List;
  */
 public class MyTransferable implements Transferable {
 
-    protected Object object;
-    protected String string;
-    protected ArrayList<DataFlavor> aFlavors = new ArrayList<DataFlavor>();
-    protected DataFlavor objectFlavor;
+    private Object object;
+    private String string;
+    private ArrayList<DataFlavor> aFlavors = new ArrayList<DataFlavor>();
+    private DataFlavor objectFlavor;
 
-    protected static final List<DataFlavor> stringFlavors
+    private static final List<DataFlavor> stringFlavors
             = new ArrayList<DataFlavor>(3);
 
     static {
@@ -35,36 +35,37 @@ public class MyTransferable implements Transferable {
                     DataFlavor.javaJVMLocalObjectMimeType
                     + ";class=java.lang.String"));
             stringFlavors.add(DataFlavor.stringFlavor);
-        } catch (ClassNotFoundException e) {
+        } catch (final ClassNotFoundException e) {
             System.err.println("Error initializing MyTransferable: " + e);
         }
     }
 
-    public MyTransferable(Object object) {
+    public MyTransferable(final Object object) {
         this(object, object.toString());
     }
-    public MyTransferable(Object object, String string) {
+    public MyTransferable(final Object object, final String string) {
         this.object = object;
         this.string = string;
 
-        objectFlavor = new DataFlavor(object.getClass(), object.getClass().getSimpleName());
+        objectFlavor = new DataFlavor(object.getClass()
+                , object.getClass().getSimpleName());
         aFlavors.add(objectFlavor);
         aFlavors.addAll(stringFlavors);
     }
 
     @Override
     public DataFlavor[] getTransferDataFlavors() {
-        DataFlavor[] arrayFlavors = new DataFlavor[aFlavors.size()];
+        final DataFlavor[] arrayFlavors = new DataFlavor[aFlavors.size()];
         return aFlavors.toArray(arrayFlavors);
     }
 
     @Override
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
+    public boolean isDataFlavorSupported(final DataFlavor flavor) {
         return aFlavors.contains(flavor);
     }
 
     @Override
-    public Object getTransferData(DataFlavor flavor)
+    public Object getTransferData(final DataFlavor flavor)
             throws UnsupportedFlavorException, IOException {
 
         if (objectFlavor.equals(flavor)) {
@@ -77,7 +78,7 @@ public class MyTransferable implements Transferable {
         throw new UnsupportedFlavorException(flavor);
     }
 
-    protected boolean isStringFlavor(DataFlavor flavor) {
+    protected boolean isStringFlavor(final DataFlavor flavor) {
         return stringFlavors.contains(flavor);
     }
 }

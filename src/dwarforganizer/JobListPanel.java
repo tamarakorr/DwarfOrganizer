@@ -85,8 +85,9 @@ public class JobListPanel extends JPanel {
     // is an outstanding bug in Java documented at
     // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4820794
 
-    public JobListPanel(List<Labor> vLabors, List<LaborGroup> vLaborGroups
-            , JobBlacklist blacklist, DwarfOrganizerIO io)   // , Vector<KeyStroke> keysToIgnore
+    public JobListPanel(final List<Labor> vLabors
+            , final List<LaborGroup> vLaborGroups
+            , final JobBlacklist blacklist, final DwarfOrganizerIO io)   // , Vector<KeyStroke> keysToIgnore
             throws CouldntProcessFileException {
 
         mbLoading = true;
@@ -118,15 +119,16 @@ public class JobListPanel extends JPanel {
 
         // Hours label
         lblHours = new JLabel("Number of job hours: X");
-        JPanel panHours = new JPanel();
+        final JPanel panHours = new JPanel();
         panHours.setLayout(new BorderLayout());
         panHours.add(lblHours, BorderLayout.LINE_START);
 
         // Build UI
-        Object[] columns = { "Group", "Labor", QTY_COL_IDENTIFIER
+        final Object[] columns = { "Group", "Labor", QTY_COL_IDENTIFIER
                 , TIME_COL_IDENTIFIER, JOB_PRIO_COL_IDENTIFIER    // "Time Weight"
                 , CUR_SKILL_WT_COL_IDENTIFIER, REMINDER_COL_IDENTIFIER };
-        Class[] columnClass = { String.class, String.class, Integer.class, Integer.class
+        final Class[] columnClass = { String.class, String.class, Integer.class
+                , Integer.class
                 , Double.class, Integer.class, String.class };  // No primitives allowed here in Java 6!!
         final MySimpleTableModel oModel = new MySimpleTableModel(columns
                 , mlstLaborSettings.size(), columnClass);
@@ -135,12 +137,12 @@ public class JobListPanel extends JPanel {
         oModel.addTableModelListener(new TableModelListener() {
 
             @Override
-            public void tableChanged(TableModelEvent e) {
+            public void tableChanged(final TableModelEvent e) {
                 //System.out.println("Table changed.");
                 if (! mbLoading) updateLaborSetting(e.getFirstRow());
             }
 
-            private void updateLaborSetting(int firstRow) {
+            private void updateLaborSetting(final int firstRow) {
                 //TODO: In catch blocks, also set the table value to reflect the
                 // default value (Will this be circular?)
 
@@ -149,18 +151,18 @@ public class JobListPanel extends JPanel {
                 int intNewQty;
                 try {
                     intNewTime = Integer.parseInt(oModel.getValueAt(firstRow, 3).toString());
-                } catch (NumberFormatException e) {
+                } catch (final NumberFormatException ignore) {
                     intNewTime = DEFAULT_TIME;
                 }
                 try {
                     intNewQty = Integer.parseInt(oModel.getValueAt(
                             firstRow, 2).toString());
-                } catch (NumberFormatException e) {
+                } catch (final NumberFormatException ignore) {
                     intNewQty = DEFAULT_QTY;
                 }
 
-                Job job = mlstLaborSettings.get(firstRow);
-                boolean bTimeChanged = (job.getQtyDesired() != intNewQty
+                final Job job = mlstLaborSettings.get(firstRow);
+                final boolean bTimeChanged = (job.getQtyDesired() != intNewQty
                         || job.getTime() != intNewTime);
 
                 job.setQtyDesired(intNewQty);
@@ -168,13 +170,13 @@ public class JobListPanel extends JPanel {
                 try {
                     job.setCandidateWeight(Double.parseDouble(oModel.getValueAt(
                             firstRow, 4).toString()));
-                } catch (NumberFormatException e) {
+                } catch (final NumberFormatException ignore) {
                     job.setCandidateWeight(DEFAULT_WT);
                 }
                 try {
                     job.setCurrentSkillWeight(Integer.parseInt(
                             oModel.getValueAt(firstRow, 5).toString()));
-                } catch (NumberFormatException e) {
+                } catch (final NumberFormatException ignore) {
                     job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
                 }
                 job.setReminder(oModel.getValueAt(firstRow, 6).toString());
@@ -214,7 +216,7 @@ public class JobListPanel extends JPanel {
                 alwaysIgnoreKeyStroke(moTable, accel.getKeyStroke());
         } */
 
-        JScrollPane oSP = new JScrollPane(moTable);
+        final JScrollPane oSP = new JScrollPane(moTable);
         MyHandyTable.handyTable(moTable, oModel, false, true);
         MyHandyTable.setPrefWidthToColWidth(moTable);
 
@@ -239,15 +241,16 @@ public class JobListPanel extends JPanel {
     }
     // A table cell editor that selects all text when we start to edit a cell:
     class SelectingEditor extends DefaultCellEditor {
-        public SelectingEditor(JTextField textField) {  // JTextField textField
+        public SelectingEditor(final JTextField textField) {  // JTextField textField
             super(textField);    // textField
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable table, Object value
-                , boolean isSelected, int row, int column) {
+        public Component getTableCellEditorComponent(final JTable table
+                , final Object value
+                , final boolean isSelected, final int row, final int column) {
 
-            Component c = super.getTableCellEditorComponent(table, value
+            final Component c = super.getTableCellEditorComponent(table, value
                     , isSelected, row, column);
             if (c instanceof JTextComponent) {
                 final JTextField jtf = (JTextField) c;
@@ -274,12 +277,12 @@ public class JobListPanel extends JPanel {
 
     // A JTable that uses SelectingEditors for column edits
     class SelectingTable extends CopyCutPastingTable {
-        public SelectingTable(TableModel oModel) {
+        public SelectingTable(final TableModel oModel) {
             super(oModel);
-            TableColumnModel model = super.getColumnModel();
+            final TableColumnModel model = super.getColumnModel();
             for (int iCount = 0; iCount < super.getColumnCount(); iCount++) {
-                TableColumn tc = model.getColumn(iCount);
-                JTextField txt = new JTextField();
+                final TableColumn tc = model.getColumn(iCount);
+                final JTextField txt = new JTextField();
                 txt.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 tc.setCellEditor(new SelectingEditor(txt));    // new JTextField()
             }
@@ -287,7 +290,9 @@ public class JobListPanel extends JPanel {
     }
 
     public class CouldntProcessFileException extends Exception {
-        public CouldntProcessFileException() { super(); }
+        public CouldntProcessFileException() {
+            super();
+        }
     };
 
     // Updates the job hours display
@@ -295,9 +300,9 @@ public class JobListPanel extends JPanel {
 
         @Override
         protected Object doInBackground() throws Exception {
-            long lngHours = sumHours();
-            long lngDwarves = getMinDwarvesNeeded();
-            String text = "Number of job hours: "
+            final long lngHours = sumHours();
+            final long lngDwarves = getMinDwarvesNeeded();
+            final String text = "Number of job hours: "
                     + NumberFormat.getInstance().format(lngHours)
                     + " (~" + lngDwarves + " dwarves)";
             lblHours.setText(text);
@@ -307,7 +312,7 @@ public class JobListPanel extends JPanel {
 
     private JPopupMenu createEditMenuPopup() {
 
-        JPopupMenu popUp = new JPopupMenu();
+        final JPopupMenu popUp = new JPopupMenu();
         //JMenu menu = new JMenu("Edit");
 
         moTable.createEditMenuItems(popUp);
@@ -315,7 +320,7 @@ public class JobListPanel extends JPanel {
 
         return popUp;
     }
-    protected JMenu createEditMenuItems(JMenu menu) {
+    protected JMenu createEditMenuItems(final JMenu menu) {
         moTable.createEditMenuItems(menu);
         return menu;
     }
@@ -370,7 +375,7 @@ public class JobListPanel extends JPanel {
     }
 
     // Updates internal blacklist and updates display
-    protected void setBlacklist(JobBlacklist newData) {
+    protected void setBlacklist(final JobBlacklist newData) {
         moBlacklist = newData;
         new HoursDisplayUpdater().execute();
     }
@@ -381,9 +386,10 @@ public class JobListPanel extends JPanel {
     // fact that the user may have chosen numbers of hours that don't fit
     // perfectly together may both influence the number of dwarves needed.
     private long getMinDwarvesNeeded() {
-        BinPack<JobOpening> binPacker = new BinPack<JobOpening>();
-        ArrayList<ArrayList<JobOpening>> lstPackedBins = binPacker.binPack(
-                getJobOpenings(), MAX_DWARF_TIME, moBlacklist);
+        final BinPack<JobOpening> binPacker = new BinPack<JobOpening>();
+        final ArrayList<ArrayList<JobOpening>> lstPackedBins
+                = binPacker.binPack(getJobOpenings(), MAX_DWARF_TIME
+                , moBlacklist);
         return lstPackedBins.size();
     }
 
@@ -394,7 +400,7 @@ public class JobListPanel extends JPanel {
     private void loadLaborSettings() {
         mbLoading = true;
 
-        TableModel oModel = moTable.getModel();
+        final TableModel oModel = moTable.getModel();
         int row = 0;
         for (final Job job : mlstLaborSettings) {
             oModel.setValueAt(getGroupForLabor(job.getName()), row, 0);
@@ -418,16 +424,15 @@ public class JobListPanel extends JPanel {
         //return new File(strDir, "/DwarfOrganizer/");
         return new File("samples/jobs/");
     }
-    private File getFile(File directory, String fileName) {
+    private File getFile(final File directory, final String fileName) {
         return new File(directory, fileName + ".txt");
     }
 
     // Saves job settings to file
-    public void save(File file) {
+    public void save(final File file) {
         MyHandyTable.stopEditing(moTable); // Accept partial edits
 
-        File dir = getDirectory();
-        FileWriter fstream;
+        final File dir = getDirectory();
 
         try {
             // Open the output file.
@@ -436,8 +441,8 @@ public class JobListPanel extends JPanel {
             dir.mkdirs();           // Create the directory if it does not exist.
             file.createNewFile();   // Create the file if it does not exist.
 
-            fstream = new FileWriter(file.getAbsolutePath());
-            BufferedWriter out = new BufferedWriter(fstream);
+            final FileWriter fstream = new FileWriter(file.getAbsolutePath());
+            final BufferedWriter out = new BufferedWriter(fstream);
 
             out.write(CURRENT_JOB_SETTINGS_VERSION);
             out.newLine();
@@ -453,7 +458,7 @@ public class JobListPanel extends JPanel {
             }
             out.close();
 
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             //Logger.getLogger(JobListWindow.class.getName()).log(Level.SEVERE, null, ex);
             System.err.println(ex.toString());
         }
@@ -461,7 +466,7 @@ public class JobListPanel extends JPanel {
     }
 
     // Loads job settings from file
-    public void load(File file) {
+    public void load(final File file) {
         MyHandyTable.cancelEditing(moTable);    // Cancel partial edits
 
         mbLoading = true;
@@ -509,7 +514,7 @@ public class JobListPanel extends JPanel {
         }
     }
 
-    private Color getColor(String colorName) {
+    private Color getColor(final String colorName) {
 
         if (colorName.equals("Red"))
             return Color.RED;

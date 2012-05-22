@@ -19,7 +19,7 @@ public class CompositeTable {
     private JTable[] tables;
     private int mainIndex;
 
-    public CompositeTable(JTable[] tables, int mainIndex) {
+    public CompositeTable(final JTable[] tables, final int mainIndex) {
         this.tables = tables;
         this.mainIndex = mainIndex;
     }
@@ -29,8 +29,8 @@ public class CompositeTable {
     public JTable[] getTables() {
         return tables;
     }
-    public TableColumn getColumn(Object identifier) {
-        for (JTable table : tables) {
+    public TableColumn getColumn(final Object identifier) {
+        for (final JTable table : tables) {
             try {
                 return table.getColumn(identifier);
             } catch (IllegalArgumentException ignore) {
@@ -46,13 +46,15 @@ public class CompositeTable {
         }
         return sum;
     }
-    public void moveColumn(JTable sourceTable, int sourceIndex, int destIndex) {
+    public void moveColumn(final JTable sourceTable, final int sourceIndex
+            , final int destIndex) {
+
         int localDestIndex = 0;
         JTable destTable = null;
         int destCounter;
 
         destCounter = 0;
-        for (JTable table : tables) {
+        for (final JTable table : tables) {
             localDestIndex = 0;
             for (int iCount = 0; iCount < table.getColumnCount(); iCount++) {
                 if (destCounter == destIndex) {

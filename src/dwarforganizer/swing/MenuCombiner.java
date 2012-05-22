@@ -93,6 +93,7 @@ public class MenuCombiner {
     // NOTE: Only works for menu count > 0
     public InternalFrameListener createInternalFrameListener(
             final JFrame mainWindow, final MenuInfo menuInfo) {
+
         final PriorityQueue<MenuQueue> childQueue = createQueueFromMenuBar(
                 menuInfo.getMenuBar(), menuInfo.getMenuPriority()
                 , menuInfo.getMenuItemPriority());
@@ -113,12 +114,12 @@ public class MenuCombiner {
         return createBarFromQueue(DeepCloneUtils.deepClone(mqMainQueue));
     }
     public static class MenuInfo {
-        JMenuBar menuBar;
-        int[] menuPriority;
-        ArrayList<Integer>[] menuItemPriority;
+        private JMenuBar menuBar;
+        private int[] menuPriority;
+        private ArrayList<Integer>[] menuItemPriority;
 
-        public MenuInfo(JMenuBar menuBar, int[] menuPriority
-                , ArrayList<Integer>[] menuItemPriority) {
+        public MenuInfo(final JMenuBar menuBar, final int[] menuPriority
+                , final ArrayList<Integer>[] menuItemPriority) {
             this.menuBar = menuBar;
             this.menuPriority = menuPriority;
             this.menuItemPriority = menuItemPriority;
@@ -204,11 +205,11 @@ public class MenuCombiner {
             , final PriorityQueue<MenuQueue> childQueue) {
         return new InternalFrameAdapter() {
             @Override
-            public void internalFrameActivated(InternalFrameEvent e) {
+            public void internalFrameActivated(final InternalFrameEvent e) {
                 mainWindow.setJMenuBar(combine(childQueue));
             }
             @Override
-            public void internalFrameDeactivated(InternalFrameEvent e) {
+            public void internalFrameDeactivated(final InternalFrameEvent e) {
                 mainWindow.setJMenuBar(separate());
             }
         };
@@ -249,9 +250,9 @@ public class MenuCombiner {
     }
     // Compares items based on Order property
     private int basicCompare(final Ordered o1, final Ordered o2) {
-        int order1 = o1.getOrder();
-        int order2 = o2.getOrder();
-        int iReturn;
+        final int order1 = o1.getOrder();
+        final int order2 = o2.getOrder();
+        final int iReturn;
 
         if (order1 < order2) {
             iReturn = -1;
@@ -306,7 +307,7 @@ public class MenuCombiner {
         final PriorityQueue<T> qReturn;
 
         int size = mainList.size();
-        for (Collection<T> list : otherLists) {
+        for (final Collection<T> list : otherLists) {
             size += list.size();
         }
 
@@ -344,9 +345,9 @@ public class MenuCombiner {
             System.out.println(mq.getOrder() + ": "
                     + mq.getMenu().getText());
             for (final CombinableMenuItem item : mq.getQueue()) {
-                Component comp = item.getMenuItem();
+                final Component comp = item.getMenuItem();
                 if (comp instanceof JMenuItem) {
-                    JMenuItem menuItem = (JMenuItem) comp;
+                    final JMenuItem menuItem = (JMenuItem) comp;
                     System.out.println(INDENT + menuItem.getText());
                 }
                 else if (comp instanceof JSeparator) {

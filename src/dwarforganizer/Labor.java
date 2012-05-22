@@ -16,7 +16,9 @@ public class Labor {
     private String skillName;
     private String groupName;
 
-    public Labor(String name, String skillName, String groupName) {
+    public Labor(final String name, final String skillName
+            , final String groupName) {
+
         this.name = name;
         this.skillName = skillName;
         this.groupName = groupName;

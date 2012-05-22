@@ -19,7 +19,7 @@ public class Stat {
     private String xmlName;
     private ArrayList<StatHint> lstStatHints;
 
-    public Stat(String name, int[] range) {
+    public Stat(final String name, final int[] range) {
         this.name = name;
         this.range = range;
 
@@ -29,13 +29,17 @@ public class Stat {
         protected String hintText;
         protected int hintMin;
         protected int hintMax;
-        public StatHint(String hintText, int hintMin, int hintMax) {
+        public StatHint(final String hintText, final int hintMin
+                , final int hintMax) {
+
             this.hintText = hintText;
             this.hintMin = hintMin;
             this.hintMax = hintMax;
         }
     }
-    public void addStatHint(String hintText, int hintMin, int hintMax) {
+    public void addStatHint(final String hintText, final int hintMin
+            , final int hintMax) {
+
         lstStatHints.add(new StatHint(hintText, hintMin, hintMax));
     }
 
@@ -47,7 +51,7 @@ public class Stat {
         return xmlName;
     }
 
-    public void setXmlName(String xmlName) {
+    public void setXmlName(final String xmlName) {
         this.xmlName = xmlName;
     }
 

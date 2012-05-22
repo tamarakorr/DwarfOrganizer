@@ -18,9 +18,9 @@ public class DwarfOrganizer {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         MyNimbus.setNimbus();
-        MainWindow mainWindow = new MainWindow();
+        final MainWindow mainWindow = new MainWindow();
     }
     // Voluntarily crash the program
     public static void crash(final String message, final Exception e) {

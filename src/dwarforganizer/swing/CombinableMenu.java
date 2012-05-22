@@ -16,7 +16,7 @@ import javax.swing.JMenu;
 public class CombinableMenu {
     private int order;
     private JMenu menu;
-    public CombinableMenu(JMenu menu, int order) {
+    public CombinableMenu(final JMenu menu, final int order) {
         this.menu = menu;
         this.order = order;
     }

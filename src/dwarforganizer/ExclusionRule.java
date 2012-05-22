@@ -28,9 +28,11 @@ public class ExclusionRule extends Exclusion
     };
 
     // Example: new Exclusion("Juveniles", "Age", "Less than", 13) excludes juveniles
-    public ExclusionRule(Integer ID, String name, boolean active
-            , String propertyName, String comparator
-            , Object value) {
+    public ExclusionRule(final Integer ID, final String name
+            , final boolean active
+            , final String propertyName, final String comparator
+            , final Object value) {
+
         super(ID, name, active);
         this.propertyName = propertyName;
         this.comparator = comparator;
@@ -49,18 +51,18 @@ public class ExclusionRule extends Exclusion
 
     @Override
     public String toString() {
-        return "Exclusion: ID = " + super.getID() + ", Name = " + super.getName()
+        return "Exclusion: ID = " + super.getID() + ", Name = "
+                + super.getName()
                 + ", Property = " + propertyName
-                + ", Comparator = " + comparator + ", Value = " + value.toString();
+                + ", Comparator = " + comparator + ", Value = "
+                + value.toString();
     }
     @Override
-    public boolean appliesTo(MyPropertyGetter obj) {
-
+    public boolean appliesTo(final MyPropertyGetter obj) {
         return compareWith(obj.getProperty(this.propertyName, false)
                 , this.value);
-
     }
-    private boolean compareWith(Object valueObj, Object valueThis) {
+    private boolean compareWith(final Object valueObj, Object valueThis) {
         //System.out.println(value2.getClass().toString());
 
         if (valueObj.getClass().equals(String.class)) {
@@ -68,30 +70,30 @@ public class ExclusionRule extends Exclusion
 
             if (this.comparator.equals("Contains"))
                 return (valueObj.toString().contains(valueThis.toString()));
-            else if (this.comparator.equals("Does not contain"))
+            if (this.comparator.equals("Does not contain"))
                 return (! valueObj.toString().contains(valueThis.toString()));
-            else if (this.comparator.equals("Equals"))
+            if (this.comparator.equals("Equals"))
                 return (valueObj.toString().equals(valueThis.toString()));
-            else if (this.comparator.equals("Not equal to"))
+            if (this.comparator.equals("Not equal to"))
                 return (! valueObj.toString().equals(valueThis.toString()));
 
         }
         else if (Integer.class.equals(valueObj.getClass())) {
-            Integer intThis = Integer.parseInt(valueThis.toString());
-            Integer intObj = (Integer) valueObj;
+            final int intThis = Integer.parseInt(valueThis.toString());
+            final int intObj = (Integer) valueObj;
 
             if (this.comparator.equals("Less than")) {
                 return intObj < intThis;
             }
-            else if (this.comparator.equals("Less than or equal to"))
+            if (this.comparator.equals("Less than or equal to"))
                 return intObj <= intThis;
-            else if (this.comparator.equals("Equals"))
+            if (this.comparator.equals("Equals"))
                 return intObj == intThis;
-            else if (this.comparator.equals("Greater than"))
+            if (this.comparator.equals("Greater than"))
                 return intObj > intThis;
-            else if (this.comparator.equals("Greater than or equal to"))
+            if (this.comparator.equals("Greater than or equal to"))
                 return intObj >= intThis;
-            else if (this.comparator.equals("Not equal to"))
+            if (this.comparator.equals("Not equal to"))
                 return intObj != intThis;
         }
         else {
@@ -106,8 +108,10 @@ public class ExclusionRule extends Exclusion
     }
 
     @Override
-    public Object getProperty(String propName, boolean humanReadable) {
-        String prop = propName.toLowerCase();
+    public Object getProperty(final String propName
+            , final boolean humanReadable) {
+
+        final String prop = propName.toLowerCase();
         if (prop.equals("name"))
             return this.getName();
         else if (prop.equals("propertyname"))

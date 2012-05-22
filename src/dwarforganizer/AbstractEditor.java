@@ -59,12 +59,12 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         moDirtyHandler = new DirtyHandler();
     }
 
-    public void initialize(JTable table, MyTableModel model
-            , JButton btnUpdate, boolean clearAfterAdd
-            , boolean clearAfterEdit, boolean editOnDoubleClick
-            , boolean ctrlEnterToEdit, boolean deleteKeyToDelete
-            , boolean createPopUpEdit, boolean createPopUpDelete
-            , JComponent focusOnEdit) {
+    public void initialize(final JTable table, final MyTableModel model
+            , final JButton btnUpdate, final boolean clearAfterAdd
+            , final boolean clearAfterEdit, final boolean editOnDoubleClick
+            , final boolean ctrlEnterToEdit, final boolean deleteKeyToDelete
+            , final boolean createPopUpEdit, final boolean createPopUpDelete
+            , final JComponent focusOnEdit) {
             //, final int[] editKeys, final int[] deleteKeys) { // DefaultTableModel
 
         moTable = table;
@@ -77,7 +77,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         if (editOnDoubleClick) {
             moTable.addMouseListener(new MouseClickedAdapter() {
                 @Override
-                public void mouseClicked(MouseEvent e) {
+                public void mouseClicked(final MouseEvent e) {
                     // Double click to edit row
                     if (e.getButton() == MouseEvent.BUTTON1
                             && e.getClickCount() == 2) {
@@ -90,16 +90,18 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         if (ctrlEnterToEdit) {
             moTable.addKeyListener(new KeyTypedAdapter() {
                 @Override
-                public void keyTyped(KeyEvent e) {
-                    if (e.isControlDown() && (e.getKeyChar() == KeyEvent.VK_ENTER))
+                public void keyTyped(final KeyEvent e) {
+                    if (e.isControlDown()
+                            && (e.getKeyChar() == KeyEvent.VK_ENTER)) {
                         editRow();
+                    }
                 }
             });
         }
         if (deleteKeyToDelete) {
             moTable.addKeyListener(new KeyTypedAdapter() {
                 @Override
-                public void keyTyped(KeyEvent e) {
+                public void keyTyped(final KeyEvent e) {
                     if (e.getKeyChar() == KeyEvent.VK_DELETE)
                         deleteRow();
                 }
@@ -117,11 +119,11 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         moTable.getSelectionModel().addListSelectionListener(
             new ListSelectionListener() {
             @Override
-            public void valueChanged(ListSelectionEvent e) {
+            public void valueChanged(final ListSelectionEvent e) {
                 if (! e.getValueIsAdjusting()) {
-                    if (meEditState.equals(EditingState.EDIT))
+                    if (meEditState.equals(EditingState.EDIT)) {
                         setEditingState(EditingState.NEW);
-
+                    }
                     updatePopupsEnabled();
                 }
             }
@@ -133,10 +135,10 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
     }
     // Enable the menus if anything is selected.
     private void updatePopupsEnabled() {
-        JMenuItem[] menuItemList = new JMenuItem[] {
+        final JMenuItem[] menuItemList = new JMenuItem[] {
             mmuEditMenu, mmuDeleteMenu };
 
-        for (JMenuItem menuItem : menuItemList) {
+        for (final JMenuItem menuItem : menuItemList) {
             if (null != menuItem) { // It may not exist
                 menuItem.setEnabled(moTable.getSelectedRowCount() > 0);
             }
@@ -173,7 +175,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
                 setEditingState(EditingState.EDIT);
                 if (mbClearAfterEdit) clearInput();
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.err.println(e.getMessage() + " Failed to update row.");
             return false;
         }
@@ -183,16 +185,16 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
 
     // Edits the first selected row
     protected boolean editRow() {
-        int row = moTable.getSelectedRow();
+        final int row = moTable.getSelectedRow();
         if (row != -1)
             return startEditingRow(row);
         else
             return false;
     }
     // Edits the given row (table row index)
-    protected boolean startEditingRow(int tableRow) {
+    protected boolean startEditingRow(final int tableRow) {
 
-        int modelRow = moTable.convertRowIndexToModel(tableRow);
+        final int modelRow = moTable.convertRowIndexToModel(tableRow);
         mintCurrentEditedRow = modelRow;
 
         setEditingState(EditingState.EDIT);
@@ -205,22 +207,11 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         return true;
     }
 
-    // Doesn't make sense anymore:
-/*    // Copies the first selected row
-    protected void copyRow() {
-        int row = moTable.getSelectedRow();
-        if (row != -1) {
-            mintCurrentEditedRow = moTable.convertRowIndexToModel(row);
-            setEditingState(EditingState.EDIT);
-            rowDataToInput((T) moModel.getRowData().get(mintCurrentEditedRow)); // row
-        }
-    } */
-
     // Deletes the first selected row
     protected boolean deleteRow() {
-        int row = moTable.getSelectedRow();
+        final int row = moTable.getSelectedRow();
         if (row != -1) {
-            int modelRow = moTable.convertRowIndexToModel(row);
+            final int modelRow = moTable.convertRowIndexToModel(row);
             moModel.removeRow(modelRow);
             mintCurrentEditedRow = -1;
             setEditingState(EditingState.NEW);
@@ -231,23 +222,20 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
             return false;
     }
 
-    private boolean inputToRow(int modelRow) {
+    private boolean inputToRow(final int modelRow) {
         try {
             if (! validateInput()) {
                 return false;
             }
 
-            //Vector<Object> vRowData = createRowData();
-            T rowData = createRowData(false);
+            final T rowData = createRowData(false);
             moModel.updateRow(modelRow, rowData);
-            //moModel.removeRow(modelRow);
-            //moModel.insertRow(modelRow, vRowData);
 
             moDirtyHandler.setDirty(true);
             MyHandyTable.ensureIndexIsVisible(moTable
                     , moTable.convertRowIndexToView(modelRow));
 
-        } catch (Exception ignore) {
+        } catch (final Exception ignore) {
             return false;
         }
         return true;
@@ -261,18 +249,19 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
             moModel.addRow(createRowData(true));
 
             moDirtyHandler.setDirty(true);
-            int modelIndex = moModel.getRowCount() - 1;
-            MyHandyTable.ensureIndexIsVisible(moTable, moTable.convertRowIndexToView(modelIndex));
+            final int modelIndex = moModel.getRowCount() - 1;
+            MyHandyTable.ensureIndexIsVisible(moTable
+                    , moTable.convertRowIndexToView(modelIndex));
 
             mintCurrentEditedRow = modelIndex;
 
-        } catch (Exception ignore) {
+        } catch (final Exception ignore) {
             return false;
         }
         return true;
     }
 
-    private void setEditingState(EditingState newState) {
+    private void setEditingState(final EditingState newState) {
         switch (newState) {
             case NEW:
                 mbtnUpdate.setEnabled(false);
@@ -284,7 +273,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         meEditState = newState;
     }
     @Override
-    public void addDirtyListener(DirtyListener listener) {
+    public void addDirtyListener(final DirtyListener listener) {
         moDirtyHandler.addDirtyListener(listener);
     }
     @Override
@@ -299,10 +288,11 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
         return moDirtyHandler;
     }
     // Creates the right-click context popup menu for the table
-    private JPopupMenu createPopUpMenu(boolean allowEdit, boolean allowDelete
-            , boolean ctrlEnterToEdit, boolean deleteKeyToDelete) {
+    private JPopupMenu createPopUpMenu(final boolean allowEdit
+            , final boolean allowDelete
+            , final boolean ctrlEnterToEdit, final boolean deleteKeyToDelete) {
 
-        JPopupMenu popUp = new JPopupMenu();
+        final JPopupMenu popUp = new JPopupMenu();
         JMenuItem menuItem;
 
         if (allowEdit) {
@@ -312,18 +302,13 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
                         KeyStroke.getKeyStroke("control ENTER"));
             menuItem.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     editRow();
                 }
             });
             mmuEditMenu = menuItem;
             popUp.add(menuItem);
         }
-
-/*        // ---------------------------------------
-        if (allowEdit && allowDelete) {
-            popUp.add(new JSeparator());
-        } */
 
         // ---------------------------------------
         if (allowDelete) {
@@ -332,7 +317,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
                 menuItem.setAccelerator(KeyStroke.getKeyStroke("DELETE"));
             menuItem.addActionListener(new ActionListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed(final ActionEvent e) {
                     deleteRow();
                 }
             });

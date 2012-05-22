@@ -14,7 +14,9 @@ import dwarforganizer.bins.BinRule;
 public class JobBlacklist extends JobList implements BinRule<JobOpening> {
 
     @Override
-    public boolean canItemsBeBinned(JobOpening job1, JobOpening job2) {
+    public boolean canItemsBeBinned(final JobOpening job1
+            , final JobOpening job2) {
+
         if (job1.getName().equals(job2.getName())) {
             return false;
         } else {

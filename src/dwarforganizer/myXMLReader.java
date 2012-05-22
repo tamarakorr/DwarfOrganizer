@@ -19,45 +19,46 @@ import org.xml.sax.SAXException;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class myXMLReader {
+public class MyXMLReader {
 
     private Document mDoc;
 
-    public myXMLReader(String fileName) {
+    public MyXMLReader(final String fileName) {
         this(new File(fileName));
     }
 
-    public myXMLReader(File file) {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    public MyXMLReader(final File file) {
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
-            DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+            final DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             mDoc = docBuilder.parse(file);
 
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             System.err.println(e);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             System.err.println(e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println(e);
-        } catch (NullPointerException e) {
+        } catch (final NullPointerException e) {
             System.err.println("Null pointer exception for file = " + file.getName());
             e.printStackTrace(System.out);
         }
     }
-    public myXMLReader(InputStream is) {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    public MyXMLReader(final InputStream is) {
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
-            DocumentBuilder docBuilder = dbf.newDocumentBuilder();
+            final DocumentBuilder docBuilder = dbf.newDocumentBuilder();
             mDoc = docBuilder.parse(is);
 
-        } catch (ParserConfigurationException e) {
+        } catch (final ParserConfigurationException e) {
             System.err.println(e);
-        } catch (SAXException e) {
+        } catch (final SAXException e) {
             System.err.println(e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println(e);
         }
     }
-    public Document getDocument() { return mDoc; }
-
+    public Document getDocument() {
+        return mDoc;
+    }
 }

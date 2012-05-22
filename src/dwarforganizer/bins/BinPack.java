@@ -54,7 +54,7 @@ public class BinPack<T extends Binnable> {
                 if (intItemSize <= intSizeRemaining) {
 
                     // If placing this item in this bin does not violate a rule
-                    boolean bAccept;
+                    final boolean bAccept;
                     if (lstReturn.size() >= (bin + 1))
                         bAccept = binAccepts(lstReturn.get(bin), item, binRule);
                     else
@@ -87,11 +87,10 @@ public class BinPack<T extends Binnable> {
     private boolean binAccepts(final List<T> bin, final T item
             , final BinRule binRule) {
 
-        for (T binnedItem : bin) {
+        for (final T binnedItem : bin) {
             if (! binRule.canItemsBeBinned(binnedItem, item))
                 return false;
         }
         return true;
     }
-
 }

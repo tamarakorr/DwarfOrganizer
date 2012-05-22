@@ -24,7 +24,9 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
 
     public abstract boolean appliesTo(MyPropertyGetter obj);
 
-    public Exclusion(Integer ID, String name, boolean active) {
+    public Exclusion(final Integer ID, final String name
+            , final boolean active) {
+
         super();
         this.ID = ID;
         this.name = name;
@@ -43,15 +45,15 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
         return active;
     }
 
-    public void setID(Integer ID) {
+    public void setID(final Integer ID) {
         this.ID = ID;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(final boolean active) {
         this.active = active;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -63,8 +65,10 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
 
 
     @Override
-    public Object getProperty(String propName, boolean humanReadable) {
-        String prop = propName.toLowerCase();
+    public Object getProperty(final String propName
+            , final boolean humanReadable) {
+
+        final String prop = propName.toLowerCase();
         if (prop.equals("name"))
             return this.getName();
         else if (prop.equals("id"))
@@ -85,8 +89,8 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
     }
 
     @Override
-    public void setProperty(String propName, Object value) {
-        String prop = propName.toLowerCase();
+    public void setProperty(final String propName, final Object value) {
+        final String prop = propName.toLowerCase();
 
         try {
             if (prop.equals("name"))
@@ -101,5 +105,4 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
             System.err.println("Failed to set Exclusion property " + propName);
         }
     }
-
 }

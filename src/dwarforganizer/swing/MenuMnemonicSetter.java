@@ -23,9 +23,9 @@ import javax.swing.MenuElement;
  */
 public class MenuMnemonicSetter {
     //Set mnemonic of all the items in the menubar
-    public static void setMnemonics(JMenuBar mb) {
-        MenuElement[] MenuElements = mb.getSubElements();
-        int num = MenuElements.length;
+    public static void setMnemonics(final JMenuBar mb) {
+        final MenuElement[] MenuElements = mb.getSubElements();
+        final int num = MenuElements.length;
         if (0 == num) {
             return;
         }
@@ -39,22 +39,22 @@ public class MenuMnemonicSetter {
     }
 
     // Set mnemonic of all the top level menus in the menubar
-    private static void setMnemonicForTopLevel(JMenuBar mb) {
-        MenuElement[] MenuElements = mb.getSubElements();
-        int num = MenuElements.length;
+    private static void setMnemonicForTopLevel(final JMenuBar mb) {
+        final MenuElement[] MenuElements = mb.getSubElements();
+        final int num = MenuElements.length;
         if (0 == num) {
             return;
         }
-        char mnemonics[] = new char[num];
+        final char mnemonics[] = new char[num];
 
         for (int i = 0; i < num; ++i) {
             if (!(MenuElements[i] instanceof JMenu)) {
                 continue;
             }
-            JMenu menu = (JMenu) MenuElements[i];
+            final JMenu menu = (JMenu) MenuElements[i];
 
-            String text = menu.getText();
-            char mnemonic = getMnemonic(text, mnemonics);
+            final String text = menu.getText();
+            final char mnemonic = getMnemonic(text, mnemonics);
             if (' ' != mnemonic) {
                 menu.setMnemonic(mnemonic);
                 mnemonics[i] = mnemonic;
@@ -66,23 +66,23 @@ public class MenuMnemonicSetter {
     // To set a different mnemonic for each item, it first checks the first
     // character of all the words then the second, third, and so on until a
     // unique character is found.
-    private static void setMnemonic(JMenu jm) {
-        Component mcomps[] = jm.getMenuComponents();
-        int num = mcomps.length;
+    private static void setMnemonic(final JMenu jm) {
+        final Component mcomps[] = jm.getMenuComponents();
+        final int num = mcomps.length;
 
         if (0 == num) {
             return;
         }
-        char mnemonics[] = new char[num];
+        final char mnemonics[] = new char[num];
 
         for (int i = 0; i < num; ++i) {
             if (!(mcomps[i] instanceof JMenuItem)) {
                 continue;
             }
-            JMenuItem menuitem = (JMenuItem) mcomps[i];
+            final JMenuItem menuitem = (JMenuItem) mcomps[i];
 
-            String text = menuitem.getText();
-            char mnemonic = getMnemonic(text, mnemonics);
+            final String text = menuitem.getText();
+            final char mnemonic = getMnemonic(text, mnemonics);
             if (' ' != mnemonic) {
                 menuitem.setMnemonic(mnemonic);
                 mnemonics[i] = mnemonic;
@@ -93,13 +93,13 @@ public class MenuMnemonicSetter {
         }
     }
 
-    private static char getMnemonic(String text, char[] mnemonics) {
-        ArrayList words = new ArrayList();
-        StringTokenizer t = new StringTokenizer(text);
+    private static char getMnemonic(final String text, final char[] mnemonics) {
+        final ArrayList words = new ArrayList();
+        final StringTokenizer t = new StringTokenizer(text);
         int maxSize = 0;
 
         while (t.hasMoreTokens()) {
-            String word = (String) t.nextToken();
+            final String word = (String) t.nextToken();
             if (word.length() > maxSize) {
                 maxSize = word.length();
             }
@@ -108,26 +108,25 @@ public class MenuMnemonicSetter {
         words.trimToSize();
 
         for (int i = 0; i < maxSize; ++i) {
-            char mnemonic = getMnemonic(words, mnemonics, i);
+            final char mnemonic = getMnemonic(words, mnemonics, i);
             if (' ' != mnemonic) {
                 return mnemonic;
             }
         }
-
         return ' ';
     }
 
-    private static char getMnemonic(ArrayList words, char[] mnemonics
-            , int index) {
+    private static char getMnemonic(final ArrayList words
+            , final char[] mnemonics, final int index) {
 
-        int numwords = words.size();
+        final int numwords = words.size();
 
         for (int i = 0; i < numwords; ++i) {
-            String word = ((String) words.get(i)).toLowerCase();
+            final String word = ((String) words.get(i)).toLowerCase();
             if (index >= word.length()) {
                 continue;
             }
-            char c = word.charAt(index);
+            final char c = word.charAt(index);
             if (!isMnemonicExists(c, mnemonics)) {
                 return c;
             }
@@ -135,8 +134,10 @@ public class MenuMnemonicSetter {
         return ' ';
     }
 
-    private static boolean isMnemonicExists(char c, char[] mnemonics) {
-        int num = mnemonics.length;
+    private static boolean isMnemonicExists(final char c
+            , final char[] mnemonics) {
+
+        final int num = mnemonics.length;
         for (int i = 0; i < num; ++i) {
             if (mnemonics[i] == c) {
                 return true;

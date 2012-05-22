@@ -19,17 +19,17 @@ public class JobList extends HashMap<String, List<String>> {
     public JobList() { super(); }
 
     public void print() {
-        for (String key : this.keySet()) {
+        for (final String key : this.keySet()) {
             System.out.println("Whitelist for " + key + ":");
             final List<String> list = this.get(key);
-            for (String element : list)
+            for (final String element : list)
                 System.out.println("     " + element);
         }
     }
 
     // Adds a one-way entry to the job list, with the first job as the
     // key and the second as the value.
-    public void addOneWayEntry(String keyJob, String valueJob) {
+    public void addOneWayEntry(final String keyJob, final String valueJob) {
         if (this.containsKey(keyJob))
             this.get(keyJob).add(valueJob);
         else {
@@ -39,7 +39,9 @@ public class JobList extends HashMap<String, List<String>> {
         }
     }
 
-    protected boolean areItemsListedTogether(String item1, String item2) {
+    protected boolean areItemsListedTogether(final String item1
+            , final String item2) {
+
         if (this.containsKey(item1)) {
             if (this.get(item1).contains(item2))
                 return true;
@@ -51,5 +53,4 @@ public class JobList extends HashMap<String, List<String>> {
         }
         return false;
     }
-
 }

@@ -48,12 +48,12 @@ public class MyFileChooser extends JFileChooser {
 
     private static final String HUNTING_TEXT = "Looking_for_file_name_textbox";
 
-    public MyFileChooser(Frame owner) {
+    public MyFileChooser(final Frame owner) {
         super();
         focusFileNameWhenShown(owner);
     }
 
-    private void focusFileNameWhenShown(Frame owner) {
+    private void focusFileNameWhenShown(final Frame owner) {
         // Create a dialog to contain the chooser
         final JDialog dialog = new JDialog(owner, this.getDialogTitle(), true);
 
@@ -62,10 +62,10 @@ public class MyFileChooser extends JFileChooser {
         // Find the "File Name" text component.
         // To help hunt down the right text box, set the Selected File to a known
         // value temporarily. We will search for it in the UI elements.
-        File temp = this.getSelectedFile();
+        final File temp = this.getSelectedFile();
         this.setSelectedFile(new File(HUNTING_TEXT));
 
-        JTextComponent txtFileName = findFileNameTextBox(this);
+        final JTextComponent txtFileName = findFileNameTextBox(this);
 
         // (Because setting SelectedFile back to null doesn't clear the text)
         if (temp == null) {
@@ -82,21 +82,21 @@ public class MyFileChooser extends JFileChooser {
     }
 
     // Recursively search for the file name text box
-    private JTextComponent findFileNameTextBox(Container cont) {
+    private JTextComponent findFileNameTextBox(final Container cont) {
 
         JTextComponent txtReturn = null;
         txtReturn = findFileNameTextBox(txtReturn, cont);
         return txtReturn;
     }
     private JTextComponent findFileNameTextBox(JTextComponent txt
-            , Container cont) {
+            , final Container cont) {
 
-        Component[] components = cont.getComponents();
+        final Component[] components = cont.getComponents();
         for (int i = 0; i < components.length; i++) {
             if (txt != null)
                 return txt;
-            else if (components[i] instanceof JTextComponent) {
-                JTextComponent txtReturn = (JTextComponent) components[i];
+            if (components[i] instanceof JTextComponent) {
+                final JTextComponent txtReturn = (JTextComponent) components[i];
                 if (txtReturn.getText().equals(HUNTING_TEXT)) {
                     //System.out.println("Found a text component! " + txtReturn.toString());
                     return txtReturn;
@@ -119,7 +119,7 @@ public class MyFileChooser extends JFileChooser {
         // does not use setVisible() on its own.)
         dialog.addComponentListener(new ComponentAdapter(){
           @Override
-          public void componentShown(ComponentEvent e){
+          public void componentShown(final ComponentEvent e){
               if (txt != null)
                 txt.requestFocusInWindow();
           }
@@ -153,10 +153,13 @@ public class MyFileChooser extends JFileChooser {
             txt.addHierarchyListener(new HierarchyListener() {
 
                 @Override
-                public void hierarchyChanged(HierarchyEvent e) {
-                    if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0)
-                        if (txt.isShowing())
+                public void hierarchyChanged(final HierarchyEvent e) {
+                    if ((e.getChangeFlags()
+                            & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                        if (txt.isShowing()) {
                             txt.requestFocusInWindow();
+                        }
+                    }
                 }
             });
         }

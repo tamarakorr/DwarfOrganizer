@@ -18,32 +18,34 @@ import java.util.TimerTask;
  */
 public final class CursorController {
 
-    public static final Cursor busyCursor = new Cursor(Cursor.WAIT_CURSOR);
-    public static final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
-    public static final int delay = 500; // in milliseconds
+    public static final Cursor BUSY_CURSOR = new Cursor(Cursor.WAIT_CURSOR);
+    public static final Cursor DEFAULT_CURSOR
+            = new Cursor(Cursor.DEFAULT_CURSOR);
+    public static final int DELAY = 500; // in milliseconds
 
     private CursorController() {}
 
     public static ActionListener createListener(final Component component
             , final ActionListener mainActionListener) {
-        ActionListener actionListener = new ActionListener() {
+
+        final ActionListener actionListener = new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent ae) {
 
-                TimerTask timerTask = new TimerTask() {
+                final TimerTask timerTask = new TimerTask() {
                     @Override
                     public void run() {
-                        component.setCursor(busyCursor);
+                        component.setCursor(BUSY_CURSOR);
                     }
                 };
-                Timer timer = new Timer();
+                final Timer timer = new Timer();
 
                 try {
-                    timer.schedule(timerTask, delay);
+                    timer.schedule(timerTask, DELAY);
                     mainActionListener.actionPerformed(ae);
                 } finally {
                     timer.cancel();
-                    component.setCursor(defaultCursor);
+                    component.setCursor(DEFAULT_CURSOR);
                 }
             }
         };

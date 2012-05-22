@@ -33,7 +33,7 @@ public class SortKeySwapper {
         super();
     }
 
-    public void setTable(JTable oTable) {
+    public void setTable(final JTable oTable) {
         moTable = oTable;
     }
 
@@ -44,10 +44,11 @@ public class SortKeySwapper {
             if (null != moTable.getRowSorter().getSortKeys()) {
 
                 try {
-                    List<SortKey> temp = moKeyHolder;
-                    moKeyHolder = (List<SortKey>) moTable.getRowSorter().getSortKeys();
+                    final List<SortKey> temp = moKeyHolder;
+                    moKeyHolder = (List<SortKey>)
+                            moTable.getRowSorter().getSortKeys();
                     moTable.getRowSorter().setSortKeys(temp);
-                } catch (NullPointerException e) {
+                } catch (final NullPointerException e) {
                     e.printStackTrace(System.out);
                     System.err.println("Failed to swap sort keys. Did you"
                             + " remember to do SortKeySwapper.setTable() before"
@@ -56,5 +57,4 @@ public class SortKeySwapper {
             }
         }
     }
-
 }

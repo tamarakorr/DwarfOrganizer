@@ -23,7 +23,7 @@ public class Broadcaster {
         mlstListener = new ArrayList<BroadcastListener>();
     }
 
-    public void notifyListeners(BroadcastMessage message) {
+    public void notifyListeners(final BroadcastMessage message) {
         /*final Vector<BroadcastListener> clone
                 = (Vector<BroadcastListener>) mlstListener.clone(); */
         final List<BroadcastListener> list
@@ -34,7 +34,7 @@ public class Broadcaster {
         }
     }
 
-    public void addListener(BroadcastListener listener) {
+    public void addListener(final BroadcastListener listener) {
         /*final Vector<BroadcastListener> clone
                 = (Vector<BroadcastListener>) mlstListener.clone(); */
         final List<BroadcastListener> list = Collections.synchronizedList(

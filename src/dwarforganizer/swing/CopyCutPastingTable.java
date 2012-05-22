@@ -35,24 +35,26 @@ public class CopyCutPastingTable extends JTable {
         super();
         initialize();
     }
-    public CopyCutPastingTable(int numRows, int numColumns) {
+    public CopyCutPastingTable(final int numRows, final int numColumns) {
         super(numRows, numColumns);
         initialize();
     }
-    public CopyCutPastingTable(Object[][] rowData, Object[] columnNames) {
+    public CopyCutPastingTable(final Object[][] rowData
+            , final Object[] columnNames) {
+
         super(rowData, columnNames);
         initialize();
     }
-    public CopyCutPastingTable(TableModel dm) {
+    public CopyCutPastingTable(final TableModel dm) {
         super(dm);
         initialize();
     }
-    public CopyCutPastingTable(TableModel dm, TableColumnModel cm) {
+    public CopyCutPastingTable(final TableModel dm, final TableColumnModel cm) {
         super(dm, cm);
         initialize();
     }
-    public CopyCutPastingTable(TableModel dm, TableColumnModel cm
-            , ListSelectionModel sm) {
+    public CopyCutPastingTable(final TableModel dm, final TableColumnModel cm
+            , final ListSelectionModel sm) {
         super(dm, cm, sm);
         initialize();
     }
@@ -90,11 +92,11 @@ public class CopyCutPastingTable extends JTable {
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
+        public void actionPerformed(final ActionEvent e) {
             if (focusOwner == null)
                 return;
-            String action = (String)e.getActionCommand();
-            Action a = focusOwner.getActionMap().get(action);
+            final String action = (String)e.getActionCommand();
+            final Action a = focusOwner.getActionMap().get(action);
             if (a != null) {
                 a.actionPerformed(new ActionEvent(focusOwner,
                                                   ActionEvent.ACTION_PERFORMED,
@@ -106,8 +108,8 @@ public class CopyCutPastingTable extends JTable {
     // Starting an edit session is horribly bugged. So we are preventing
     // Control, Alt, and Meta from starting the edit session.
     @Override
-    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e
-            , int condition, boolean pressed) {
+    protected boolean processKeyBinding(final KeyStroke ks, final KeyEvent e
+            , final int condition, final boolean pressed) {
 
         // We cannot just ignore every key that isn't in the input map
         // these days, because in modern Java EVERY DARN KEY is in the
@@ -130,8 +132,8 @@ public class CopyCutPastingTable extends JTable {
             return super.processKeyBinding(ks, e, condition, pressed);
     }
 
-    private void setCutCopyPasteMappings(JTable table) {
-        ActionMap map = table.getActionMap();
+    private void setCutCopyPasteMappings(final JTable table) {
+        final ActionMap map = table.getActionMap();
         map.put(TransferHandler.getCutAction().getValue(Action.NAME),
                 TransferHandler.getCutAction());
         map.put(TransferHandler.getCopyAction().getValue(Action.NAME),
@@ -140,14 +142,14 @@ public class CopyCutPastingTable extends JTable {
                 TransferHandler.getPasteAction());
     }
 
-    public void createEditMenuItems(JComponent editMenu) {
+    public void createEditMenuItems(final JComponent editMenu) {
         final JMenuItem[] editMenuItems = new JMenuItem[3];
-        TransferActionListener actionListener = new TransferActionListener();
+        final TransferActionListener tal = new TransferActionListener();
 
         JMenuItem menuItem = new JMenuItem("Cut Cell");
         menuItem.setActionCommand((String)TransferHandler.getCutAction().
                  getValue(Action.NAME));
-        menuItem.addActionListener(actionListener);
+        menuItem.addActionListener(tal);
         menuItem.setAccelerator(
           KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
         menuItem.setMnemonic(KeyEvent.VK_U);
@@ -158,7 +160,7 @@ public class CopyCutPastingTable extends JTable {
         menuItem = new JMenuItem("Copy Cell");
         menuItem.setActionCommand((String)TransferHandler.getCopyAction().
                  getValue(Action.NAME));
-        menuItem.addActionListener(actionListener);
+        menuItem.addActionListener(tal);
         menuItem.setAccelerator(
           KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK));
         menuItem.setMnemonic(KeyEvent.VK_C);
@@ -168,7 +170,7 @@ public class CopyCutPastingTable extends JTable {
         menuItem = new JMenuItem("Paste Cell");
         menuItem.setActionCommand((String)TransferHandler.getPasteAction().
                  getValue(Action.NAME));
-        menuItem.addActionListener(actionListener);
+        menuItem.addActionListener(tal);
         menuItem.setAccelerator(
           KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
         menuItem.setMnemonic(KeyEvent.VK_T);
@@ -181,7 +183,7 @@ public class CopyCutPastingTable extends JTable {
                 new ListSelectionListener() {
 
             @Override
-            public void valueChanged(ListSelectionEvent e) {
+            public void valueChanged(final ListSelectionEvent e) {
                 if (! e.getValueIsAdjusting())
                     updateMenuEnabledStates(editMenuItems);
             }
@@ -190,9 +192,9 @@ public class CopyCutPastingTable extends JTable {
         // Set the initial enabled state of the menu items
         updateMenuEnabledStates(editMenuItems);
     }
-    private void updateMenuEnabledStates(JMenuItem[] menuItems) {
-        boolean bAnythingSelected = this.getSelectedRowCount() > 0;
-        for (JMenuItem menuItem : menuItems) {
+    private void updateMenuEnabledStates(final JMenuItem[] menuItems) {
+        final boolean bAnythingSelected = this.getSelectedRowCount() > 0;
+        for (final JMenuItem menuItem : menuItems) {
             menuItem.setEnabled(bAnythingSelected);
         }
     }

@@ -24,14 +24,14 @@ public class StateIncrementHandler {
     private int stateIncrement;
     private ThresholdFunctions thresholdFunctions;
 
-    public StateIncrementHandler(DefaultState currentState) {
+    public StateIncrementHandler(final DefaultState currentState) {
 
         if (currentState.equals(DefaultState.POSITIVE_STATE))
             stateIncrement = POSITIVE_THRESHOLD;
         else // (currentState.equals(DefaultState.NEGATIVE_STATE)
             stateIncrement = NEGATIVE_THRESHOLD;
     }
-    public void initialize(ThresholdFunctions tf) {
+    public void initialize(final ThresholdFunctions tf) {
         this.thresholdFunctions = tf;
     }
     protected interface ThresholdFunctions {

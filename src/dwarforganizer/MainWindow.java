@@ -714,7 +714,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     //java.awt.Desktop.getDesktop().open(new File(TUTORIAL_FILE));
                     BareBonesBrowserLaunch.openURL(new File(
                             TUTORIAL_FILE).toURI().toURL().toString());
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(
                             Level.SEVERE, null, ex);
                     ex.printStackTrace(System.out);
@@ -760,8 +760,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // ---------------------------------------------------------------------
         addSeparator(menu, lstReturn, SEP_PRIO);
 
-        JMenuItem menuItem = MenuHelper.createMenuItem("Exit", createExitAL()
-                , KeyEvent.VK_X);
+        final JMenuItem menuItem = MenuHelper.createMenuItem("Exit"
+                , createExitAL(), KeyEvent.VK_X);
         addMenuItem(menu, menuItem, lstReturn, EXIT_MENU_PRIORITY);
 
         return lstReturn;
@@ -1223,7 +1223,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 if (! btn.equals(frame.getRootPane().getDefaultButton()))
                     setDefaultButton(btn, frame);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             System.err.println(e.getMessage() + " Failed to set default button");
         }
     }
@@ -1324,6 +1324,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         private JInternalFrame createAlwaysShownFrame(final JDesktopPane desktop
                 , final Container ui, final String title) {
+
             final AbstractFrameCreator creator = new AbstractFrameCreator() {
                 @Override
                 public Container createUIObject() {

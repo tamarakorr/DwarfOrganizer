@@ -20,8 +20,10 @@ public class SocialSkill extends SecondarySkill {
     private int noStatMin;
     private int noStatMax;
 
-    public SocialSkill(String name, List<Stat> stats, String noStatName
-            , int noStatMin, int noStatMax) {
+    public SocialSkill(final String name, final List<Stat> stats
+            , final String noStatName, final int noStatMin
+            , final int noStatMax) {
+
         super(name, stats);
         this.noStatName = noStatName;
         this.noStatMin = noStatMin;

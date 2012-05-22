@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class MetaSkill extends GenericSkill implements NamedThing {
     protected List<Skill> vSkills;
-    public MetaSkill(String name, List<Skill> skills) {
+    public MetaSkill(final String name, final List<Skill> skills) {
         super(name);
         this.vSkills = skills;
     }

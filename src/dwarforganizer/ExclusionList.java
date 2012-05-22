@@ -15,26 +15,27 @@ import java.util.List;
  * See MIT license in license.txt
  */
 public class ExclusionList extends Exclusion
-        implements DeepCloneable<Exclusion> {
+    implements DeepCloneable<Exclusion> {
 
     private List<String> mvCitizenNames;
 
-    public ExclusionList(Integer ID, String name, boolean active
-            , List<String> citizenList) {
+    public ExclusionList(final Integer ID, final String name
+            , final boolean active, final List<String> citizenList) {
+
         super(ID, name, active);
         this.mvCitizenNames = citizenList;
     }
     public List<String> getCitizenList() {
         return mvCitizenNames;
     }
-    public void setCitizenList(List<String> vCitizenNames) {
+    public void setCitizenList(final List<String> vCitizenNames) {
         this.mvCitizenNames = vCitizenNames;
     }
 
     @Override
-    public boolean appliesTo(MyPropertyGetter citizen) {
+    public boolean appliesTo(final MyPropertyGetter citizen) {
         if (citizen.getClass().equals(Dwarf.class)) {
-            Dwarf dwarf = (Dwarf) citizen;
+            final Dwarf dwarf = (Dwarf) citizen;
             return mvCitizenNames.contains(dwarf.getName());
         }
         else {
@@ -45,8 +46,9 @@ public class ExclusionList extends Exclusion
 
     @Override
     public ExclusionList deepClone() {
-        ArrayList<String> vNames = new ArrayList<String>(mvCitizenNames.size());
-        for (String name : mvCitizenNames) {
+        final ArrayList<String> vNames = new ArrayList<String>(
+                mvCitizenNames.size());
+        for (final String name : mvCitizenNames) {
             vNames.add(name);
         }
         return new ExclusionList(this.getID(), this.getName(), this.isActive()

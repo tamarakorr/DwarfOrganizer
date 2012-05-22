@@ -45,69 +45,69 @@ public class ViewManagerUI extends AbstractEditor<GridView>
 
         broadcaster = new Broadcaster();
 
-        Object[] cols = new Object[] { "All Views" };
-        Class[] colClass = new Class[] { String.class };
-        String[] colProps = new String[] { "name" };
+        final Object[] cols = new Object[] { "All Views" };
+        final Class[] colClass = new Class[] { String.class };
+        final String[] colProps = new String[] { "name" };
         mlstViews = new ArrayList<GridView>();
-        SortKeySwapper swapper = new SortKeySwapper();
+        final SortKeySwapper swapper = new SortKeySwapper();
 
         model = new MyTableModel(cols, colClass, colProps, mlstViews, swapper);
-        JTable table = new JTable(model);
+        final JTable table = new JTable(model);
         table.setPreferredScrollableViewportSize(new Dimension(220, 175));
 
         swapper.setTable(table);
-        JScrollPane pane = new JScrollPane(table);
+        final JScrollPane pane = new JScrollPane(table);
         btnUpdate = new JButton("Update");
         btnUpdate.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 updateRecord();
             }
         });
         txtName = new PlaceholderTextField(20, "Rename a view and press [Enter]"
                 , true);
 
-        JButton btnDelete = new JButton("Delete");
+        final JButton btnDelete = new JButton("Delete");
         btnDelete.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 deleteRow();
             }
         });
 
-        JButton btnEdit = new JButton("Edit");
+        final JButton btnEdit = new JButton("Edit");
         btnEdit.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 editRow();
             }
         });
 
-        JButton btnSave = new JButton("Save");
+        final JButton btnSave = new JButton("Save");
         btnSave.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 saveViews();
             }
         });
 
-        JButton btnClose = new JButton("Close");
+        final JButton btnClose = new JButton("Close");
         btnClose.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 closeWindow();
             }
         });
 
         // Set up default buttons
-        JComponent[] nullComps = new JComponent[] { table };
-        JComponent[] updateComps = new JComponent[] { btnUpdate, txtName
+        final JComponent[] nullComps = new JComponent[] { table };
+        final JComponent[] updateComps = new JComponent[] { btnUpdate, txtName
                 , btnDelete, btnEdit, btnSave, btnClose };
         setUpDefaultButtons(createDefaultButtonMap(nullComps, null)
                 , createDefaultButtonMap(updateComps, btnUpdate)); // (varargs)
 
         // Build UI-------------------------------------------------------------
-        JPanel tablePanel = new JPanel(new BorderLayout());
+        final JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBorder(BorderFactory.createEtchedBorder());
         tablePanel.add(pane, BorderLayout.CENTER);
 
@@ -165,7 +165,7 @@ public class ViewManagerUI extends AbstractEditor<GridView>
     @Override
     public boolean validateInput() {
         // Ensure no other view has the same name:
-        for (GridView view : mlstViews)
+        for (final GridView view : mlstViews)
             if (view.getName().equals(txtName.getText())) {
                 JOptionPane.showMessageDialog(uiPanel
                         , "There is already a view with that name."
@@ -176,20 +176,20 @@ public class ViewManagerUI extends AbstractEditor<GridView>
     }
 
     @Override
-    public GridView createRowData(boolean isNew) {
+    public GridView createRowData(final boolean isNew) {
 
         if (isNew)
             System.err.println("[ViewManagerUI] New views are unsupported");
 
-        String name = txtName.getText();
+        final String name = txtName.getText();
 
-        GridView view = mlstViews.get(super.getCurrentEditedRow());
+        final GridView view = mlstViews.get(super.getCurrentEditedRow());
         view.setName(name);
         return view;
     }
 
     @Override
-    public boolean rowDataToInput(GridView rowData) {
+    public boolean rowDataToInput(final GridView rowData) {
         txtName.setText(rowData.getName());
         return true;
     }
@@ -205,23 +205,23 @@ public class ViewManagerUI extends AbstractEditor<GridView>
         broadcaster.notifyListeners(new BroadcastMessage("ViewManagerClose"
                 , null, ""));
     }
-    private void requestDefaultButton(JButton btn) {
+    private void requestDefaultButton(final JButton btn) {
         broadcaster.notifyListeners(new BroadcastMessage(
                 "ViewManagerDefaultButton", btn, ""));
     }
     // Sets up focus listeners for components in default button maps
     // (Uses varargs)
-    private void setUpDefaultButtons(Map<JComponent, JButton>... maps) {
-        for (Map<JComponent, JButton> map : maps) {
-            for (JComponent comp : map.keySet()) {
+    private void setUpDefaultButtons(final Map<JComponent, JButton>... maps) {
+        for (final Map<JComponent, JButton> map : maps) {
+            for (final JComponent comp : map.keySet()) {
                 final JButton btn = map.get(comp);
-                FocusListener listener = new FocusListener() {
+                final FocusListener listener = new FocusListener() {
                     @Override
-                    public void focusGained(FocusEvent e) {
+                    public void focusGained(final FocusEvent e) {
                         requestDefaultButton(btn);
                     }
                     @Override
-                    public void focusLost(FocusEvent e) { // Do nothing
+                    public void focusLost(final FocusEvent e) { // Do nothing
                     }
                 };
                 comp.addFocusListener(listener);
@@ -231,11 +231,11 @@ public class ViewManagerUI extends AbstractEditor<GridView>
     // Creates a map for the given array of components to the given default
     // button.
     private HashMap<JComponent, JButton> createDefaultButtonMap(
-            JComponent[] comps, JButton btn) {
+            final JComponent[] comps, final JButton btn) {
 
-        HashMap<JComponent, JButton> map = new HashMap<JComponent, JButton>(
-                comps.length);
-        for (JComponent comp : comps)
+        final HashMap<JComponent, JButton> map
+                = new HashMap<JComponent, JButton>(comps.length);
+        for (final JComponent comp : comps)
             map.put(comp, btn);
         return map;
     }

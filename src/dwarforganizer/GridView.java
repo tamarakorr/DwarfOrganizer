@@ -33,7 +33,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
     private List<Object> mlstColOrder;
 
     // TODO: Object keyAttribute, KeyAxis axis, boolean labelY
-    public GridView(String name, List<Object> colOrder) {
+    public GridView(final String name, final List<Object> colOrder) {
         super();
 
         mstrName = name;
@@ -47,7 +47,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         return mstrName;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.mstrName = name;
     }
 
@@ -55,7 +55,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         return mbLabelY;
     }
 
-    public void setLabelY(boolean labelY) {
+    public void setLabelY(final boolean labelY) {
         this.mbLabelY = labelY;
     }
 
@@ -63,7 +63,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         return mlstColOrder;
     }
 
-    public void setColOrder(List<Object> colOrder) {
+    public void setColOrder(final List<Object> colOrder) {
         this.mlstColOrder = colOrder;
     }
 
@@ -71,7 +71,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         return moKey;
     }
 
-    public void setKeyAttribute(Object key) {
+    public void setKeyAttribute(final Object key) {
         this.moKey = key;
     }
 
@@ -79,7 +79,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         return moKeyAxis;
     }
 
-    public void setKeyAxis(KeyAxis keyAxis) {
+    public void setKeyAxis(final KeyAxis keyAxis) {
         this.moKeyAxis = keyAxis;
     }
 
@@ -98,29 +98,30 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
     }
     public class AttributeColumn extends GridColumn {
         private Object attribute;
-        public AttributeColumn(Object attribute) {
+        public AttributeColumn(final Object attribute) {
             super();
             this.attribute = attribute;
         }
 
         @Override
-        public boolean isInView(Object attribute) {
+        public boolean isInView(final Object attribute) {
             return this.attribute.equals(attribute);
         }
     }
     public class ColumnGroup extends GridColumn {
         private List<Object> columnGroup;
-        public ColumnGroup(List<Object> columnGroup) {
+        public ColumnGroup(final List<Object> columnGroup) {
             super();
             this.columnGroup = columnGroup;
         }
 
         @Override
-        public boolean isInView(Object attribute) {
+        public boolean isInView(final Object attribute) {
             return this.columnGroup.contains(attribute);
         }
     }
-    public void applyToTable(CompositeTable table, TableColumnModel columnModel) {
+    public void applyToTable(final CompositeTable table
+            , final TableColumnModel columnModel) {
         // Hide all columns not in the column ordering list---------------------
 
         hideColumns(columnModel); //table.getMainTable()
@@ -128,7 +129,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
 
         //TODO: the rest
     }
-    private void hideColumns(TableColumnModel columnModel) { //JTable table
+    private void hideColumns(final TableColumnModel columnModel) { //JTable table
         if (! HideableTableColumnModel.class.isAssignableFrom(
                 columnModel.getClass())) {
             System.err.println("[GridView] Could not set column visibility: "
@@ -136,10 +137,10 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         }
         else {
             // Show or hide each column based on presence in view
-            HideableTableColumnModel hideableModel = (HideableTableColumnModel)
-                    columnModel;
+            final HideableTableColumnModel hideableModel
+                    = (HideableTableColumnModel) columnModel;
             for (int iCount = 0; iCount < hideableModel.getColumnCount(false); iCount++) {
-                Object identifier = hideableModel.getColumn(iCount
+                final Object identifier = hideableModel.getColumn(iCount
                         , false).getIdentifier();
                 hideableModel.setColumnVisible(hideableModel.getColumn(iCount
                         , false), isColumnInView(identifier));
@@ -147,25 +148,25 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         }
 
     }
-    private void reorderTableColumns(TableColumnModel columnModel
-            , List<Object> order) {
+    private void reorderTableColumns(final TableColumnModel columnModel
+            , final List<Object> order) {
 
         int iCount = 0;
-        for (Object identifier : order) {
+        for (final Object identifier : order) {
             columnModel.moveColumn(columnModel.getColumnIndex(identifier)
                     , iCount++);
             //table.moveColumn(MyHandyTable.getColByName(table
             //        , identifier.toString()), iCount++);
         }
     }
-    private void reorderTableColumns(CompositeTable compTable
-            , List<Object> order) {
+    private void reorderTableColumns(final CompositeTable compTable
+            , final List<Object> order) {
 
         int col;
 
         int iCount = 0;
-        for (Object identifier : order) {
-            for (JTable table : compTable.getTables()) {
+        for (final Object identifier : order) {
+            for (final JTable table : compTable.getTables()) {
                 try {
                     col = table.getColumnModel().getColumnIndex(identifier);
                     moveColumn(compTable, table, col, iCount++);
@@ -175,19 +176,21 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
             }
         }
     }
-    private void moveColumn(CompositeTable compTable, JTable source
-            , int sourceIndex, int overallDestIndex) {
+    private void moveColumn(final CompositeTable compTable, final JTable source
+            , final int sourceIndex, final int overallDestIndex) {
         compTable.moveColumn(source, sourceIndex, overallDestIndex);
     }
-    private boolean isColumnInView(Object identifier) {
+    private boolean isColumnInView(final Object identifier) {
         //System.out.println(identifier.toString() + " is in view: "
         //        + mlstColOrder.contains(identifier));
         return mlstColOrder.contains(identifier);
     }
 
     @Override
-    public Object getProperty(String propName, boolean humanReadable) {
-        String prop = propName.toLowerCase();
+    public Object getProperty(final String propName
+            , final boolean humanReadable) {
+
+        final String prop = propName.toLowerCase();
 
         if (prop.equals("name"))
             return getName();
@@ -210,7 +213,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
     }
 
     // Note: We do not check the name
-    public boolean equals(GridView otherView) {
+    public boolean equals(final GridView otherView) {
 
         //System.out.println("equals()");
 
@@ -231,8 +234,8 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
         }
 
         // Check column ordering------------------------------------------------
-        List<Object> otherOrder = otherView.getColOrder();
-        int size = otherOrder.size();
+        final List<Object> otherOrder = otherView.getColOrder();
+        final int size = otherOrder.size();
 
         // If column ordering lists aren't the same size, unequal
         if (mlstColOrder.size() != size) {

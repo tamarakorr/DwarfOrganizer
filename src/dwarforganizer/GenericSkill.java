@@ -14,7 +14,7 @@ public class GenericSkill implements NamedThing {
 
     private String name;
 
-    public GenericSkill(String name) {
+    public GenericSkill(final String name) {
         this.name = name;
     }
 

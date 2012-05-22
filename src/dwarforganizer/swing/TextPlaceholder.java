@@ -36,7 +36,7 @@ public class TextPlaceholder { //extends JLabel {
     private int mintFocusLost;
     private JLabel label;
 
-    public TextPlaceholder(String text, JTextComponent component) {
+    public TextPlaceholder(final String text, final JTextComponent component) {
         this(text, component, Show.FOCUS_LOST);
     }
     public TextPlaceholder(final String text, final JTextComponent component
@@ -61,26 +61,30 @@ public class TextPlaceholder { //extends JLabel {
         checkForPlaceholder();
     }
 
-    public Show getShow() { return meShow; }
+    public Show getShow() {
+        return meShow;
+    }
     // Show.ALWAYS = always show the placeholder
     // Show.FOCUS_GAINED = show the prompt when the component gains focus,
     //                     and hide when focus lost
     // Show.FOCUS_LOST (default) = show when the component loses focus, and hide
     //                   when focus gained
-    public void setShow(Show newValue) {
+    public void setShow(final Show newValue) {
         meShow = newValue;
     }
 
     // Set setShowOnce(true) to show the component once only
     // false = show repeatedly
-    public boolean showOnce() { return mbShowOnce; }
-    public void setShowOnce(boolean newValue) {
+    public boolean showOnce() {
+        return mbShowOnce;
+    }
+    public void setShowOnce(final boolean newValue) {
         mbShowOnce = newValue;
     }
 
     // Change the alpha
     // @param alpha range 0 - 1.0
-    public void setAlpha(float alpha) {
+    public void setAlpha(final float alpha) {
         setAlpha((int) (alpha * 255));
     }
     // Change the alpha
@@ -88,17 +92,17 @@ public class TextPlaceholder { //extends JLabel {
     public void setAlpha(int alpha) {
         alpha = alpha > 255 ? 255 : alpha < 0 ? 0 : alpha;
 
-        Color foreground = label.getForeground();
-        int red = foreground.getRed();
-        int green = foreground.getGreen();
-        int blue = foreground.getBlue();
+        final Color foreground = label.getForeground();
+        final int red = foreground.getRed();
+        final int green = foreground.getGreen();
+        final int blue = foreground.getBlue();
 
-        Color withAlpha = new Color(red, green, blue, alpha);
+        final Color withAlpha = new Color(red, green, blue, alpha);
         label.setForeground(withAlpha);
     }
     // Change the style
     // @param Font.BOLD, Font.ITALIC, Font.BOLD + Font.ITALIC, etc. (from Font class)
-    public void setStyle(int style) {
+    public void setStyle(final int style) {
         label.setFont(label.getFont().deriveFont(style));
     }
 
@@ -129,12 +133,12 @@ public class TextPlaceholder { //extends JLabel {
     private FocusListener createFocusListener() {
         return new FocusListener() {
             @Override
-            public void focusGained(FocusEvent e) {
+            public void focusGained(final FocusEvent e) {
                 checkForPlaceholder();
             }
 
             @Override
-            public void focusLost(FocusEvent e) {
+            public void focusLost(final FocusEvent e) {
                 mintFocusLost = 1;
                 checkForPlaceholder();
             }
@@ -145,17 +149,17 @@ public class TextPlaceholder { //extends JLabel {
     private DocumentListener createDocumentListener() {
         return new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(final DocumentEvent e) {
                 checkForPlaceholder();
             }
 
             @Override
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(final DocumentEvent e) {
                 checkForPlaceholder();
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) { }
+            public void changedUpdate(final DocumentEvent e) { }
         };
     }
     public JLabel getLabel() {

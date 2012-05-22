@@ -45,12 +45,16 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
 
     // Method to use column identifier instead of TableColumn
     // Beware; getColumnIndex() isn't incredibly fast for large tables
-    public void setColumnVisible(Object colIdentifier, boolean visible) {
-        int index = this.getColumnIndex(colIdentifier, false);
+    public void setColumnVisible(final Object colIdentifier
+            , final boolean visible) {
+
+        final int index = this.getColumnIndex(colIdentifier, false);
         setColumnVisible(this.getColumn(index, false), visible);
     }
 
-    public void setColumnVisible(TableColumn column, boolean visible) {
+    public void setColumnVisible(final TableColumn column
+            , final boolean visible) {
+
         if (! visible) {
             super.removeColumn(column);
         }
@@ -58,12 +62,14 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
             // find the visible index of the column:
             // iterate through both collections of visible and all columns, counting
             // visible columns up to the one that's about to be shown again
-            int numVisible = tableColumns.size();
-            int numInvisible = mlstAllTableColumns.size();
+            final int numVisible = tableColumns.size();
+            final int numInvisible = mlstAllTableColumns.size();
             int visibleIndex = 0;
             for (int invisibleIndex = 0; invisibleIndex < numInvisible; ++invisibleIndex) {
-                TableColumn visibleColumn = (visibleIndex < numVisible ? tableColumns.get(visibleIndex) : null); // (TableColumn)
-                TableColumn testColumn
+                final TableColumn visibleColumn = (visibleIndex < numVisible
+                        ? tableColumns.get(visibleIndex)
+                        : null); // (TableColumn)
+                final TableColumn testColumn
                         = mlstAllTableColumns.get(invisibleIndex);
                 if (testColumn == column) {
                     if (visibleColumn != column) {
@@ -80,18 +86,18 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
     }
     // Debugging
     // The vector seems to get out of order when involved with the ColumnFreezingTable
-    private void printAll(int howMany, String prefix) {
+    private void printAll(final int howMany, final String prefix) {
         for (int iCount = 0; iCount < howMany; iCount++)
             System.out.println(prefix + " " + iCount + " "
                     + mlstAllTableColumns.get(iCount).getIdentifier());
     }
-    public boolean isColumnVisible(TableColumn aColumn) {
+    public boolean isColumnVisible(final TableColumn aColumn) {
         return (tableColumns.indexOf(aColumn) >= 0);
     }
 
-    public TableColumn getColumnModelIndex(int modelColumnIndex) {
+    public TableColumn getColumnModelIndex(final int modelColumnIndex) {
         for (int cCount = 0; cCount < mlstAllTableColumns.size(); ++cCount) {
-            TableColumn col = mlstAllTableColumns.get(cCount); //(TableColumn)
+            final TableColumn col = mlstAllTableColumns.get(cCount); //(TableColumn)
             if (col.getModelIndex() == modelColumnIndex) {
                 return col;
             }
@@ -100,12 +106,13 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
     }
 
     public void setAllColumnsVisible() {
-        int noColumns = mlstAllTableColumns.size();
+        final int noColumns = mlstAllTableColumns.size();
         for (int columnIndex = 0; columnIndex < noColumns; ++columnIndex) {
-            TableColumn visibleColumn = (columnIndex < tableColumns.size()
+            final TableColumn visibleColumn = (columnIndex < tableColumns.size()
                     ? tableColumns.get(columnIndex)
                     : null); // (TableColumn)
-            TableColumn invisibleColumn = mlstAllTableColumns.get(columnIndex); // (TableColumn)
+            final TableColumn invisibleColumn
+                    = mlstAllTableColumns.get(columnIndex); // (TableColumn)
 
             if (visibleColumn != invisibleColumn) {
                 super.addColumn(invisibleColumn);
@@ -115,16 +122,16 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
     }
 
     @Override
-    public void addColumn(TableColumn column) {
+    public void addColumn(final TableColumn column) {
         //System.out.println("Adding " + column.getIdentifier());
         mlstAllTableColumns.add(column);
         super.addColumn(column);
     }
 
     @Override
-    public void removeColumn(TableColumn column) {
+    public void removeColumn(final TableColumn column) {
         //System.out.println("Removing column " + column.getIdentifier());
-        int allColumnsIndex = mlstAllTableColumns.indexOf(column);
+        final int allColumnsIndex = mlstAllTableColumns.indexOf(column);
         if (allColumnsIndex != -1) {
             mlstAllTableColumns.remove(allColumnsIndex);
         }
@@ -133,15 +140,15 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
     }
 
     @Override
-    public void moveColumn(int oldIndex, int newIndex) {
+    public void moveColumn(final int oldIndex, final int newIndex) {
         if ((oldIndex < 0) || (oldIndex >= getColumnCount()) ||
                 (newIndex < 0) || (newIndex >= getColumnCount())) {
             throw new IllegalArgumentException("moveColumn() - Index out of range");
         }
-        TableColumn fromColumn = tableColumns.get(oldIndex);
-        TableColumn toColumn = tableColumns.get(newIndex);
-        int allColumnsOldIndex = mlstAllTableColumns.indexOf(fromColumn);
-        int allColumnsNewIndex = mlstAllTableColumns.indexOf(toColumn);
+        final TableColumn fromColumn = tableColumns.get(oldIndex);
+        final TableColumn toColumn = tableColumns.get(newIndex);
+        final int allColumnsOldIndex = mlstAllTableColumns.indexOf(fromColumn);
+        final int allColumnsNewIndex = mlstAllTableColumns.indexOf(toColumn);
 //System.out.println("Moving " + fromColumn.getIdentifier() + " from " + allColumnsOldIndex + " to " + allColumnsNewIndex + " (inserting at " + toColumn.getIdentifier() + ")");
 //printAll(3, "Before move:");
         if (oldIndex != newIndex) {
@@ -152,18 +159,20 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
 //printAll(3, "After move:");
     }
 
-    public int getColumnCount(boolean onlyVisible) {
+    public int getColumnCount(final boolean onlyVisible) {
         final List columns = (onlyVisible ? tableColumns : mlstAllTableColumns);
         return columns.size();
     }
 
-    public Enumeration getColumns(boolean onlyVisible) {
+    public Enumeration getColumns(final boolean onlyVisible) {
         final List columns = (onlyVisible ? tableColumns : mlstAllTableColumns);
         return Collections.enumeration(columns);
         //return columns.elements();
     }
 
-    public int getColumnIndex(Object identifier, boolean onlyVisible) {
+    public int getColumnIndex(final Object identifier
+            , final boolean onlyVisible) {
+
         if (identifier == null) {
             throw new IllegalArgumentException("Identifier is null");
         }
@@ -171,10 +180,9 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
         final List<TableColumn> columns = (onlyVisible
                 ? tableColumns : mlstAllTableColumns);
         final int numCols = columns.size();
-        TableColumn column;
 
         for (int columnIndex = 0; columnIndex < numCols; ++columnIndex) {
-            column = columns.get(columnIndex); // (TableColumn)
+            final TableColumn column = columns.get(columnIndex); // (TableColumn)
             if (identifier.equals(column.getIdentifier())) {
                 return columnIndex;
             }
@@ -184,7 +192,9 @@ public class HideableTableColumnModel extends DefaultTableColumnModel {
                 + ")");
     }
 
-    public TableColumn getColumn(int columnIndex, boolean onlyVisible) {
+    public TableColumn getColumn(final int columnIndex
+            , final boolean onlyVisible) {
+
         return mlstAllTableColumns.get(columnIndex); // (TableColumn)
     }
 }

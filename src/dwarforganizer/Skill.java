@@ -15,10 +15,12 @@ import java.util.List;
 public class Skill extends GenericSkill implements NamedThing {
     private List<Stat> mvStats;
 
-    public Skill(String name, List<Stat> stats) {
+    public Skill(final String name, final List<Stat> stats) {
         super(name);
         mvStats = stats;
     }
-    public List<Stat> getStats() { return mvStats; }
+    public List<Stat> getStats() {
+        return mvStats;
+    }
 
 }

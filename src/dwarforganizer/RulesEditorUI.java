@@ -85,13 +85,13 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         }
     } */
 
-    public RulesEditorUI(List<Labor> vLabors) { // Vector<String[]> ruleFileContents
+    public RulesEditorUI(final List<Labor> vLabors) { // Vector<String[]> ruleFileContents
 
         // Super constructor----------------------------------------------------
         super();
 
         // Declarations---------------------------------------------------------
-        JPanel panEdit;
+        final JPanel panEdit;
 
         // Create objects-------------------------------------------------------
         //moDirtyHandler = new DirtyHandler();
@@ -106,11 +106,11 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         moRulesEditor = new RulesEditor(this);
 
         // Create model---------------------------------------------------------
-        Class[] aColClasses = new Class[] { String.class, String.class
+        final Class[] aColClasses = new Class[] { String.class, String.class
                 , String.class, String.class };
-        String[] aColProps = new String[] { "type", "firstlabor", "secondlabor"
+        final String[] aColProps = new String[] { "type", "firstlabor", "secondlabor"
                 , "comment" };
-        SortKeySwapper swapper = new SortKeySwapper();
+        final SortKeySwapper swapper = new SortKeySwapper();
         mmdlRules = new MyTableModel<LaborRule>(mvHeadings, aColClasses
                 , aColProps, new ArrayList<LaborRule>(), swapper);
 
@@ -137,9 +137,9 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mtxtMeaning.setBorder(BorderFactory.createEmptyBorder());
         mtxtMeaning.setBackground(new Color(0, 0, 0, 0)); // JLabel().getBackground()
 
-        ActionListener alUpdateMeaning = new ActionListener() {
+        final ActionListener alUpdateMeaning = new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 updateMeaning();
             }
         };
@@ -160,7 +160,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mbtnAdd = new JButton(TEXT_ADD);
         mbtnAdd.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 moRulesEditor.addRecord();
             }
         });
@@ -169,7 +169,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         mbtnUpdate.addActionListener(new ActionListener() {
 
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 moRulesEditor.updateRecord();
             }
         });
@@ -183,30 +183,30 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
                 , false, false, true, true, true, true, true, mtxtComment);
 
         // Set up default buttons
-        Map<JComponent, JButton> hmDefaultButtons = new HashMap<JComponent
-                , JButton>(5);
-        JComponent[] compsForDefaultAdd = new JComponent[] { mcboType
+        final Map<JComponent, JButton> hmDefaultButtons
+                = new HashMap<JComponent, JButton>(5);
+        final JComponent[] compsForDefaultAdd = new JComponent[] { mcboType
                 , mcboFirstLabor, mcboSecondLabor, mtxtComment };
-        for (JComponent comp : compsForDefaultAdd) {
+        for (final JComponent comp : compsForDefaultAdd) {
             hmDefaultButtons.put(comp, mbtnAdd);
         }
         hmDefaultButtons.put(mtblRules, null);
 
-        for (JComponent comp : hmDefaultButtons.keySet()) {
+        for (final JComponent comp : hmDefaultButtons.keySet()) {
             final JButton btn = hmDefaultButtons.get(comp);
             comp.addFocusListener(new FocusListener() {
                 @Override
-                public void focusGained(FocusEvent e) {
+                public void focusGained(final FocusEvent e) {
                     requestDefaultButton(btn);
                 }
                 @Override
-                public void focusLost(FocusEvent e) {
+                public void focusLost(final FocusEvent e) {
                 }
             });
         }
 
         // Build the UI---------------------------------------------------------
-        JPanel panCommentOnTop = new JPanel();
+        final JPanel panCommentOnTop = new JPanel();
         panCommentOnTop.setLayout(new BorderLayout());
         panEdit = new JPanel();
         panEdit.setLayout(new FlowLayout());
@@ -239,7 +239,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         panel.add(new JLabel("Comment"), BorderLayout.NORTH);
         panel.add(mtxtComment, BorderLayout.SOUTH);
 
-        JPanel flowPanel = new JPanel(new FlowLayout());
+        final JPanel flowPanel = new JPanel(new FlowLayout());
         flowPanel.add(panel);
 
         panCommentOnTop.add(flowPanel, BorderLayout.NORTH); // panel
@@ -300,7 +300,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         }
 
         @Override
-        public LaborRule createRowData(boolean isNew) {
+        public LaborRule createRowData(final boolean isNew) {
             return new LaborRule(mcboType.getSelectedItem().toString()
                     , mcboFirstLabor.getSelectedItem().toString()
                     , mcboSecondLabor.getSelectedItem().toString()
@@ -308,7 +308,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         }
 
         @Override
-        public boolean rowDataToInput(LaborRule rowData) {
+        public boolean rowDataToInput(final LaborRule rowData) {
             clearInput();
 
             if (rowData.getType() != null)
@@ -329,7 +329,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     protected Broadcaster getDefaultButtonBroadcaster() {
         return defaultButtonBroadcaster;
     }
-    private void requestDefaultButton(JButton btn) {
+    private void requestDefaultButton(final JButton btn) {
         defaultButtonBroadcaster.notifyListeners(new BroadcastMessage(
                 "RulesEditorDefaultButton", btn
                 , "New default button requested"));
@@ -341,7 +341,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     }
 
     // Load the given rule file contents
-    public void loadData(List<LaborRule> ruleFileContents) { // String[]
+    public void loadData(final List<LaborRule> ruleFileContents) { // String[]
         // Clear input----------------------------------------------------------
         moRulesEditor.clearInput(); // clearInput();
 
@@ -366,7 +366,8 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
     // Converts Vector<Labor> into Vector<String> (.name property)
     private ArrayList<String> getLaborNames(final List<Labor> lstLabors) {
-        ArrayList<String> lstReturn = new ArrayList<String>(lstLabors.size());
+        final ArrayList<String> lstReturn
+                = new ArrayList<String>(lstLabors.size());
 
         for (final Labor labor : lstLabors)
             lstReturn.add(labor.getName());
@@ -377,10 +378,10 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     // Updates the text description of the current contents of the input controls
     private void updateMeaning() {
 
-        String strType = mcboType.getSelectedItem().toString();
+        final String strType = mcboType.getSelectedItem().toString();
         String strFirst = mcboFirstLabor.getSelectedItem().toString();
         String strSecond = mcboSecondLabor.getSelectedItem().toString();
-        String strMeaning;
+        final String strMeaning;
 
         if (strFirst.equals(DEFAULT_LABOR))
             strFirst = "[the first labor]";
@@ -402,7 +403,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     }
 
     @Override
-    public void addDirtyListener(DirtyListener listener) {
+    public void addDirtyListener(final DirtyListener listener) {
         moRulesEditor.addDirtyListener(listener); // getDirtyHandler()
     }
 
@@ -414,5 +415,4 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     public void setClean() {
         moRulesEditor.setClean(); // getDirtyHandler()
     }
-
 }

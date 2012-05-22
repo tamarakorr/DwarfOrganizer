@@ -17,8 +17,9 @@ public class LaborGroup {
     private int G;
     private int B;
 
-    public LaborGroup(String name, String color, int colorR, int colorG
-            , int colorB) {
+    public LaborGroup(final String name, final String color, final int colorR
+            , final int colorG, final int colorB) {
+
         this.name = name;
         this.color = color;
         this.R = colorR;

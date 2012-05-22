@@ -18,60 +18,70 @@ import myutils.MyHandyTextField;
 public class PlaceholderTextField extends JTextField {
 
     private static final boolean AUTOHIGHLIGHT_DEFAULT = false;
+    private static final int PLACEHOLDER_ALPHA = 128;
 
     private String mstrPlaceholderText = null;
 
     public PlaceholderTextField() {
         super();
     }
-    public PlaceholderTextField(Document doc, String text, int columns) {
+    public PlaceholderTextField(final Document doc, final String text
+            , final int columns) {
+
         this(doc, text, columns, null, AUTOHIGHLIGHT_DEFAULT);
     }
-    public PlaceholderTextField(Document doc, String text, int columns
-            , String placeholder, boolean autoHighlight) {
+    public PlaceholderTextField(final Document doc, final String text
+            , final int columns, final String placeholder
+            , final boolean autoHighlight) {
+
         super(doc, text, columns);
         mstrPlaceholderText = placeholder;
         createPlaceholder();
-        if (autoHighlight) enableAutoHighlight();
+        if (autoHighlight)
+            enableAutoHighlight();
     }
-    public PlaceholderTextField(int columns) {
+    public PlaceholderTextField(final int columns) {
         this(columns, null, AUTOHIGHLIGHT_DEFAULT);
     }
-    public PlaceholderTextField(int columns, String placeholder
-            , boolean autoHighlight) {
+    public PlaceholderTextField(final int columns, final String placeholder
+            , final boolean autoHighlight) {
         super(columns);
         mstrPlaceholderText = placeholder;
         createPlaceholder();
-        if (autoHighlight) enableAutoHighlight();
+        if (autoHighlight)
+            enableAutoHighlight();
     }
-    public PlaceholderTextField(String text) {
+    public PlaceholderTextField(final String text) {
         this(text, null, AUTOHIGHLIGHT_DEFAULT);
     }
-    public PlaceholderTextField(String text, String placeholder
-            , boolean autoHighlight) {
+    public PlaceholderTextField(final String text, final String placeholder
+            , final boolean autoHighlight) {
         super(text);
         mstrPlaceholderText = placeholder;
         createPlaceholder();
-        if (autoHighlight) enableAutoHighlight();
+        if (autoHighlight)
+            enableAutoHighlight();
     }
-    public PlaceholderTextField(String text, int columns) {
+    public PlaceholderTextField(final String text, final int columns) {
         this(text, columns, null, AUTOHIGHLIGHT_DEFAULT);
     }
-    public PlaceholderTextField(String text, int columns, String placeholder
-            , boolean autoHighlight) {
+    public PlaceholderTextField(final String text, final int columns
+            , final String placeholder, final boolean autoHighlight) {
+
         super(text, columns);
         mstrPlaceholderText = placeholder;
         createPlaceholder();
-        if (autoHighlight) enableAutoHighlight();
+        if (autoHighlight)
+            enableAutoHighlight();
     }
 
     private void createPlaceholder() {
         if (mstrPlaceholderText == null)
             return;
-        TextPlaceholder tp = new TextPlaceholder(mstrPlaceholderText, this
+        final TextPlaceholder tp = new TextPlaceholder(mstrPlaceholderText, this
                 , TextPlaceholder.Show.ALWAYS);
         tp.getLabel().setForeground(Color.GRAY);
-        tp.setAlpha(128);
+        tp.setAlpha(PLACEHOLDER_ALPHA);
     }
     private void enableAutoHighlight() {
         MyHandyTextField.autoHighlight(this);

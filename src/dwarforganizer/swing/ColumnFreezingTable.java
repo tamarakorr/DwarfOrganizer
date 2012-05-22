@@ -60,8 +60,8 @@ public class ColumnFreezingTable {
 
     TableColumnModel mcmAllColumns;
 
-    public ColumnFreezingTable(JScrollPane rightPane
-            , TableColumnModel cmAllColumns) {
+    public ColumnFreezingTable(final JScrollPane rightPane
+            , final TableColumnModel cmAllColumns) {
 
         this.rightPane = rightPane;
 
@@ -104,8 +104,8 @@ public class ColumnFreezingTable {
         // Copy object cell renderers
         // There seems to be no easy way to enumerate installed renderers.
         // So we just copy the defined default renderers here:
-        Class[] rendererClasses = { Object.class, Boolean.class, Number.class };
-        for (Class cls : rendererClasses) {
+        final Class[] rendererClasses = { Object.class, Boolean.class, Number.class };
+        for (final Class cls : rendererClasses) {
             leftTable.setDefaultRenderer(cls
             , rightTable.getDefaultRenderer(cls));
         }
@@ -141,7 +141,7 @@ public class ColumnFreezingTable {
         split.addPropertyChangeListener("dividerLocation"
                 , new PropertyChangeListener() {
             @Override
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if (!snapping) {
                     updateDividerLocation((Integer) evt.getOldValue()
                             , (Integer) evt.getNewValue());
@@ -164,10 +164,10 @@ public class ColumnFreezingTable {
         // Get the maximum number of columns we want to allow in the left
         // table. (If the right viewport isn't full, this is all columns.
         // Otherwise this is the total number of visible columns - 1.)
-        int leftColumns = leftTable.getColumnCount();
-        int lastVisibleColIndex = rightTable.columnAtPoint(new Point(
+        final int leftColumns = leftTable.getColumnCount();
+        final int lastVisibleColIndex = rightTable.columnAtPoint(new Point(
                 rightPane.getViewport().getViewRect().width, 0));
-        int maxLeftColumns;
+        final int maxLeftColumns;
 
         if (lastVisibleColIndex == -1)
             maxLeftColumns = mcmAllColumns.getColumnCount();
@@ -183,7 +183,8 @@ public class ColumnFreezingTable {
         totalWidth += sumColumnWidth(leftTable);
         if (maxLeftColumns > leftColumns) {
             //System.out.println("Getting width of " + (maxLeftColumns - leftColumns) + " columns");
-            totalWidth += sumColumnWidth(rightTable, maxLeftColumns - leftColumns);
+            totalWidth += sumColumnWidth(rightTable
+                    , maxLeftColumns - leftColumns);
         }
         return totalWidth;
     }
@@ -193,14 +194,14 @@ public class ColumnFreezingTable {
 
             // This occurs after the column has already been added
             @Override
-            public void columnAdded(TableColumnModelEvent e) {
+            public void columnAdded(final TableColumnModelEvent e) {
                 // Add the column to the proper table
-                int index = e.getToIndex();
+                final int index = e.getToIndex();
                 //System.out.println("Adding column at " + index);
-                TableColumn tableColumn = mcmAllColumns.getColumn(index);
-                JTable table = getTableForIndex(index);
-                int addAtIndex = convertAllIndexToLocal(index);
-                boolean isLeftTable = table.equals(leftTable);
+                final TableColumn tableColumn = mcmAllColumns.getColumn(index);
+                final JTable table = getTableForIndex(index);
+                final int addAtIndex = convertAllIndexToLocal(index);
+                final boolean isLeftTable = table.equals(leftTable);
 
                 //System.out.println(isLeftTable + ", " + table.equals(rightTable));
 
@@ -219,35 +220,36 @@ public class ColumnFreezingTable {
 
             // This occurs after the column has already been removed
             @Override
-            public void columnRemoved(TableColumnModelEvent e) {
-                int index = e.getFromIndex();
-                JTable table = getTableForIndex(index);
-                int removedIndex = convertAllIndexToLocal(index);
-                boolean isLeftTable = table.equals(leftTable);
+            public void columnRemoved(final TableColumnModelEvent e) {
+                final int index = e.getFromIndex();
+                final JTable table = getTableForIndex(index);
+                final int removedIndex = convertAllIndexToLocal(index);
+                final boolean isLeftTable = table.equals(leftTable);
 
-                TableColumn tableColumn = table.getColumnModel().getColumn(
-                        removedIndex);
+                final TableColumn tableColumn
+                        = table.getColumnModel().getColumn(removedIndex);
                 //System.out.println("Column removed: index " + index + ", "
                 //    + tableColumn.getIdentifier());
                 table.removeColumn(tableColumn);
 
                 // Move the divider if needed
                 if (isLeftTable) {
-                    int newWidth = sumColumnWidth(leftTable);
+                    final int newWidth = sumColumnWidth(leftTable);
                     updateDividerLocation(newWidth, newWidth);
                 }
             }
 
             // This occurs after the column has already been moved
             @Override
-            public void columnMoved(TableColumnModelEvent e) {
+            public void columnMoved(final TableColumnModelEvent e) {
                 //System.out.println("Column moved");
-                int srcIndex = e.getFromIndex();
-                int destIndex = e.getToIndex();
-                TableColumn tableColumn = mcmAllColumns.getColumn(destIndex);
-                int newIndex = convertAllIndexToLocal(destIndex);
-                JTable source = getTableForIndex(srcIndex);
-                JTable dest = getTableForIndex(destIndex);
+                final int srcIndex = e.getFromIndex();
+                final int destIndex = e.getToIndex();
+                final TableColumn tableColumn = mcmAllColumns.getColumn(
+                        destIndex);
+                final int newIndex = convertAllIndexToLocal(destIndex);
+                final JTable source = getTableForIndex(srcIndex);
+                final JTable dest = getTableForIndex(destIndex);
 
                 MyHandyTable.moveColumn(tableColumn, source, dest, newIndex);
 
@@ -260,35 +262,37 @@ public class ColumnFreezingTable {
             }
 
             @Override
-            public void columnMarginChanged(ChangeEvent e) { // Do nothing
+            public void columnMarginChanged(final ChangeEvent e) { // Do nothing
             }
             @Override
-            public void columnSelectionChanged(ListSelectionEvent e) { // Do nothing
+            public void columnSelectionChanged(final ListSelectionEvent e) { // Do nothing
             }
         };
     }
 
-    private int sumColumnWidth(JTable table) {
+    private int sumColumnWidth(final JTable table) {
         return sumColumnWidth(table.getColumnModel(), table.getColumnCount());
     }
-    private int sumColumnWidth(JTable table, int numColumns) {
+    private int sumColumnWidth(final JTable table, final int numColumns) {
         return sumColumnWidth(table.getColumnModel(), numColumns);
     }
-    private int sumColumnWidth(TableColumnModel cm, int numColumns) {
+    private int sumColumnWidth(final TableColumnModel cm
+            , final int numColumns) {
+
         int total = 0;
         for (int iCount = 0; iCount < numColumns; iCount++) {
             total += cm.getColumn(iCount).getWidth();
         }
         return total;
     }
-    private JTable getTableForIndex(int allColumnsIndex) {
+    private JTable getTableForIndex(final int allColumnsIndex) {
         if (allColumnsIndex < leftTable.getColumnCount())
             return leftTable;
         else
             return rightTable;
     }
-    private int convertAllIndexToLocal(int allColumnsIndex) {
-        int leftColumns = leftTable.getColumnCount();
+    private int convertAllIndexToLocal(final int allColumnsIndex) {
+        final int leftColumns = leftTable.getColumnCount();
         if (allColumnsIndex < leftColumns)
             return allColumnsIndex;
         else
@@ -307,13 +311,13 @@ public class ColumnFreezingTable {
     // Holds a column movement instruction
     private class ColToMove {
 
-        TableColumn col;
-        JTable source;
-        JTable dest;
-        int position;
+        private TableColumn col;
+        private JTable source;
+        private JTable dest;
+        private int position;
 
-        public ColToMove(TableColumn col, JTable source, JTable dest
-                , int position) {
+        public ColToMove(final TableColumn col, final JTable source
+                , final JTable dest, final int position) {
             this.col = col;
             this.source = source;
             this.dest = dest;
@@ -324,31 +328,33 @@ public class ColumnFreezingTable {
     // Call this if columns may need to be moved to the other side of the divider
     // due to resizing.
     private void updateDividerLocation() {
-        int location = split.getDividerLocation();
+        final int location = split.getDividerLocation();
         updateDividerLocation(location, location);
     }
     // Moves columns between tables if needed, and snaps divider line
     // to a column boundary.
     // If the boundary is dragged past half the column's width,
     // moves that column.
-    private void updateDividerLocation(int oldValue, int newValue) {
+    private void updateDividerLocation(final int oldValue, int newValue) {
         int snap;
         int totalColWidth;
         int position;
         int thisColWidth;
         int halfThisColWidth;
-        int maxSnap = calcMaxSnap();
+        final int maxSnap = calcMaxSnap();
 
         List<ColToMove> list = new ArrayList<ColToMove>();
 
         totalColWidth = 0;
         position = 0;
         snap = DEFAULT_SNAP;
-        if (newValue > maxSnap) newValue = maxSnap;
+        if (newValue > maxSnap)
+            newValue = maxSnap;
 
         // Do any left table columns need to be moved to the right table?
         for (int iCount = 0; iCount < leftTable.getColumnCount(); iCount++) {
-            TableColumn col = leftTable.getColumn(leftTable.getColumnName(iCount));
+            final TableColumn col = leftTable.getColumn(leftTable.getColumnName(
+                    iCount));
             thisColWidth = col.getWidth();
             halfThisColWidth = thisColWidth / 2;
             totalColWidth += thisColWidth;
@@ -371,8 +377,8 @@ public class ColumnFreezingTable {
         if (newValue > oldValue) {
             position = leftTable.getColumnCount();
             for (int iCount = 0; iCount < rightTable.getColumnCount() - 1; iCount++) {
-                TableColumn col = rightTable.getColumn(rightTable.getColumnName(
-                        iCount));
+                final TableColumn col = rightTable.getColumn(
+                        rightTable.getColumnName(iCount));
                 thisColWidth = col.getWidth();
                 totalColWidth += thisColWidth;
                 halfThisColWidth = thisColWidth / 2;
@@ -396,7 +402,7 @@ public class ColumnFreezingTable {
     }
     // Snaps the divider without calling updateDividerLocation (does not check
     // to move any columns)
-    private void safeSnap(int location) {
+    private void safeSnap(final int location) {
         // Add DIVIDER_SIZE + 1 pixels to avoid cutting off any columns on the
         // left of the divider
         snapping = true;
@@ -407,8 +413,8 @@ public class ColumnFreezingTable {
         split.setDividerLocation(DEFAULT_SNAP);
     }
     // Executes the list of column movement instructions
-    private void moveColumns(List<ColToMove> list) {
-        for (ColToMove moveIt : list) {
+    private void moveColumns(final List<ColToMove> list) {
+        for (final ColToMove moveIt : list) {
             //System.out.println("Requesting move " + moveIt.col.getIdentifier()
             //        + " to " + moveIt.position);
             MyHandyTable.moveColumn(moveIt.col, moveIt.source, moveIt.dest
@@ -423,7 +429,7 @@ public class ColumnFreezingTable {
         return new PropertyChangeListener() {
 
             @Override
-            public void propertyChange(PropertyChangeEvent evt) {
+            public void propertyChange(final PropertyChangeEvent evt) {
                 if ("selectionModel".equals(evt.getPropertyName())) {
                     follower.setSelectionModel(leader.getSelectionModel());
                 }
@@ -436,18 +442,20 @@ public class ColumnFreezingTable {
     }
 
     // Keep scroll state up to date
-    private ChangeListener createScrollSynchronizer(final JScrollPane follower) {
+    private ChangeListener createScrollSynchronizer(
+            final JScrollPane follower) {
+
         return new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
-                JViewport viewport = (JViewport) e.getSource();
+            public void stateChanged(final ChangeEvent e) {
+                final JViewport viewport = (JViewport) e.getSource();
                 follower.getVerticalScrollBar().setValue(
                         viewport.getViewPosition().y);
             }
         };
     }
     // Copy selection in side-by-side tables to clipboard
-    public void copyToClipboard(boolean isCut) {
+    public void copyToClipboard(final boolean isCut) {
         MyHandyTable.copyToClipboard(new JTable[] { leftTable, rightTable }
             , false);
     }
@@ -456,7 +464,7 @@ public class ColumnFreezingTable {
     private RowSorterListener createRowSorterListener() {
         return new RowSorterListener() {
             @Override
-            public void sorterChanged(RowSorterEvent e) {
+            public void sorterChanged(final RowSorterEvent e) {
                 // This only works if events are guaranteed to always
                 // be received in order (SORT_ORDER_CHANGED, SORTED)...
 
@@ -475,7 +483,7 @@ public class ColumnFreezingTable {
     }
     // Saves the currently selected rows by model index
     private void captureSelectedRows() {
-        int[] viewRows = leftTable.getSelectedRows();
+        final int[] viewRows = leftTable.getSelectedRows();
         selectedModelRows = new int[viewRows.length];
         for (int iCount = 0; iCount < viewRows.length; iCount++) {
             selectedModelRows[iCount]
@@ -498,15 +506,15 @@ public class ColumnFreezingTable {
             }
         }
     }
-    private void print(int[] selectedRows) {
-        for (int i : selectedRows)
+    private void print(final int[] selectedRows) {
+        for (final int i : selectedRows)
             System.out.println("'Row " + (i + 1) + "'");
         System.out.println("-----");
     }
     private void setAllColumns() {
-        TableColumn tableColumn;
         for (int iCount = 0; iCount < rightTable.getColumnCount(); iCount++) {
-            tableColumn = rightTable.getColumnModel().getColumn(iCount);
+            final TableColumn tableColumn
+                    = rightTable.getColumnModel().getColumn(iCount);
             //System.out.println("Adding " + tableColumn.getIdentifier());
             mcmAllColumns.addColumn(tableColumn);
         }
@@ -514,7 +522,7 @@ public class ColumnFreezingTable {
     public TableColumnModel getAllColumnsModel() {
         return mcmAllColumns;
     }
-    public void autoResizeTableColumn(Object identifier) {
+    public void autoResizeTableColumn(final Object identifier) {
         autoResizeTableColumns(new Object[] { identifier });
     }
     // Autosize all
@@ -525,20 +533,18 @@ public class ColumnFreezingTable {
     // Autosize the given columns
     // (We can't just call autoresize on the array because
     // we don't know which table each identifier is in)
-    public void autoResizeTableColumns(Object[] identifiers) {
-        MyTableWidthAdjuster adj;
-        int col;
-        JTable[] tables = new JTable[] { leftTable, rightTable };
+    public void autoResizeTableColumns(final Object[] identifiers) {
+        final JTable[] tables = new JTable[] { leftTable, rightTable };
 
-        for (JTable table : tables) {
-            adj = new MyTableWidthAdjuster(table);
-            for (Object identifier : identifiers) {
+        for (final JTable table : tables) {
+            final MyTableWidthAdjuster adj = new MyTableWidthAdjuster(table);
+            for (final Object id : identifiers) {
                 try {
-                    col = table.getColumnModel().getColumnIndex(identifier);
+                    final int col
+                            = table.getColumnModel().getColumnIndex(id);
                     MyHandyTable.autoResizeTableColumn(col, adj);
                     updateDividerLocation();
                 } catch (IllegalArgumentException ignore) {
-
                 }
             }
         }

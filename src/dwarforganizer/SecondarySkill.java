@@ -15,7 +15,7 @@ import java.util.List;
 public class SecondarySkill extends Skill {
     // Secondary skills are a convenience for filtering the list. They
     // look just like a Skill otherwise.
-    public SecondarySkill(String name, List<Stat> stats) {
+    public SecondarySkill(final String name, final List<Stat> stats) {
         super(name, stats);
     }
 }

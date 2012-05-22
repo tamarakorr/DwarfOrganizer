@@ -74,7 +74,7 @@ public class ResultsView { //  implements ActionListener {
 
     private static final boolean DEFAULT_NICKNAME_VIS = false;
 
-    public ResultsView(JobOptimizer.Solution solution) {
+    public ResultsView(final JobOptimizer.Solution solution) {
 
         mlstDwarves = solution.getDwarves();
         mbSolution = solution.dwarfjobmap;
@@ -97,7 +97,7 @@ public class ResultsView { //  implements ActionListener {
         mrfAll = null;
 
         // Create table, scroll pane, and sorter.
-        MySimpleTableModel oModel = createResultsModel();
+        final MySimpleTableModel oModel = createResultsModel();
 /*        for (int iCount = 0; iCount < oModel.getColumnCount(); iCount++)
             System.out.println("Column " + iCount + " is of class "
                 + oModel.getColumnClass(iCount).getName()); */
@@ -105,7 +105,8 @@ public class ResultsView { //  implements ActionListener {
         moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
 
         // Renderers
-        MyTCRStripedHighlight normalRenderer = new MyTCRStripedHighlight(1);
+        final MyTCRStripedHighlight normalRenderer
+                = new MyTCRStripedHighlight(1);
         moTable.setDefaultRenderer(Object.class, normalRenderer);
 
         // Top-align the multi-line columns
@@ -115,24 +116,27 @@ public class ResultsView { //  implements ActionListener {
             }
 
             @Override
-            public Component getTableCellRendererComponent(JTable table
-                    , Object value, boolean isSelected, boolean hasFocus, int row
-                    , int column) {
-                JLabel renderedLabel = (JLabel) super.getTableCellRendererComponent(
+            public Component getTableCellRendererComponent(final JTable table
+                    , final Object value, final boolean isSelected
+                    , final boolean hasFocus, final int row, final int column) {
+
+                final JLabel renderedLabel
+                        = (JLabel) super.getTableCellRendererComponent(
                         table, value, isSelected, hasFocus, row, column);
                 renderedLabel.setVerticalAlignment(SwingConstants.TOP);
                 return renderedLabel;
             }
         }
 
-        MyTopAlignedRenderer topAlignedRenderer = new MyTopAlignedRenderer(1);
+        final MyTopAlignedRenderer topAlignedRenderer
+                = new MyTopAlignedRenderer(1);
         moTable.getColumn("Job").setCellRenderer(topAlignedRenderer);
         moTable.getColumn("Reminder").setCellRenderer(topAlignedRenderer);
 
         // Hide nickname if necessary
         setNicknameVisible(DEFAULT_NICKNAME_VIS);
 
-        JScrollPane oSP = new JScrollPane(moTable);
+        final JScrollPane oSP = new JScrollPane(moTable);
         MyHandyTable.handyTable(moTable, oModel, true, true);
         MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
         MyHandyTable.setPrefWidthToColWidth(moTable);
@@ -141,20 +145,20 @@ public class ResultsView { //  implements ActionListener {
 
         // Create view filter buttons
         final ActionListener filterActionListener = createActionListener();
-        JRadioButton btnViewAll = new JRadioButton("View All");
+        final JRadioButton btnViewAll = new JRadioButton("View All");
         btnViewAll.setSelected(true);
         btnViewAll.setActionCommand(ACTION_CMD_ALL);
         btnViewAll.addActionListener(filterActionListener);
 
-        JRadioButton btnViewNobles = new JRadioButton("Nobles Only");
+        final JRadioButton btnViewNobles = new JRadioButton("Nobles Only");
         btnViewNobles.setActionCommand(ACTION_CMD_NOBLE);
         btnViewNobles.addActionListener(filterActionListener);
 
-        JRadioButton btnViewReminders = new JRadioButton("Has Reminder");
+        final JRadioButton btnViewReminders = new JRadioButton("Has Reminder");
         btnViewReminders.setActionCommand(ACTION_CMD_REMINDER);
         btnViewReminders.addActionListener(filterActionListener);
 
-        ButtonGroup optView = new ButtonGroup();
+        final ButtonGroup optView = new ButtonGroup();
         optView.add(btnViewAll);
         optView.add(btnViewNobles);
         optView.add(btnViewReminders);
@@ -170,7 +174,7 @@ public class ResultsView { //  implements ActionListener {
             }
         }); */
 
-        JPanel panFilter = new JPanel();
+        final JPanel panFilter = new JPanel();
         panFilter.setLayout(new FlowLayout());
         //panFilter.add(chkJobsToRemove);
         panFilter.add(btnViewAll);
@@ -178,25 +182,26 @@ public class ResultsView { //  implements ActionListener {
         panFilter.add(btnViewReminders);
 
         // Put the UI together
-        JPanel panAll = new JPanel();
+        final JPanel panAll = new JPanel();
         panAll.setLayout(new BorderLayout());
         panAll.add(oSP);
         panAll.add(panFilter, BorderLayout.PAGE_END);
 
         // Create and show a window containing the table.
-        JFrame frList = MyHandyWindow.createSimpleWindow("Optimized Jobs"
+        final JFrame frList = MyHandyWindow.createSimpleWindow("Optimized Jobs"
                 , panAll, new BorderLayout());
         frList.setJMenuBar(createMenu());
         frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frList.setVisible(true);
-
     }
     private class DisplayableChange {
 
         private String text;
         private ChangeType changeType;
 
-        public DisplayableChange(String text, ChangeType changeType) {
+        public DisplayableChange(final String text
+                , final ChangeType changeType) {
+
             this.text = text;
             this.changeType = changeType;
         }
@@ -205,7 +210,8 @@ public class ResultsView { //  implements ActionListener {
         public String toString() {
             if (this.changeType == ChangeType.STAY_SAME
                     && mbShowJobs[ChangeType.STAY_SAME.getIndex()]) {
-                return getAddRemoveText("", this.text, true, "=", COLOR_STAY_SAME);
+                return getAddRemoveText("", this.text, true, "="
+                        , COLOR_STAY_SAME);
             }
             else if (this.changeType == ChangeType.ADD
                     && mbShowJobs[ChangeType.ADD.getIndex()]) {
@@ -216,8 +222,9 @@ public class ResultsView { //  implements ActionListener {
                     || ((this.changeType == ChangeType.REMOVE)
                     && mbShowJobs[ChangeType.REMOVE.getIndex()])) { //  mbShowRemoveJobs
 
-                boolean bolden = (this.changeType == ChangeType.REMOVE_ALWAYS_SHOW);
-                return getAddRemoveText("", this.text, bolden, "-", COLOR_REMOVE);
+                final boolean bold
+                        = (this.changeType == ChangeType.REMOVE_ALWAYS_SHOW);
+                return getAddRemoveText("", this.text, bold, "-", COLOR_REMOVE);
             }
             // Else if not shown
             else if (this.changeType == ChangeType.REMOVE
@@ -237,7 +244,7 @@ public class ResultsView { //  implements ActionListener {
         public String toString() {
 
             String strReturn = "";
-            for (DisplayableChange displayableChange : this) {
+            for (final DisplayableChange displayableChange : this) {
                 if (! strReturn.equals("")
                         && ! displayableChange.toString().equals(""))
                     strReturn += MyHTMLUtils.LINE_BREAK;
@@ -248,26 +255,27 @@ public class ResultsView { //  implements ActionListener {
         }
     }
 
-    private void setNicknameVisible(boolean visible) {
-        HideableTableColumnModel hideableModel = (HideableTableColumnModel)
-                moTable.getColumnModel();
+    private void setNicknameVisible(final boolean visible) {
+        final HideableTableColumnModel hideableModel
+                = (HideableTableColumnModel) moTable.getColumnModel();
         hideableModel.setColumnVisible("Nickname", visible);
     }
 
     private JMenuBar createMenu() {
 
-        JMenuBar menuBar = new JMenuBar();
+        final JMenuBar menuBar = new JMenuBar();
 
-        JMenu menu = new JMenu("Display");
+        final JMenu menu = new JMenu("Display");
         menu.setMnemonic(KeyEvent.VK_D);
         menuBar.add(menu);
 
         // ----- Dwarf name format ---
-        final JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem("Nicknames", false);
+        final JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem(
+                "Nicknames", false);
         checkMenuItem.setMnemonic(KeyEvent.VK_N);
         checkMenuItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 setNicknameVisible(checkMenuItem.isSelected());
             }
         });
@@ -293,15 +301,15 @@ public class ResultsView { //  implements ActionListener {
     }
 
     // Menu creation macro used by createMenu()
-    private JCheckBoxMenuItem createJobMenuItem(String title
-            , final ChangeType changeType, int keyEvent) {
+    private JCheckBoxMenuItem createJobMenuItem(final String title
+            , final ChangeType changeType, final int keyEvent) {
 
         final JCheckBoxMenuItem checkMenuItem = new JCheckBoxMenuItem(
                 title, mbShowJobs[changeType.getIndex()]);
         checkMenuItem.setMnemonic(keyEvent);
         checkMenuItem.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 mbShowJobs[changeType.getIndex()] = checkMenuItem.isSelected();
                 updateShowRemoveJobs();
             }
@@ -348,29 +356,29 @@ public class ResultsView { //  implements ActionListener {
                     mdblScores[row], row, 5);  // getSkillSum(row)
 
             int jobCount = 0;
-            Dwarf thisDwarf = mlstDwarves.get(row);
+            final Dwarf thisDwarf = mlstDwarves.get(row);
             String strReminderText = "";
-            DisplayableChanges vChanges = new DisplayableChanges();
+            final DisplayableChanges vChanges = new DisplayableChanges();
 
             for (int job = 0; job < mlstJobs.size(); job++) {   // NUM_JOBS
-                Job thisJob = mlstJobs.get(job);
-                boolean bHasReminder = ! thisJob.getReminder().equals("");
+                final Job thisJob = mlstJobs.get(job);
+                final boolean bHasReminder = ! thisJob.getReminder().equals("");
 
                 if (mbSolution[job][row]) {
 
                     // Display any change from the current labors
                     if (thisDwarf.getLabors().contains(thisJob.getName())) {
 
-                        vChanges.add(new DisplayableChange(getJobAndPotentialText(
-                                thisJob.getName()
+                        vChanges.add(new DisplayableChange(
+                                getJobAndPotentialText(thisJob.getName()
                                 , thisDwarf.getBalancedPotentials().get(
                                 thisJob.getName()))
                                 , ChangeType.STAY_SAME));
                     }
                     else {
 
-                        vChanges.add(new DisplayableChange(getJobAndPotentialText(
-                                thisJob.getName()
+                        vChanges.add(new DisplayableChange(
+                                getJobAndPotentialText(thisJob.getName()
                                 , thisDwarf.getBalancedPotentials().get(
                                 thisJob.getName()))
                                 , ChangeType.ADD));
@@ -378,7 +386,8 @@ public class ResultsView { //  implements ActionListener {
 
                         // Add reminder text if any is needed.
                         if (bHasReminder) {
-                            strReminderText = addLineBreakIfNonEmpty(strReminderText);
+                            strReminderText = addLineBreakIfNonEmpty(
+                                    strReminderText);
                             strReminderText = getAddText(strReminderText
                                     , thisJob.getReminder() + " ("
                                     + thisJob.getName() + ")");
@@ -399,7 +408,8 @@ public class ResultsView { //  implements ActionListener {
 
                     // Add reminder text if any is needed.
                     if (bHasReminder) {
-                        strReminderText = addLineBreakIfNonEmpty(strReminderText);
+                        strReminderText = addLineBreakIfNonEmpty(
+                                strReminderText);
                         strReminderText = getRemoveText(strReminderText
                             , thisJob.getReminder() + " (" + thisJob.getName()
                             + ")");
@@ -410,7 +420,8 @@ public class ResultsView { //  implements ActionListener {
             // If Recover Wounded or Feed Patients/Prisoners is enabled and
             // Altruism is low enough to give a bad thought, add these to the list.
             if (thisDwarf.getStatValues().get("Altruism") != null) {
-                boolean lowAltruism = (thisDwarf.getStatValues().get("Altruism")
+                final boolean lowAltruism =
+                        (thisDwarf.getStatValues().get("Altruism")
                         <= LOW_ALTRUISM_THRESHOLD);
 
                 if (thisDwarf.getLabors().contains(strFeed) && lowAltruism) {
@@ -434,7 +445,7 @@ public class ResultsView { //  implements ActionListener {
     private ActionListener createActionListener() {
         return new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
 
                 final RowFilter rf;
                 if (e.getActionCommand().equals(ACTION_CMD_NOBLE))
@@ -457,7 +468,8 @@ public class ResultsView { //  implements ActionListener {
                     @Override
                     protected void done() {
                         try {
-                            MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
+                            MyHandyTable.adjustMultiLineRowHeight(moTable
+                                    , MULTILINE_GAP);
                         } catch (Exception ignore) {
                         }
                     }
@@ -471,41 +483,54 @@ public class ResultsView { //  implements ActionListener {
         MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
     }
     // Sets the current table filter and adjusts row height as necessary.
-    private int setCurrentTableFilter(JTable table, RowFilter rf) {
-        TableRowSorter sorter = (TableRowSorter) table.getRowSorter(); //new TableRowSorter(oModel);
+    private int setCurrentTableFilter(final JTable table, final RowFilter rf) {
+        final TableRowSorter sorter = (TableRowSorter) table.getRowSorter(); //new TableRowSorter(oModel);
         sorter.setRowFilter(rf);
         table.setRowSorter(sorter);
 
         return 0;
     }
-    private String getJobAndPotentialText(String jobName, Long potential) {
+    private String getJobAndPotentialText(final String jobName
+            , final long potential) {
         return jobName + " (" + potential + ")";
     }
-    private String addLineBreakIfNonEmpty(String text) {
+    private String addLineBreakIfNonEmpty(final String text) {
         if (! text.equals(""))
             return text + MyHTMLUtils.LINE_BREAK;
         else
             return text;
     }
-    private String getRemoveText(String currentText, String thingToAdd
-            , long value) {
+    private String getRemoveText(final String currentText
+            , final String thingToAdd, final long value) {
         return getRemoveText(currentText, thingToAdd + " (" + value + ")");
     }
-    private String getRemoveText(String currentText, String thingToAdd) {
+    private String getRemoveText(final String currentText
+            , final String thingToAdd) {
+
         return getAddRemoveText(currentText, thingToAdd, false, "-", COLOR_REMOVE);
     }
-    private String getAddText(String currentText, String thingToAdd, long value) {
+    private String getAddText(final String currentText, final String thingToAdd
+            , final long value) {
+
         return getAddText(currentText, thingToAdd + " (" + value + ")");
     }
-    private String getAddText(String currentText, String thingToAdd) {
+    private String getAddText(final String currentText
+            , final String thingToAdd) {
+
         return getAddRemoveText(currentText, thingToAdd, true, "+", COLOR_ADD);
     }
-    private String getAddRemoveText(String currentText, String thingToAdd
-            , boolean bold, String plusOrMinus, String color) {
+    private String getAddRemoveText(final String currentText
+            , final String thingToAdd
+            , final boolean bold, final String plusOrMinus
+            , final String color) {
+
         String strReturn = currentText; //addLineBreakIfNonEmpty(currentText);
         String strNewText = plusOrMinus + thingToAdd;
-        if (bold) strNewText = MyHTMLUtils.makeBold(strNewText);
-        if (! color.equals("")) strNewText = MyHTMLUtils.makeColored(strNewText, color);
+
+        if (bold)
+            strNewText = MyHTMLUtils.makeBold(strNewText);
+        if (! color.equals(""))
+            strNewText = MyHTMLUtils.makeColored(strNewText, color);
         strReturn += strNewText;
         return strReturn;
     }

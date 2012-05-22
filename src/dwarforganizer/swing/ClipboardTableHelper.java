@@ -42,15 +42,17 @@ public class ClipboardTableHelper {
     private boolean mbAllowCut;
     private boolean mbAllowPaste;
 
-    public ClipboardTableHelper(JTable table, boolean allowCopy, boolean allowCut
-            , boolean allowPaste) {
+    public ClipboardTableHelper(final JTable table, final boolean allowCopy
+            , final boolean allowCut, final boolean allowPaste) {
+
         this.tables = new JTable[] { table };
         mbAllowCopy = allowCopy;
         mbAllowCut = allowCut;
         mbAllowPaste = allowPaste;
     }
-    public ClipboardTableHelper(JTable[] table, boolean allowCopy
-            , boolean allowCut, boolean allowPaste) {
+    public ClipboardTableHelper(final JTable[] table, final boolean allowCopy
+            , final boolean allowCut, final boolean allowPaste) {
+
         this.tables = table;
         mbAllowCopy = allowCopy;
         mbAllowCut = allowCut;
@@ -64,7 +66,7 @@ public class ClipboardTableHelper {
     public KeyAdapter createKeyAdapter() {
         return new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {
+            public void keyReleased(final KeyEvent e) {
                 if (e.isControlDown()) {
                     // Copy
                     if ((e.getKeyCode() == KeyEvent.VK_C) && mbAllowCopy) {
@@ -84,7 +86,7 @@ public class ClipboardTableHelper {
         };
     }
     private void cancelEdit() {
-        for (JTable table : tables) {
+        for (final JTable table : tables) {
             MyHandyTable.cancelEditing(table);
         }
     }
@@ -104,22 +106,22 @@ public class ClipboardTableHelper {
     }
     // TODO: Consider moving to MyHandyTable
     private void pasteFromClipboard() {
-        int startRow = tables[0].getSelectedRows()[0];
-        int startCol = tables[0].getSelectedColumns()[0];
+        final int startRow = tables[0].getSelectedRows()[0];
+        final int startCol = tables[0].getSelectedColumns()[0];
+        final String pasteString;
 
-        String pasteString;
         try {
             pasteString = (String) (CLIPBOARD.getContents(
                     this).getTransferData(DataFlavor.stringFlavor));
-        } catch (Exception e) {
+        } catch (final Exception ignore) {
             JOptionPane.showMessageDialog(null, "Invalid Paste Type"
                     , "Invalid Paste Type", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        String[] lines = pasteString.split(LINE_BREAK);
+        final String[] lines = pasteString.split(LINE_BREAK);
         for (int i = 0; i < lines.length; i++) {
-            String[] cells = lines[i].split(CELL_BREAK);
+            final String[] cells = lines[i].split(CELL_BREAK);
             for (int j = 0; j < cells.length; j++) {
                 if (tables[0].getRowCount() > startRow + i
                         && tables[0].getColumnCount() > startCol + j) {

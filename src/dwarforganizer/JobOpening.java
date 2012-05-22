@@ -23,8 +23,10 @@ public class JobOpening extends Binnable {
     private int currentSkillWeight;
     private String reminder;
 
-    public JobOpening(String name, String skillName, int time
-            , double candidateWeight, int currentSkillWeight, String reminder) {
+    public JobOpening(final String name, final String skillName, final int time
+            , final double candidateWeight, final int currentSkillWeight
+            , final String reminder) {
+
         this.name = name;
         this.skillName = skillName;
         this.time = time;
@@ -34,18 +36,19 @@ public class JobOpening extends Binnable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        Job j = (Job) o;
+    public int compareTo(final Object o) {
+        final Job j = (Job) o;
         if (this.time < j.getTime())
             return -1;
-        else if (this.time == j.getTime())
+        if (this.time == j.getTime())
             return 0;
-        else
-            return 1;
+        return 1;
     }
 
     @Override
-    public Object getProperty(String propName, boolean humanReadable) {
+    public Object getProperty(final String propName
+            , final boolean humanReadable) {
+
         if (propName.equals("size"))
             return this.time;
         else {
@@ -94,27 +97,27 @@ public class JobOpening extends Binnable {
         return time;
     }
 
-    public void setCandidateWeight(double candidateWeight) {
+    public void setCandidateWeight(final double candidateWeight) {
         this.candidateWeight = candidateWeight;
     }
 
-    public void setCurrentSkillWeight(int currentSkillWeight) {
+    public void setCurrentSkillWeight(final int currentSkillWeight) {
         this.currentSkillWeight = currentSkillWeight;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
-    public void setReminder(String reminder) {
+    public void setReminder(final String reminder) {
         this.reminder = reminder;
     }
 
-    public void setSkillName(String skillName) {
+    public void setSkillName(final String skillName) {
         this.skillName = skillName;
     }
 
-    public void setTime(int time) {
+    public void setTime(final int time) {
         this.time = time;
     }
 

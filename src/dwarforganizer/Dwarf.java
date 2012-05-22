@@ -19,6 +19,8 @@ import java.util.Map;
 public class Dwarf implements MyPropertyGetter, Comparable
         , DeepCloneable<Dwarf> {
 
+    private static final int ADULT_MINIMUM_AGE = 13;
+
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
             "Name", "Nickname", "Gender", "Age", "JobText" };
     private static final Class[] SUPPORTED_PROP_CLASSES = new Class[] {
@@ -45,13 +47,14 @@ public class Dwarf implements MyPropertyGetter, Comparable
         balancedPotentials = new HashMap<String, Long>();
         labors = new ArrayList<String>();
     }
-    public Dwarf(String name, String nickname, String gender, int age
-            , Map<String, Integer> statValues
-            , Map<String, Integer> statPercents
-            , int time, Map<String, Long> skillPotentials
-            , Map<String, Long> skillLevels
-            , Map<String, Long> balancedPotentials
-            , String jobText, List<String> labors) {
+    public Dwarf(final String name, final String nickname, final String gender
+            , final int age, final Map<String, Integer> statValues
+            , final Map<String, Integer> statPercents
+            , final int time, final Map<String, Long> skillPotentials
+            , final Map<String, Long> skillLevels
+            , final Map<String, Long> balancedPotentials
+            , final String jobText, final List<String> labors) {
+
         super();
         this.name = name;
         this.nickname = nickname;
@@ -67,11 +70,11 @@ public class Dwarf implements MyPropertyGetter, Comparable
         this.labors = labors;
     }
 
-    public void setStatPercents(Map<String, Integer> statPercents) {
+    public void setStatPercents(final Map<String, Integer> statPercents) {
         this.statPercents = statPercents;
     }
 
-    public void setStatValues(Map<String, Integer> statValues) {
+    public void setStatValues(final Map<String, Integer> statValues) {
         this.statValues = statValues;
     }
 
@@ -96,14 +99,14 @@ public class Dwarf implements MyPropertyGetter, Comparable
     }
 
     public boolean isJuvenile() {
-        return (age < 13);
+        return (age < ADULT_MINIMUM_AGE);
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -111,7 +114,7 @@ public class Dwarf implements MyPropertyGetter, Comparable
         return age;
     }
 
-    public void setAge(int age) {
+    public void setAge(final int age) {
         this.age = age;
     }
 
@@ -119,7 +122,7 @@ public class Dwarf implements MyPropertyGetter, Comparable
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(final String gender) {
         this.gender = gender;
     }
 
@@ -127,7 +130,7 @@ public class Dwarf implements MyPropertyGetter, Comparable
         return jobText;
     }
 
-    public void setJobText(String jobText) {
+    public void setJobText(final String jobText) {
         this.jobText = jobText;
     }
 
@@ -135,7 +138,7 @@ public class Dwarf implements MyPropertyGetter, Comparable
         return nickname;
     }
 
-    public void setNickname(String nickname) {
+    public void setNickname(final String nickname) {
         this.nickname = nickname;
     }
 
@@ -143,7 +146,7 @@ public class Dwarf implements MyPropertyGetter, Comparable
         return time;
     }
 
-    public void setTime(int time) {
+    public void setTime(final int time) {
         this.time = time;
     }
 
@@ -152,8 +155,10 @@ public class Dwarf implements MyPropertyGetter, Comparable
     }
 
     @Override
-    public Object getProperty(String propName, boolean humanReadable) {
-        String prop = propName.toLowerCase();
+    public Object getProperty(final String propName
+            , final boolean humanReadable) {
+
+        final String prop = propName.toLowerCase();
         if (prop.equals("name"))
             return getName().toString();
         else if (prop.equals("nickname"))
@@ -188,8 +193,8 @@ public class Dwarf implements MyPropertyGetter, Comparable
 
     // Used for alphabetizing citizen lists. Not totally the correct way to do it, but easy
     @Override
-    public int compareTo(Object o) {
-        Dwarf otherDwarf = (Dwarf) o;
+    public int compareTo(final Object o) {
+        final Dwarf otherDwarf = (Dwarf) o;
         return this.name.compareTo(otherDwarf.name);
     }
 

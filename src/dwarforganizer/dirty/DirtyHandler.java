@@ -33,7 +33,7 @@ public class DirtyHandler {
         setDirty(false);
     }
 
-    public void setDirty(boolean newValue) {
+    public void setDirty(final boolean newValue) {
         if (mbDirty != newValue) {
             mbDirty = newValue;
             notifyDirtyListeners();
@@ -50,7 +50,7 @@ public class DirtyHandler {
         }
     }
 
-    public void addDirtyListener(DirtyListener listener) {
+    public void addDirtyListener(final DirtyListener listener) {
         //Vector<DirtyListener> v = (Vector<DirtyListener>) mlstDirtyListener.clone();
         final List<DirtyListener> list = Collections.synchronizedList(
                 mlstDirtyListener);

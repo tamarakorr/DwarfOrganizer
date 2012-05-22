@@ -22,19 +22,25 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     private List<Integer> mlstEditableExceptionCols;
     private boolean mbEditable;
 
-    public MyEditableTableModel(Object[] cols, Class[] colClasses
-            , String[] colProps
-            , List<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyEditableTableModel(final Object[] cols, final Class[] colClasses
+            , final String[] colProps
+            , final List<T> rows, final SortKeySwapper sortKeySwapper) {
+
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
-    public MyEditableTableModel(List<Object> cols, Class[] colClasses
-            , String[] colProps, List<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyEditableTableModel(final List<Object> cols
+            , final Class[] colClasses, final String[] colProps
+            , final List<T> rows, final SortKeySwapper sortKeySwapper) {
+
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
-    public MyEditableTableModel(List<Object> cols, List<Class> colClasses
-            , List<String> colProps, List<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyEditableTableModel(final List<Object> cols
+            , final List<Class> colClasses
+            , final List<String> colProps, final List<T> rows
+            , final SortKeySwapper sortKeySwapper) {
+
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
@@ -44,12 +50,12 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
         mbEditable = false;
         mlstEditableExceptionCols = new ArrayList<Integer>();
     }
-    public void addEditableException(int col) {
+    public void addEditableException(final int col) {
         if (! mlstEditableExceptionCols.contains(col))
             mlstEditableExceptionCols.add(col);
     }
     // Adds an editable exception for the first column with the given identifier
-    public void addEditableException(Object colIdentifier) {
+    public void addEditableException(final Object colIdentifier) {
         for (int iCount = 0; iCount < this.getColumnCount(); iCount++) {
             if (colIdentifier.toString().equals(this.getColumnName(iCount))) {
                 addEditableException(iCount);
@@ -58,7 +64,7 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
         }
     }
     @Override
-    public boolean isCellEditable(int row, int column) {
+    public boolean isCellEditable(final int row, final int column) {
         //System.out.println("isCellEditable(" + row + ", " + column + ")");
         if (mlstEditableExceptionCols.contains(column)) {
             //System.out.println("Returning " + ! mbEditable);
@@ -70,10 +76,12 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
         }
     }
     @Override
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        T oRow = (T) mlstRowData.get(rowIndex);
+    public void setValueAt(final Object aValue, final int rowIndex
+            , final int columnIndex) {
+
+        final T oRow = (T) getRowData().get(rowIndex);
         // Get the user readable version of the property:
-        oRow.setProperty(mlstColumnPropertyNames.get(columnIndex).toString()
+        oRow.setProperty(getColumnPropertyNames().get(columnIndex).toString()
                 , aValue);
         fireUpdated(rowIndex, rowIndex);
     }
