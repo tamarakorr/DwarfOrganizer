@@ -12,14 +12,12 @@ import dwarforganizer.dirty.DirtyListener;
 import dwarforganizer.swing.MyTableModel;
 import dwarforganizer.swing.PlaceholderTextField;
 import dwarforganizer.swing.SortKeySwapper;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.List;
 import java.util.*;
 import javax.swing.*;
 import myutils.DefaultFocus;
@@ -105,7 +103,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         // Dummy data vector
         //Vector<String[]> ruleFileContents = new Vector<String[]>();
 
-        moRulesEditor = new RulesEditor();
+        moRulesEditor = new RulesEditor(this);
 
         // Create model---------------------------------------------------------
         Class[] aColClasses = new Class[] { String.class, String.class
@@ -259,6 +257,10 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     }
 
     private class RulesEditor extends AbstractEditor<LaborRule> {
+        private Component dialogParent;
+        public RulesEditor(final Component dialogParent) {
+            this.dialogParent = dialogParent;
+        }
 
         @Override
         public void clearInput() {
@@ -270,15 +272,31 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
         @Override
         public boolean validateInput() {
-            if (mcboType.getSelectedItem().toString().equals(DEFAULT_TYPE)
-                    || mcboFirstLabor.getSelectedItem().toString().equals(DEFAULT_LABOR)
-                    || mcboSecondLabor.getSelectedItem().toString().equals(DEFAULT_LABOR)) {
+            final String type = mcboType.getSelectedItem().toString();
+            final String first = mcboFirstLabor.getSelectedItem().toString();
+            final String second = mcboSecondLabor.getSelectedItem().toString();
 
-                //System.out.println("Invalid input");
+            if (type.equals(DEFAULT_TYPE)) {
+                warn("Select a rule type.");
                 return false;
             }
-            else
-                return true;
+            if (first.equals(DEFAULT_LABOR)) {
+                warn("Select the first labor.");
+                return false;
+            }
+            if (second.equals(DEFAULT_LABOR)) {
+                warn("Select the second labor.");
+                return false;
+            }
+            if (first.equals(second)) {
+                warn("The first labor and the second labor must be different.");
+                return false;
+            }
+            return true;
+        }
+        private void warn(final String messageBody) {
+            JOptionPane.showMessageDialog(dialogParent, messageBody
+                    , "Cannot add rule", JOptionPane.OK_OPTION);
         }
 
         @Override
