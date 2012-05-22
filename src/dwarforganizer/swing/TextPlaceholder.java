@@ -23,8 +23,7 @@ import javax.swing.text.JTextComponent;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class TextPlaceholder extends JLabel implements FocusListener
-        , DocumentListener {
+public class TextPlaceholder { //extends JLabel {
 
     public enum Show {
         ALWAYS, FOCUS_GAINED, FOCUS_LOST;
@@ -35,26 +34,30 @@ public class TextPlaceholder extends JLabel implements FocusListener
     private Show meShow;
     private boolean mbShowOnce;
     private int mintFocusLost;
+    private JLabel label;
 
     public TextPlaceholder(String text, JTextComponent component) {
         this(text, component, Show.FOCUS_LOST);
     }
-    public TextPlaceholder(String text, JTextComponent component, Show show) {
-        this.mtxtText = component;
-        setShow(show);
+    public TextPlaceholder(final String text, final JTextComponent component
+            , final Show show) {
+
+        mtxtText = component;
+        meShow = show;
         mdocDoc = component.getDocument();
 
-        setText(text);
-        setFont(component.getFont());
-        setForeground(component.getForeground());
-        setBorder(new EmptyBorder(component.getInsets()));
-        setHorizontalAlignment(JLabel.LEADING);
+        label = new JLabel();
+        label.setText(text);
+        label.setFont(component.getFont());
+        label.setForeground(component.getForeground());
+        label.setBorder(new EmptyBorder(component.getInsets()));
+        label.setHorizontalAlignment(JLabel.LEADING);
 
-        component.addFocusListener(this);
-        mdocDoc.addDocumentListener(this);
+        component.addFocusListener(createFocusListener()); // this
+        mdocDoc.addDocumentListener(createDocumentListener()); // this
 
         component.setLayout(new BorderLayout());
-        component.add(this);
+        component.add(label);
         checkForPlaceholder();
     }
 
@@ -85,65 +88,77 @@ public class TextPlaceholder extends JLabel implements FocusListener
     public void setAlpha(int alpha) {
         alpha = alpha > 255 ? 255 : alpha < 0 ? 0 : alpha;
 
-        Color foreground = getForeground();
+        Color foreground = label.getForeground();
         int red = foreground.getRed();
         int green = foreground.getGreen();
         int blue = foreground.getBlue();
 
         Color withAlpha = new Color(red, green, blue, alpha);
-        super.setForeground(withAlpha);
+        label.setForeground(withAlpha);
     }
     // Change the style
     // @param Font.BOLD, Font.ITALIC, Font.BOLD + Font.ITALIC, etc. (from Font class)
     public void setStyle(int style) {
-        setFont(getFont().deriveFont(style));
+        label.setFont(label.getFont().deriveFont(style));
     }
 
     private void checkForPlaceholder() {
         // Text entered -> remove placeholder
         if (mdocDoc.getLength() > 0) {
-            setVisible(false);
+            label.setVisible(false);
             return;
         }
 
         // Placeholder has been shown once -> remove
         if (mbShowOnce && (mintFocusLost > 0)) {
-            setVisible(false);
+            label.setVisible(false);
             return;
         }
 
         // Check Show property and focus to determine if we should display
         // the placeholder.
         if (mtxtText.hasFocus())
-            setVisible(meShow == Show.ALWAYS || meShow == Show.FOCUS_GAINED);
+            label.setVisible(meShow == Show.ALWAYS
+                    || meShow == Show.FOCUS_GAINED);
         else
-            setVisible(meShow == Show.ALWAYS || meShow == Show.FOCUS_LOST);
+            label.setVisible(meShow == Show.ALWAYS
+                    || meShow == Show.FOCUS_LOST);
     }
 
     // FocusListener
-    @Override
-    public void focusGained(FocusEvent e) {
-        checkForPlaceholder();
-    }
+    private FocusListener createFocusListener() {
+        return new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                checkForPlaceholder();
+            }
 
-    @Override
-    public void focusLost(FocusEvent e) {
-        mintFocusLost = 1;
-        checkForPlaceholder();
+            @Override
+            public void focusLost(FocusEvent e) {
+                mintFocusLost = 1;
+                checkForPlaceholder();
+            }
+        };
     }
 
     // DocumentListener
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-        checkForPlaceholder();
+    private DocumentListener createDocumentListener() {
+        return new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                checkForPlaceholder();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                checkForPlaceholder();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) { }
+        };
     }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-        checkForPlaceholder();
+    public JLabel getLabel() {
+        return label;
     }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) { }
-
 }

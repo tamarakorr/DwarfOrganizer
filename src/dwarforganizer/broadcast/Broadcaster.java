@@ -5,7 +5,9 @@
 
 package dwarforganizer.broadcast;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -14,24 +16,35 @@ import java.util.Vector;
  */
 public class Broadcaster {
 
-    private Vector<BroadcastListener> mvListener;
+    private List<BroadcastListener> mlstListener;
 
     public Broadcaster() {
         super();
-
-        mvListener = new Vector<BroadcastListener>();
+        mlstListener = new ArrayList<BroadcastListener>();
     }
 
     public void notifyListeners(BroadcastMessage message) {
-        Vector<BroadcastListener> v = (Vector<BroadcastListener>) mvListener.clone();
-        for (BroadcastListener listener : v)
-            listener.broadcast(message);
+        /*final Vector<BroadcastListener> clone
+                = (Vector<BroadcastListener>) mlstListener.clone(); */
+        final List<BroadcastListener> list
+                = Collections.synchronizedList(mlstListener);
+        synchronized(list) {
+            for (final BroadcastListener listener : list)
+                listener.broadcast(message);
+        }
     }
 
     public void addListener(BroadcastListener listener) {
-        Vector<BroadcastListener> v = (Vector<BroadcastListener>) mvListener.clone();
-        if (! v.contains(listener))
-            mvListener.add(listener);
-    }
+        /*final Vector<BroadcastListener> clone
+                = (Vector<BroadcastListener>) mlstListener.clone(); */
+        final List<BroadcastListener> list = Collections.synchronizedList(
+                mlstListener);
 
+        synchronized(list) {
+            if (! list.contains(listener)) {
+                //mlstListener.add(listener);
+                list.add(listener);
+            }
+        }
+    }
 }

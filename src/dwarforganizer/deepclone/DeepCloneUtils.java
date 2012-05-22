@@ -8,7 +8,6 @@ package dwarforganizer.deepclone;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.PriorityQueue;
-import java.util.Vector;
 
 /**
  * Convenient utility functions for operations on objects implementing
@@ -39,13 +38,14 @@ public class DeepCloneUtils {
         }
         return lstReturn;
     }
+    // (Vector "obsolete")
     // Deep clone a vector of DeepCloneable items
-    public static <T extends DeepCloneable> Vector<T> deepClone(
+/*    public static <T extends DeepCloneable> Vector<T> deepClone(
             final Vector<T> vector) {
         final Vector<T> vReturn = new Vector<T>(vector.size());
         for (final DeepCloneable<T> e : vector) {
             vReturn.add(e.deepClone());
         }
         return vReturn;
-    }
+    } */
 }

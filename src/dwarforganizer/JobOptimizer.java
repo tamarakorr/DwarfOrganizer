@@ -6,9 +6,7 @@
 package dwarforganizer;
 
 import dwarforganizer.bins.BinPack;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.*;
 import myutils.MySimpleLogDisplay;
 
 /**
@@ -26,26 +24,43 @@ public class JobOptimizer { // implements ActionListener
     private boolean[][] mbSolution;
     private double [] mdblScores; // Individual scores are just tracked for reporting
 
-    private Hashtable<String, Integer> mhtJobNameToIndex = new Hashtable<String, Integer>();
+    private Map<String, Integer> mmapJobNameToIndex
+            = new HashMap<String, Integer>();
 
-    private Vector<Job> mvJobs;
-    private Vector<Dwarf> mvDwarves;
+    private List<Job> mlstJobs;
+    private List<Dwarf> mlstDwarves;
     private JobBlacklist mhtJobBlacklist;
 
     private MySimpleLogDisplay moLog = new MySimpleLogDisplay();
 
+    public JobOptimizer(List<Job> vJobs, List<Dwarf> vDwarves
+            , JobBlacklist htBlacklist) {
+
+        mlstJobs = vJobs;
+        mlstDwarves = vDwarves;
+        mhtJobBlacklist = htBlacklist;
+    }
+
     protected class Solution {
-        protected Vector<Job> jobs;
-        protected Vector<Dwarf> dwarves;
+        protected List<Job> jobs;
+        protected List<Dwarf> dwarves;
         protected boolean[][] dwarfjobmap;
         protected double[] dwarfscores;
 
-        public Solution(Vector<Job> jobs, Vector<Dwarf> dwarves
+        public Solution(List<Job> jobs, List<Dwarf> dwarves
                 , boolean[][] solution, double[] dwarfscores) {
             this.jobs = jobs;
             this.dwarves = dwarves;
             this.dwarfjobmap = solution;
             this.dwarfscores = dwarfscores;
+        }
+
+        public List<Dwarf> getDwarves() {
+            return dwarves;
+        }
+
+        public List<Job> getJobs() {
+            return jobs;
         }
     }
 
@@ -53,19 +68,11 @@ public class JobOptimizer { // implements ActionListener
         public SolutionImpossibleException() { super(); }
     } ;
 
-    public JobOptimizer(Vector<Job> vJobs, Vector<Dwarf> vDwarves
-            , JobBlacklist htBlacklist) {
-
-        mvJobs = vJobs;
-        mvDwarves = vDwarves;
-        mhtJobBlacklist = htBlacklist;
-    }
-
     public int optimize() {
 
-        NUM_JOBS = mvJobs.size();
+        NUM_JOBS = mlstJobs.size();
         moLog.addEvent("There are " + NUM_JOBS + " jobs for assignment");
-        NUM_DWARVES = mvDwarves.size();
+        NUM_DWARVES = mlstDwarves.size();
         moLog.addEvent("There are " + NUM_DWARVES + " dwarves for assignment");
 
         // Create job name->index lookup table
@@ -73,10 +80,10 @@ public class JobOptimizer { // implements ActionListener
 
         // Summarize
         long jobHours = 0l;
-        for (Job job : mvJobs)
+        for (Job job : mlstJobs)
             jobHours += job.getTime() * job.getQtyDesired();
         long dwarfHours = 0l;
-        for (Dwarf dwarf : mvDwarves)
+        for (Dwarf dwarf : mlstDwarves)
             dwarfHours += dwarf.getTime();
         moLog.addEvent(jobHours + " job hours to be matched with " + dwarfHours // mvDwarves.size()
                 + " dwarf hours");
@@ -97,7 +104,7 @@ public class JobOptimizer { // implements ActionListener
                 System.err.println("(A solution is impossible. Aborting.)");
                 moLog.addEvent("(A solution is impossible. Aborting.)");
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 moLog.addEvent("An error was encountered.");
             }
         }
@@ -108,17 +115,18 @@ public class JobOptimizer { // implements ActionListener
     // Hashes job names to vector indices
     private void createJobIndex() {
         for (int iCount = 0; iCount < NUM_JOBS; iCount++) {
-            System.out.println(iCount + " " + mvJobs.get(iCount).getName());
-            mhtJobNameToIndex.put(mvJobs.get(iCount).getName(), iCount);    // Index it for matching
+            System.out.println(iCount + " " + mlstJobs.get(iCount).getName());
+            mmapJobNameToIndex.put(mlstJobs.get(iCount).getName(), iCount);    // Index it for matching
         }
     }
 
     // maxTime = The maximum time the jobs are allowed to take per dwarf.
-    Vector<Long> getValidJobCombos(Vector<Integer> vJobs, int intMaxTime) {
+    ArrayList<Long> getValidJobCombos(ArrayList<Integer> lstJobs
+            , int intMaxTime) {
 
-        int intJobs = vJobs.size();
+        final int intJobs = lstJobs.size();
         long maxCombos = Math.round(Math.pow(2d, intJobs));
-        Vector<Long> vlngCombos = new Vector<Long>();
+        ArrayList<Long> lstCombos = new ArrayList<Long>();
 
         System.out.println("  Calculating " + maxCombos + " job combinations...");
 
@@ -127,15 +135,15 @@ public class JobOptimizer { // implements ActionListener
         // inverting each one as well.
         for (long mCount = 0; mCount <= (maxCombos / 2); mCount++) {
             // Get the total time for this combo.
-            int intTotalTime1 = getTimeForCombo(vJobs, mCount);
+            int intTotalTime1 = getTimeForCombo(lstJobs, mCount);
 
             // Check the time total for the inverse of this combo as well.
-            int intTotalTime2 = getTimeForCombo(vJobs, ~ mCount);
+            int intTotalTime2 = getTimeForCombo(lstJobs, ~ mCount);
 
             // If time total is ok, add these jobs for now.
             if (intTotalTime1 <= intMaxTime && intTotalTime2 <= intMaxTime) {
 
-                vlngCombos.add(mCount);
+                lstCombos.add(mCount);
                 /*System.out.println("Combo #" + mCount + ") "
                         + " Time: " + dblTotalTime1
                         + " Inverse combo time: " + dblTotalTime2
@@ -143,34 +151,35 @@ public class JobOptimizer { // implements ActionListener
                         + " (Inverse: " + jobComboToString(~ mCount, vJobs) + ")"); */
             }
         }
-        System.out.println("  (" + vlngCombos.size() + " valid combos by time)");
+        System.out.println("  (" + lstCombos.size() + " valid combos by time)");
 
         // Prune out any jobs that are disallowed together.
-        Vector<Long> vReturn = getNonBlacklistedJobs(vlngCombos, vJobs);
+        ArrayList<Long> lstReturn = getNonBlacklistedJobs(lstCombos, lstJobs);
 
-        return vReturn;
+        return lstReturn;
     }
 
     // Returns true if the given combo indexed by the given list of relevant
     // jobs is blacklisted; false otherwise.
-    private boolean isComboBlacklisted(long combo, Vector<Integer> relevantJobs) {
+    private boolean isComboBlacklisted(long combo, List<Integer> relevantJobs) {
 
         int intSize = relevantJobs.size();
 
         for (String job1Name : mhtJobBlacklist.keySet()) {
-            int job1Index = mhtJobNameToIndex.get(job1Name);
+            int job1Index = mmapJobNameToIndex.get(job1Name);
 
             if (relevantJobs.contains(job1Index)) {
-                int job1RelevantIndex = getIndexOfItemInVector(job1Index, relevantJobs);
+                int job1RelevantIndex = getIndexOfItemInList(job1Index
+                        , relevantJobs);
 
                 if (isJobIncludedInCombo(job1RelevantIndex, combo, intSize)) {
 
                     for (String job2Name : mhtJobBlacklist.get(job1Name)) {
-                        int job2Index = mhtJobNameToIndex.get(job2Name);
+                        int job2Index = mmapJobNameToIndex.get(job2Name);
 
                         if (relevantJobs.contains(job2Index)) {
-                            int job2RelevantIndex = getIndexOfItemInVector(job2Index
-                                    , relevantJobs);
+                            int job2RelevantIndex = getIndexOfItemInList(
+                                    job2Index, relevantJobs);
 
                             if (isJobIncludedInCombo(job2RelevantIndex, combo, intSize)) {
                                 //System.out.println("  Eliminating blacklisted combo ("
@@ -185,23 +194,23 @@ public class JobOptimizer { // implements ActionListener
         return false;
     }
 
-    private int getIndexOfItemInVector(int item, Vector<Integer> vec) {
-        for (int iCount = 0; iCount < vec.size(); iCount++)
-            if (vec.get(iCount) == item)
+    private int getIndexOfItemInList(final int item, final List<Integer> list) {
+        for (int iCount = 0; iCount < list.size(); iCount++)
+            if (list.get(iCount) == item)
                 return iCount;
         return -1;
     }
 
     // Returns true if the given list of relevant jobs contains any pairs
     // of blacklisted jobs; false otherwise.
-    private boolean containsAnyBlacklisted(Vector<Integer> relevantJobs) {
+    private boolean containsAnyBlacklisted(final List<Integer> relevantJobs) {
 
         for (String job1Name : mhtJobBlacklist.keySet()) {
-            int job1Index = mhtJobNameToIndex.get(job1Name);
+            int job1Index = mmapJobNameToIndex.get(job1Name);
             if (relevantJobs.contains(job1Index))
 
                 for (String job2Name : mhtJobBlacklist.get(job1Name)) {
-                    int job2Index = mhtJobNameToIndex.get(job2Name);
+                    int job2Index = mmapJobNameToIndex.get(job2Name);
                     if (relevantJobs.contains(job2Index))
                         return true;
                 }
@@ -213,33 +222,33 @@ public class JobOptimizer { // implements ActionListener
     // Returns a subset of the given combos. The returned combos follow
     // the blacklist and whitelist rules. (Also checks and eliminates disallowed
     // inverted combos.)
-    private Vector<Long> getNonBlacklistedJobs(Vector<Long> combos
-            , Vector<Integer> relevantJobs) {
+    private ArrayList<Long> getNonBlacklistedJobs(ArrayList<Long> combos
+            , List<Integer> relevantJobs) {
 
-        Vector<Long> vNonBlacklist;     // Subset of combos, that aren't blacklisted
+        ArrayList<Long> lstNonBlacklist;     // Subset of combos, that aren't blacklisted
 
         // Prune out blacklisted jobs first-------------------------------------
         if (containsAnyBlacklisted(relevantJobs)) {
             //System.out.println("(Contains blacklisted job pair(s))");
-            vNonBlacklist = new Vector<Long>();
+            lstNonBlacklist = new ArrayList<Long>();
 
             for (long combo : combos) {
                 if (! isComboBlacklisted(combo, relevantJobs)
                         && ! isComboBlacklisted(~combo, relevantJobs))
-                    vNonBlacklist.add(combo);
+                    lstNonBlacklist.add(combo);
             }
         }
         else
-            vNonBlacklist = (Vector<Long>) combos.clone();
-        System.out.println("  (" + vNonBlacklist.size() + " valid combos by blacklist)");
+            lstNonBlacklist = (ArrayList<Long>) combos.clone();
+        System.out.println("  (" + lstNonBlacklist.size() + " valid combos by blacklist)");
 
-        return vNonBlacklist;       // vReturn
+        return lstNonBlacklist;       // vReturn
     }
 
     // Returns the time required for the given job combo.
     // If the time is greater than MAX_TIME, a number greater
     // than MAX_TIME, which is not necessarily the total time, will be returned.
-    private int getTimeForCombo(Vector<Integer> vJobs, long combo) {
+    private int getTimeForCombo(List<Integer> vJobs, long combo) {
 
         int intJobs = vJobs.size();
         int intTotalTime = 0;
@@ -249,7 +258,7 @@ public class JobOptimizer { // implements ActionListener
             // If the job is selected in this combination
             if (isJobIncludedInCombo(iCount, combo, intJobs)) {
                 //dblTotalTime += mvdJobTime.get(vJobs.get(iCount));
-                intTotalTime += mvJobs.get(vJobs.get(iCount)).getTime();
+                intTotalTime += mlstJobs.get(vJobs.get(iCount)).getTime();
                 if (intTotalTime > MAX_TIME) break;
             }
         }
@@ -262,23 +271,22 @@ public class JobOptimizer { // implements ActionListener
                  > 0;
     }
 
-    private Vector<JobOpening> getJobOpenings() {
-        Vector<JobOpening> vReturn = new Vector<JobOpening>();
+    private ArrayList<JobOpening> getJobOpenings() {
+        final ArrayList<JobOpening> lstReturn = new ArrayList<JobOpening>();
 
-        for (Job job : mvJobs) {
+        for (final Job job : mlstJobs) {
             for (int iCount = 0; iCount < job.getQtyDesired(); iCount++)
-                vReturn.add((JobOpening) job);
+                lstReturn.add((JobOpening) job);
         }
 
-        return vReturn;
+        return lstReturn;
     }
 
     private double createInitialSolution() throws SolutionImpossibleException {
 
         BinPack<JobOpening> binPacker = new BinPack<JobOpening>();
-        Vector<Vector<JobOpening>> vPackedBins = binPacker.binPack(
-                getJobOpenings()
-                , MAX_TIME, mhtJobBlacklist);
+        ArrayList<ArrayList<JobOpening>> vPackedBins = binPacker.binPack(
+                getJobOpenings(), MAX_TIME, mhtJobBlacklist);
 
         if (vPackedBins.size() > NUM_DWARVES) {
             System.err.println("The bin packing algorithm requires a minimum of "
@@ -291,16 +299,16 @@ public class JobOptimizer { // implements ActionListener
         // If bin packing worked out, initialize the solution array and dwarf time.
         mbSolution = new boolean[NUM_JOBS][NUM_DWARVES];
         mdblScores = new double[NUM_DWARVES];           // Initialize scores
-        for (Dwarf dwarf : mvDwarves)
+        for (Dwarf dwarf : mlstDwarves)
             dwarf.setTime(MAX_TIME);
 
         // Assign the bin-packed solution to the dwarves.
         for (int dCount = 0; dCount < vPackedBins.size(); dCount++) {
-            Dwarf dwarf = mvDwarves.get(dCount);
-            Vector<JobOpening> bin = vPackedBins.get(dCount);
+            Dwarf dwarf = mlstDwarves.get(dCount);
+            List<JobOpening> bin = vPackedBins.get(dCount);
             for (int jCount = 0; jCount < bin.size(); jCount++) {
                 JobOpening job = bin.get(jCount);
-                int jobIndex = mhtJobNameToIndex.get(job.getName());
+                int jobIndex = mmapJobNameToIndex.get(job.getName());
                 mbSolution[jobIndex][dCount] = true;
 
                 // Decrease the dwarf's available time
@@ -340,8 +348,8 @@ public class JobOptimizer { // implements ActionListener
             Arrays.fill(mdblScores, 0);
 
             for (int dwarf = 0; dwarf < mbSolution[0].length; dwarf++) {
-                System.out.println("Examining " + mvDwarves.get(dwarf).getName()
-                        + "'s jobs...");
+                System.out.println("Examining "
+                        + mlstDwarves.get(dwarf).getName() + "'s jobs...");
                 for (int job = 0; job < mbSolution.length; job++) {
 
                     boolean bReassigned = false;
@@ -352,17 +360,20 @@ public class JobOptimizer { // implements ActionListener
                         // Is another dwarf that is not assigned this job,
                         // better at this job?
                         for (int otherDwarf = 0; otherDwarf < NUM_DWARVES; otherDwarf++) {
-                            String jobName = mvJobs.get(job).getName();
-                            double otherDwarfSkill = mvDwarves.get(otherDwarf).balancedPotentials.get(jobName);
-                            double dwarfSkill = mvDwarves.get(dwarf).balancedPotentials.get(jobName);
+                            String jobName = mlstJobs.get(job).getName();
+                            double otherDwarfSkill = mlstDwarves.get(
+                                    otherDwarf).getBalancedPotentials().get(
+                                    jobName);
+                            double dwarfSkill = mlstDwarves.get(
+                                    dwarf).getBalancedPotentials().get(jobName);
 
                             if (! mbSolution[job][otherDwarf]
                                 && otherDwarfSkill > dwarfSkill) {
 
                                 System.out.println(" ("
-                                        + mvDwarves.get(otherDwarf).getName()
+                                        + mlstDwarves.get(otherDwarf).getName()
                                         + " is better at "
-                                        + mvJobs.get(job).getName() + ")");
+                                        + mlstJobs.get(job).getName() + ")");
 
                                 // Now swap them if necessary
                                 bReassigned = checkForJobSwap(dwarf, otherDwarf);
@@ -390,13 +401,13 @@ public class JobOptimizer { // implements ActionListener
 
     // Updates dwarf free time by current solution
     private void updateNewDwarfTime() {
-        for (int dwarf = 0; dwarf < mvDwarves.size(); dwarf++) {
+        for (int dwarf = 0; dwarf < mlstDwarves.size(); dwarf++) {
             int intTime = MAX_TIME;
             for (int job = 0; job < NUM_JOBS; job++)
                 if (mbSolution[job][dwarf])
-                    intTime -= mvJobs.get(job).getTime();
+                    intTime -= mlstJobs.get(job).getTime();
             //mvdDwarfTimeNew.set(dwarf, time);
-            mvDwarves.get(dwarf).setTime(intTime);
+            mlstDwarves.get(dwarf).setTime(intTime);
         }
     }
 
@@ -408,33 +419,35 @@ public class JobOptimizer { // implements ActionListener
 
         int intMaxFreeTime = MAX_TIME;
 
-        Vector<Integer> vRelevantJobs = new Vector<Integer>();
+        ArrayList<Integer> lstRelevantJobs = new ArrayList<Integer>();
 
         // Find all relevant jobs (those held by exactly one of the two dwarves).
         for (int jCount = 0; jCount < NUM_JOBS; jCount++)
             // (Exclusive or -> don't check for swaps if neither or both
             // dwarves have the job.)
             if (mbSolution[jCount][dwarf1] ^ mbSolution[jCount][dwarf2])
-                vRelevantJobs.add(jCount);
+                lstRelevantJobs.add(jCount);
             // If both dwarves have the job, remove the time taken by the
             // job from the available time.
             else if (mbSolution[jCount][dwarf1] && mbSolution[jCount][dwarf2])
-                intMaxFreeTime -= mvJobs.get(jCount).getTime();
+                intMaxFreeTime -= mlstJobs.get(jCount).getTime();
 
         // Find and rate every possible combination of these dwarves' jobs.
-        Vector<Long> vCombos = getValidJobCombos(vRelevantJobs, intMaxFreeTime);
+        final ArrayList<Long> lstCombos = getValidJobCombos(lstRelevantJobs
+                , intMaxFreeTime);
 
-        if (vCombos.size() == 0) {
+        if (lstCombos.isEmpty()) {
             System.err.println("...ERROR: *NO* valid combinations were found,"
                     + " including the currently selected jobs."
                     + " All results beyond this line are invalid.");
             throw new SolutionImpossibleException();
         }
         else
-            System.out.println("  ... " + (vCombos.size() * 2) + " valid combinations were found.");
+            System.out.println("  ... " + (lstCombos.size() * 2)
+                    + " valid combinations were found.");
 
         // Rate combos
-        int numJobs = vRelevantJobs.size();
+        int numJobs = lstRelevantJobs.size();
         long bestCombo = -1;
         mdblScores[dwarf1] = getSkillSum(dwarf1);   // Record scores for reporting
         mdblScores[dwarf2] = getSkillSum(dwarf2);
@@ -442,16 +455,16 @@ public class JobOptimizer { // implements ActionListener
         double bestScore = currentScore; //0;
         boolean invertBest = false;
 
-        for (int iCount = 0; iCount < vCombos.size(); iCount++) {
+        for (int iCount = 0; iCount < lstCombos.size(); iCount++) {
 
             double score1 = 0; // First dwarf with 1's, second with 0's
             double score2 = 0; // First dwarf with 0's, second with 1's
 
-            long combo = vCombos.get(iCount);
+            long combo = lstCombos.get(iCount);
 
-            for (int jCount = 0; jCount < vRelevantJobs.size(); jCount++) {
+            for (int jCount = 0; jCount < lstRelevantJobs.size(); jCount++) {
 
-                int jobIndex = vRelevantJobs.get(jCount);
+                int jobIndex = lstRelevantJobs.get(jCount);
                 if (isJobIncludedInCombo(jCount, combo, numJobs)) {
                     score1 += getWeightedScore(dwarf1, jobIndex);
                     score2 += getWeightedScore(dwarf2, jobIndex); //mvJobSkill.get(dwarf2).get(jobIndex);
@@ -488,8 +501,8 @@ public class JobOptimizer { // implements ActionListener
         //if (bDifferent) {
             //bDifferent = isJobAllocationDifferent(vRelevantJobs, bestCombo, dwarf1);
             if (bDifferent) {
-                setDwarfJobs(dwarf1, bestCombo, vRelevantJobs);
-                setDwarfJobs(dwarf2, ~ bestCombo, vRelevantJobs);
+                setDwarfJobs(dwarf1, bestCombo, lstRelevantJobs);
+                setDwarfJobs(dwarf2, ~ bestCombo, lstRelevantJobs);
             }
         //}
         return bDifferent;
@@ -499,29 +512,31 @@ public class JobOptimizer { // implements ActionListener
     private long getWeightedScore(int dwarfIndex, int jobIndex)
             throws SolutionImpossibleException {
 
-        Job thisJob = mvJobs.get(jobIndex);
-        Dwarf oDwarf = mvDwarves.get(dwarfIndex);
+        Job thisJob = mlstJobs.get(jobIndex);
+        Dwarf oDwarf = mlstDwarves.get(dwarfIndex);
 
         long potential = -1;
 
         //if (oDwarf.skillPotentials.get(thisJob.skillName) == null)
-        if (oDwarf.balancedPotentials.get(thisJob.getName()) == null) {
+        if (oDwarf.getBalancedPotentials().get(thisJob.getName()) == null) {
             System.err.println("ERROR: Potential for job '"
                     + thisJob.getName() + "' not found"
                     + " for dwarf " + oDwarf.getName() + "."
                     + " All results are invalid. (Dwarf has "
-                    + oDwarf.balancedPotentials.size() + " valid job potentials.)");
+                    + oDwarf.getBalancedPotentials().size()
+                    + " valid job potentials.)");
             throw new SolutionImpossibleException();
         }
         else {
             //potential = oDwarf.skillPotentials.get(thisJob.skillName);
-            potential = oDwarf.balancedPotentials.get(thisJob.getName());
+            potential = oDwarf.getBalancedPotentials().get(thisJob.getName());
         }
 
         return Math.round(thisJob.getCandidateWeight() * potential);
     }
 
-    private void setDwarfJobs(int dwarfIndex, long jobCombo, Vector<Integer> vJobs) {
+    private void setDwarfJobs(int dwarfIndex, long jobCombo
+            , List<Integer> vJobs) {
 
         int intNumJobs = vJobs.size();
 
@@ -532,13 +547,13 @@ public class JobOptimizer { // implements ActionListener
             boolean bNew = isJobIncludedInCombo(iCount, jobCombo, intNumJobs);
 
             if (! bOld && bNew)
-                System.out.println(mvDwarves.get(dwarfIndex).getName() + " +"
-                        + mvJobs.get(job).getName() + " ("
-                        + mvJobs.get(job).getTime() + " time units)");
+                System.out.println(mlstDwarves.get(dwarfIndex).getName() + " +"
+                        + mlstJobs.get(job).getName() + " ("
+                        + mlstJobs.get(job).getTime() + " time units)");
             else if (bOld && ! bNew)
-                System.out.println(mvDwarves.get(dwarfIndex).getName()
-                        + " -" + mvJobs.get(job).getName()
-                        + " (" + mvJobs.get(job).getTime() + " time units"
+                System.out.println(mlstDwarves.get(dwarfIndex).getName()
+                        + " -" + mlstJobs.get(job).getName()
+                        + " (" + mlstJobs.get(job).getTime() + " time units"
                         + ")");
 
             mbSolution[job][dwarfIndex] = bNew;
@@ -550,7 +565,7 @@ public class JobOptimizer { // implements ActionListener
 
         double sum = 0;
 
-        for (int dCount = 0; dCount < mvDwarves.size(); dCount++)
+        for (int dCount = 0; dCount < mlstDwarves.size(); dCount++)
             sum += getSkillSum(dCount);
 
         return sum;
@@ -580,8 +595,9 @@ public class JobOptimizer { // implements ActionListener
     private boolean isJobLegalForDwarf(int job, int dwarf) {
         for (int iCount = 0; iCount < NUM_JOBS; iCount++) {
             if (mbSolution[iCount][dwarf]) {
-                if (mhtJobBlacklist.areItemsListedTogether(mvJobs.get(iCount).getName()
-                        , mvJobs.get(job).getName()))
+                if (mhtJobBlacklist.areItemsListedTogether(
+                        mlstJobs.get(iCount).getName()
+                        , mlstJobs.get(job).getName()))
                     return false;
 /*                if (! areJobsAllowedTogether(mvJobs.get(iCount).name
                     , mvJobs.get(job).name))
@@ -608,6 +624,7 @@ public class JobOptimizer { // implements ActionListener
     }
 
     private void displayResults() { // throws SolutionImpossibleException
-        new ResultsView(new Solution(mvJobs, mvDwarves, mbSolution, mdblScores));
+        ResultsView temp = new ResultsView(new Solution(mlstJobs, mlstDwarves
+                , mbSolution, mdblScores));
     }
 }

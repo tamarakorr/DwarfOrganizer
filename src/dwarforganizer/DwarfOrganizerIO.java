@@ -6,21 +6,9 @@
 package dwarforganizer;
 
 import dwarforganizer.Stat.StatHint;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -28,11 +16,7 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import myutils.MyFileUtils;
@@ -80,7 +64,7 @@ public class DwarfOrganizerIO {
 
     private JobBlacklist moBlacklist;
     private JobList moWhitelist;
-    private Vector<LaborRule> mvRuleFile;
+    private List<LaborRule> mvRuleFile;
 
     private Integer mintMaxExclID = 0;
 
@@ -109,14 +93,15 @@ public class DwarfOrganizerIO {
         return USER_FILES_DIR + fileName;
     }
 
-    protected Vector<LaborGroup> readLaborGroups() {
+    protected ArrayList<LaborGroup> readLaborGroups() {
         final int EXPECTED_COLUMNS = 5;
-        Vector<LaborGroup> vReturn = new Vector<LaborGroup>();
+        ArrayList<LaborGroup> vReturn = new ArrayList<LaborGroup>();
 
         try {
             FileInputStream in = new FileInputStream(
                     getInputFile(GROUP_LIST_FILE_NAME));
-            Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
+            List<String[]> vData = MyFileUtils.readDelimitedLineByLine(in
+                    , "\t", 1);
             for (String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
                     System.err.println("A line in group-list.txt contains an"
@@ -132,19 +117,20 @@ public class DwarfOrganizerIO {
         } catch (Exception ex) {
             final String message = "Failed to process group-list.txt."
                     + " The application will shut down.";
-            Main.crash(message, ex);
+            DwarfOrganizer.crash(message, ex);
         }
         return vReturn;
     }
 
-    protected Vector<Labor> readLabors() {
+    protected ArrayList<Labor> readLabors() {
         final int EXPECTED_COLUMNS = 3;
-        Vector<Labor> vReturn = new Vector<Labor>();
+        ArrayList<Labor> vReturn = new ArrayList<Labor>();
 
         try {
             FileInputStream in = new FileInputStream(getInputFile(
                     LABOR_LIST_FILE_NAME));
-            Vector<String[]> vData = MyFileUtils.readDelimitedLineByLine(in, "\t", 1);
+            List<String[]> vData = MyFileUtils.readDelimitedLineByLine(in
+                    , "\t", 1);
 
             for (String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
@@ -160,7 +146,7 @@ public class DwarfOrganizerIO {
             final String message = "Failed to read the critical file"
                 + " labor-list.txt."
                 + " The application will terminate.";
-            Main.crash(message, e);
+            DwarfOrganizer.crash(message, e);
         }
         return vReturn;
     }
@@ -176,7 +162,7 @@ public class DwarfOrganizerIO {
         String[] jobs = new String[LABOR_RULE_MAX_COLS]; // 4
         moBlacklist = new JobBlacklist();
         moWhitelist = new JobList();
-        mvRuleFile = new Vector<LaborRule>();
+        mvRuleFile = new ArrayList<LaborRule>();
 
         try {
             // Open the file
@@ -239,34 +225,41 @@ public class DwarfOrganizerIO {
 
             // (Do not post-process the whitelist here)
         } catch (FileNotFoundException e) {
-            Main.warn(ERROR_MESSAGE, e);
+            DwarfOrganizer.warn(ERROR_MESSAGE, e);
         } catch (Exception e) {
-            Main.warn(ERROR_MESSAGE, e);
-            e.printStackTrace();
+            DwarfOrganizer.warn(ERROR_MESSAGE, e);
+            e.printStackTrace(System.out);
         }
     }
     protected JobBlacklist getBlacklist() { return moBlacklist; }
     protected JobList getWhitelist() { return moWhitelist; }
-    protected Vector<LaborRule> getRuleFileContents() { return mvRuleFile; }
+    protected List<LaborRule> getRuleFileContents() { return mvRuleFile; }
 
-    // Appends old COMMENT entries (comment) to the given non-comment line (jobs)
-    private String[] fixOldStyleComment(String[] jobs, String comment) {
+    // Appends old COMMENT entries (comment) to the given non-comment line
+    // (jobs)
+    private String[] fixOldStyleComment(String[] jobs, final String comment) {
+        final int NO_COMMENT_SIZE = 3;
+        final int COMMENT_SIZE = 4;
+        final int COMMENT_INDEX = 3;
+
         // Append comment to existing comment
-        if (jobs.length > 3)
-            jobs[3] += "; " + comment;
+        if (jobs.length > NO_COMMENT_SIZE)
+            jobs[COMMENT_INDEX] += "; " + comment;
         // Create comment on next non-COMMENT line
         else {
             String[] clone = (String[]) jobs.clone();
-            jobs = new String[4];
-            for (int iCount = 0; iCount < 3; iCount++)
-                jobs[iCount] = clone[iCount];
-            jobs[3] = comment;
+            jobs = new String[COMMENT_SIZE];
+            // Replaced with System.arraycopy:
+            /*for (int iCount = 0; iCount < COMMENT_SIZE - 1; iCount++)
+                jobs[iCount] = clone[iCount]; */
+            System.arraycopy(clone, 0, jobs, 0, COMMENT_SIZE - 1);
+            jobs[COMMENT_INDEX] = comment;
         }
         return jobs;
     }
 
     // Creates moBlacklist and moWhitelist from the given file data
-    private void createRuleStructures(Vector<LaborRule> vData) { // String[]
+    private void createRuleStructures(List<LaborRule> vData) { // String[]
         //for (String[] fields : vData) {
         for (LaborRule laborRule : vData) {
             if (laborRule.getType().equals("BLACKLIST")) { // fields[0]
@@ -292,7 +285,7 @@ public class DwarfOrganizerIO {
 
     // Writes the given data to the rule file.
     // Recreates the whitelist and blacklist data structures.
-    protected void writeRuleFile(Vector<LaborRule> vData) { // String[]
+    protected void writeRuleFile(List<LaborRule> vData) { // String[]
 
         moBlacklist = new JobBlacklist();
         moWhitelist = new JobList();
@@ -333,7 +326,7 @@ public class DwarfOrganizerIO {
             createRuleStructures(mvRuleFile);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
             System.err.println("Failed to write " + RULE_FILE_NAME);
         }
 
@@ -361,36 +354,36 @@ public class DwarfOrganizerIO {
                 , "Self_consciousness", "Straightforwardness", "Cooperation"
                 , "Assertiveness", "Altruism" };
 
-        private Hashtable<String, Stat> mhtStats;
-        private Hashtable<String, Skill> mhtSkills;
-        private Hashtable<String, MetaSkill> mhtMetaSkills;
+        private Map<String, Stat> mhtStats;
+        private Map<String, Skill> mhtSkills;
+        private Map<String, MetaSkill> mhtMetaSkills;
 
-        private Vector<Dwarf> mvDwarves;
+        private ArrayList<Dwarf> mvDwarves;
 
         public DwarfIO() {
             // "Constants"
             SKILL_LEVEL_PATTERN = Pattern.compile("(.*\\[)(\\d+)(\\].*)");
         }
 
-        public Vector<Dwarf> getDwarves() {
+        public ArrayList<Dwarf> getDwarves() {
             return mvDwarves;
         }
 
-        public Hashtable<String, MetaSkill> getMetaSkills() {
+        public Map<String, MetaSkill> getMetaSkills() {
             return mhtMetaSkills;
         }
 
-        public Hashtable<String, Skill> getSkills() {
+        public Map<String, Skill> getSkills() {
             return mhtSkills;
         }
 
-        public Hashtable<String, Stat> getStats() {
+        public Map<String, Stat> getStats() {
             return mhtStats;
         }
 
         public void readDwarves(String filePath) {
 
-            mvDwarves = new Vector<Dwarf>(); // Initialize before reading anything
+            mvDwarves = new ArrayList<Dwarf>(); // Initialize before reading anything
 
             try {
 
@@ -409,15 +402,15 @@ public class DwarfOrganizerIO {
                 parseDwarves(nodes);
             } catch (Exception e) {
                 //System.err.println(e.getMessage() + " Failed to read dwarves.XML");
-                Main.warn("Failed to read the last dwarves.XML", e);
+                DwarfOrganizer.warn("Failed to read the last dwarves.XML", e);
             }
         }
 
         // Reads labor-skills.XML
         private void createSkills() {
 
-            mhtSkills = new Hashtable<String, Skill>();
-            mhtMetaSkills = new Hashtable<String, MetaSkill>();
+            mhtSkills = new HashMap<String, Skill>();
+            mhtMetaSkills = new HashMap<String, MetaSkill>();
 
             createStats();
 
@@ -427,17 +420,18 @@ public class DwarfOrganizerIO {
             } catch (URISyntaxException e) {
                 final String message = "URI syntax exception: failed to read"
                         + " labor-skills.XML";
-                Main.crash(message, e);
+                DwarfOrganizer.crash(message, e);
             } catch (FileNotFoundException e) {
                 final String message = "labor-skills.xml not found."
                         + " The application will shut down.";
-                Main.crash(message, e);
+                DwarfOrganizer.crash(message, e);
             }
 
             // TODO: Remove this hard-coding. Put meta skills in XML file.
             // Meta skills: Broker and manager
             mhtMetaSkills.put("Broker", new MetaSkill("Broker"
-                , new Vector<Skill>(Arrays.asList(new Skill[] { mhtSkills.get("Appraisal")
+                , new ArrayList<Skill>(Arrays.asList(new Skill[] {
+                  mhtSkills.get("Appraisal")
                 , mhtSkills.get("Judging Intent"), mhtSkills.get("Conversation")
                 , mhtSkills.get("Comedy"), mhtSkills.get("Flattery")
                 , mhtSkills.get("Lying")
@@ -445,15 +439,16 @@ public class DwarfOrganizerIO {
                 , mhtSkills.get("Negotiation"), mhtSkills.get("Consoling")
                 , mhtSkills.get("Pacification") }))));
             mhtMetaSkills.put("Manager", new MetaSkill("Manager"
-                    , new Vector<Skill>(Arrays.asList(new Skill[] {
+                    , new ArrayList<Skill>(Arrays.asList(new Skill[] {
                     mhtSkills.get("Organization")
-                    , mhtSkills.get("Consoling"), mhtSkills.get("Pacification") }))));
+                    , mhtSkills.get("Consoling"), mhtSkills.get("Pacification")
+                    }))));
         }
 
         // Creates mhtStats.
         // TODO Remove hard-coding
         private void createStats() {
-            mhtStats = new Hashtable<String, Stat>();
+            mhtStats = new HashMap<String, Stat>();
 
             String[] plusplusStats = { "Focus", "Spatial Sense" };
             String[] plusStats = { "Strength", "Toughness", "Analytical Ability"
@@ -524,24 +519,24 @@ public class DwarfOrganizerIO {
                 }
                 in.close();
             } catch (FileNotFoundException e) {
-                Main.warn(ERROR_MESSAGE, e);
+                DwarfOrganizer.warn(ERROR_MESSAGE, e);
             } catch (Exception e) {
-                Main.warn(ERROR_MESSAGE, e);
-                e.printStackTrace();
+                DwarfOrganizer.warn(ERROR_MESSAGE, e);
+                e.printStackTrace(System.out);
             }
         }
 
         // Reads the labor skills XML data file
         // Commented code has been left intact so that I (hopefully) don't ever have
         // to research the problems I encountered here again
-        private Hashtable<String, Skill> getLaborSkills() throws URISyntaxException
+        private HashMap<String, Skill> getLaborSkills() throws URISyntaxException
                 , FileNotFoundException {
 
-            final Hashtable<String, Vector<Stat>> htStatGroup
-                    = new Hashtable<String, Vector<Stat>>();
-            final Hashtable<String, Skill> htReturn
-                    = new Hashtable<String, Skill>();
-            Vector<Stat> vStat;
+            final HashMap<String, List<Stat>> htStatGroup
+                    = new HashMap<String, List<Stat>>();
+            final HashMap<String, Skill> htReturn
+                    = new HashMap<String, Skill>();
+            List<Stat> vStat;
             Element thisStat;
             NodeList stat;
 
@@ -586,7 +581,7 @@ public class DwarfOrganizerIO {
                             , "Error - Null name in XML"); // thisStatGroup.getAttribute("Name");
                     //System.out.println("Stat group name: " + strStatGroupName);
                     stat = thisStatGroup.getElementsByTagName("Stat");
-                    vStat = new Vector<Stat>(stat.getLength());
+                    vStat = new ArrayList<Stat>(stat.getLength());
                     for (int jCount = 0; jCount < stat.getLength(); jCount++) {
                         thisStat = (Element) stat.item(jCount);
                         String strStatName = thisStat.getAttribute("Name");
@@ -612,7 +607,7 @@ public class DwarfOrganizerIO {
                         // Stats and StatGroupRefs can be listed
                         // Add stats to stat list
                         stat = thisLaborSkill.getElementsByTagName("Stat");
-                        vStat = new Vector<Stat>(stat.getLength());
+                        vStat = new ArrayList<Stat>(stat.getLength());
                         //System.out.println(stat.getLength() + " stats");
                         for (int mCount = 0; mCount < stat.getLength(); mCount++) {
                             String strStatName = stat.item(mCount).getTextContent();
@@ -681,8 +676,10 @@ public class DwarfOrganizerIO {
                 //if (! isJuvenile(age)) {
 
                 // Read stat values and get percentiles.
-                Hashtable<String, Integer> statValues = new Hashtable<String, Integer>();
-                Hashtable<String, Integer> htPercents = new Hashtable<String, Integer>();
+                HashMap<String, Integer> statValues
+                        = new HashMap<String, Integer>();
+                HashMap<String, Integer> htPercents
+                        = new HashMap<String, Integer>();
                 for (String key : mhtStats.keySet()) {
                     //System.out.println("Getting " + mhtStats.get(key).name);
 
@@ -707,7 +704,7 @@ public class DwarfOrganizerIO {
                         // this is a Runesmith XML file. Check for trait hints.
                         if (value == -1) {
                             value = Integer.parseInt(DEFAULT_TRAIT_VALUE);
-                            for (StatHint hint : mhtStats.get(key).vStatHints) {
+                            for (StatHint hint : mhtStats.get(key).getStatHints()) {
                                 //if (traits contains hint)
                                 if (getTagList(thisCreature, "Traits").contains(hint.hintText)) {
                                     value = (hint.hintMin + hint.hintMax) / 2;
@@ -731,8 +728,8 @@ public class DwarfOrganizerIO {
                 oDwarf.setAge(age);
                 oDwarf.setGender(getTagValue(thisCreature, "Sex", "Error - Null Sex"));
                 oDwarf.setNickname(getTagValue(thisCreature, "Nickname", ""));
-                oDwarf.statPercents = htPercents;
-                oDwarf.statValues = statValues;
+                oDwarf.setStatPercents(htPercents);
+                oDwarf.setStatValues(statValues);
                 oDwarf.setTime(MAX_DWARF_TIME);
                 oDwarf.setJobText(getTagList(thisCreature, "Labours"));
                 String jobs[] = oDwarf.getJobText().split("\n");
@@ -743,7 +740,7 @@ public class DwarfOrganizerIO {
                     for (int jCount = 1; jCount < jobs.length - 1; jCount++) {
                         //System.out.println(oDwarf.name + ": labor " + jCount
                         //        + " enabled: " + jobs[jCount].trim());
-                        oDwarf.labors.add(jobs[jCount].trim());
+                        oDwarf.getLabors().add(jobs[jCount].trim());
                     }
                 }
 
@@ -764,7 +761,7 @@ public class DwarfOrganizerIO {
 
                         // If it is a DFHack dwarves.XML, the skill level will
                         // be just digits.
-                        long skillValue = -1;
+                        long skillValue; // = -1;
                         try {
                             skillValue = Long.parseLong(strSkillLevel);
                         } catch (NumberFormatException e) {
@@ -786,7 +783,7 @@ public class DwarfOrganizerIO {
                 // Simple skill potentials
                 for (String key : mhtSkills.keySet()) {
                     Skill oSkill = mhtSkills.get(key);
-                    oDwarf.skillPotentials.put(oSkill.getName()
+                    oDwarf.getSkillPotentials().put(oSkill.getName()
                             , getPotential(oDwarf, oSkill));
                 }
                 // Meta skill potentials
@@ -795,9 +792,10 @@ public class DwarfOrganizerIO {
                     double dblSum = 0.0d;
 
                     for (Skill oSkill : meta.vSkills)
-                        dblSum += oDwarf.skillPotentials.get(oSkill.getName());
+                        dblSum += oDwarf.getSkillPotentials().get(
+                                oSkill.getName());
 
-                    oDwarf.skillPotentials.put(meta.getName()
+                    oDwarf.getSkillPotentials().put(meta.getName()
                             , Math.round(dblSum / meta.vSkills.size()));
                 }
                 mvDwarves.add(oDwarf);
@@ -808,16 +806,18 @@ public class DwarfOrganizerIO {
         private long getPotential(Dwarf oDwarf, Skill oSkill) {
 
             double dblSum = 0.0d;
-            Vector<Stat> vStats = oSkill.getStats();
+            List<Stat> vStats = oSkill.getStats();
             double numStats = (double) vStats.size();
 
             for (int kCount = 0; kCount < numStats; kCount++) {
-                double addValue = oDwarf.statPercents.get(vStats.get(kCount).getName());
+                double addValue = oDwarf.getStatPercents().get(
+                        vStats.get(kCount).getName());
 
                 // If the dwarf cannot gain skill because of a personality trait
                 if (oSkill.getClass() == SocialSkill.class) {
                     SocialSkill sSkill = (SocialSkill) oSkill;
-                    long noValue = oDwarf.statValues.get(sSkill.getNoStatName());
+                    long noValue = oDwarf.getStatValues().get(
+                            sSkill.getNoStatName());
                     if (noValue >= sSkill.getNoStatMin()
                             && noValue <= sSkill.getNoStatMax())
                         addValue = 0;
@@ -923,19 +923,19 @@ public class DwarfOrganizerIO {
         } catch (FileNotFoundException ex) {
             Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
                     , null, ex);
-            ex.printStackTrace();
+            ex.printStackTrace(System.out);
             strReturn += "Error: License not found.";
         } catch (IOException ex) {
             Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
                     , null, ex);
-            ex.printStackTrace();
+            ex.printStackTrace(System.out);
             strReturn += "Error: Failed to read license.";
         }
         return strReturn;
     }
 
     // Loads job settings from file
-    public void readJobSettings(File file, Vector<Job> vLaborSettings
+    public void readJobSettings(File file, List<Job> vLaborSettings
             , String defaultReminder) {
         final String ERROR_MESSAGE = "Failed to load job file.";
 
@@ -943,8 +943,9 @@ public class DwarfOrganizerIO {
             FileInputStream fstream = new FileInputStream(file.getAbsolutePath());
             DataInputStream in = new DataInputStream(fstream);
 
-            Hashtable<String, Job> htJobs = hashJobs(MyFileUtils.readDelimitedLineByLine(
-                    in, "\t", 0), defaultReminder);
+            Map<String, Job> htJobs = hashJobs(
+                    MyFileUtils.readDelimitedLineByLine(in, "\t", 0)
+                    , defaultReminder);
 
             // Update the current labor settings with the file data.
             for (Job job : vLaborSettings) {
@@ -968,15 +969,15 @@ public class DwarfOrganizerIO {
             System.err.println(ERROR_MESSAGE);
         } catch (Exception e) {
             System.err.println(ERROR_MESSAGE);
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
 
-    // Loads the job data into a hash table
-    private Hashtable<String, Job> hashJobs(Vector<String[]> vJobs
+    // Loads the job data into a hash map
+    private HashMap<String, Job> hashJobs(List<String[]> vJobs
             , String defaultReminder) {
 
-        Hashtable<String, Job> htReturn = new Hashtable<String, Job>();
+        HashMap<String, Job> htReturn = new HashMap<String, Job>();
 
         String strReminder;
 
@@ -1071,22 +1072,22 @@ public class DwarfOrganizerIO {
 
         return true;    // Success
     }
-    public Vector<GridView> readViews() {
+    public ArrayList<GridView> readViews() {
 
-        AbstractXMLReader<Vector<GridView>> reader
-                = new AbstractXMLReader<Vector<GridView>>() {
+        AbstractXMLReader<ArrayList<GridView>> reader
+                = new AbstractXMLReader<ArrayList<GridView>>() {
 
             @Override
-            public Vector<GridView> getDefaultReturnObject() {
-                return new Vector<GridView>();
+            public ArrayList<GridView> getDefaultReturnObject() {
+                return new ArrayList<GridView>();
             }
 
             @Override
-            public Vector<GridView> processDocument(Document doc
-                    , Vector<GridView> returnObject) {
+            public ArrayList<GridView> processDocument(Document doc
+                    , ArrayList<GridView> returnObject) {
 
-                String name = "";
-                ArrayList<Object> colOrder = new ArrayList<Object>();
+                String name; // = "";
+                ArrayList<Object> colOrder; // = new ArrayList<Object>();
                 int numViews;
 
                 numViews = Integer.parseInt(doc.getElementsByTagName(
@@ -1143,15 +1144,15 @@ public class DwarfOrganizerIO {
             } catch (ParserConfigurationException ex) {
                 Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
                         Level.SEVERE, null, ex);
-                Main.warn(errorMessage, ex);
+                DwarfOrganizer.warn(errorMessage, ex);
             } catch (SAXException ex) {
                 Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
                         Level.SEVERE, null, ex);
-                Main.warn(errorMessage, ex);
+                DwarfOrganizer.warn(errorMessage, ex);
             } catch (IOException ex) {
                 Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
                         Level.SEVERE, null, ex);
-                Main.warn(errorMessage, ex);
+                DwarfOrganizer.warn(errorMessage, ex);
             }
 
             return returnObject;
@@ -1260,14 +1261,14 @@ public class DwarfOrganizerIO {
         public abstract Exclusion createExclusion();
     }
 
-    private Vector<Exclusion> readSection(SectionReader srf
+    private ArrayList<Exclusion> readSection(SectionReader srf
             , Document doc, String tagName, String version) {
         Node node;
         Element ele;
-        Vector<Exclusion> vReturn = new Vector<Exclusion>();
+        ArrayList<Exclusion> vReturn = new ArrayList<Exclusion>();
 
         Integer id = -1;
-        String name = "Exclusion rule name";
+        String name; // = "Exclusion rule name";
 
         NodeList lstExclusionRules = doc.getElementsByTagName(tagName);
         for (int iCount = 0; iCount < lstExclusionRules.getLength(); iCount++) {
@@ -1307,13 +1308,13 @@ public class DwarfOrganizerIO {
         return vReturn;
     }
 
-    public Vector<Exclusion> readExclusions(final Vector<Dwarf> citizens) {
+    public ArrayList<Exclusion> readExclusions(final List<Dwarf> citizens) {
 
         Node node;
         Element ele;
         String version;
 
-        Vector<Exclusion> vReturn = new Vector<Exclusion>();
+        ArrayList<Exclusion> vReturn = new ArrayList<Exclusion>();
 
         File file = new File(getInputFile(EXCLUSION_FILE_NAME));
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -1359,7 +1360,7 @@ public class DwarfOrganizerIO {
 
             // Exclusion Lists---------------
             SectionReader exclusionListReader = new SectionReader() {
-                Vector<String> vCitizenName;
+                ArrayList<String> vCitizenName;
 
                 @Override
                 public void doVersionAPlusFunction(Element ele) {
@@ -1368,7 +1369,7 @@ public class DwarfOrganizerIO {
 
                 @Override
                 public void doVersionBPlusFunction(Element ele) {
-                    vCitizenName = new Vector<String>();
+                    vCitizenName = new ArrayList<String>();
                     NodeList nlist = ele.getElementsByTagName("Citizen");
                     for (int iCount = 0; iCount < nlist.getLength(); iCount++) {
                         Node node = nlist.item(iCount);
@@ -1431,8 +1432,7 @@ public class DwarfOrganizerIO {
     protected Integer getMaxUsedExclusionID() {
         return mintMaxExclID;
     }
-    private boolean isExclusionActive(int ID
-            , Hashtable<Integer, Boolean> htActive) {
+    private boolean isExclusionActive(int ID, Map<Integer, Boolean> htActive) {
         if (htActive == null)
             return false;
         else if (htActive.containsKey(ID))
@@ -1440,10 +1440,10 @@ public class DwarfOrganizerIO {
         else
             return false;
     }
-    private Vector<Dwarf> getCitizensFromNames(Vector<String> names
-            , Vector<Dwarf> citizens) {
+    private ArrayList<Dwarf> getCitizensFromNames(List<String> names
+            , List<Dwarf> citizens) {
 
-        Vector<Dwarf> vReturn = new Vector<Dwarf>();
+        ArrayList<Dwarf> vReturn = new ArrayList<Dwarf>();
 
         for (String name : names) {
             //System.out.println("Looking for " + name);

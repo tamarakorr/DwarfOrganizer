@@ -5,8 +5,10 @@
 
 package dwarforganizer.swing;
 
-import dwarforganizer.*;
-import java.util.Vector;
+import dwarforganizer.MyPropertyGetter;
+import dwarforganizer.MyPropertySetter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Editable (by column exception) version of MyTableModel.
@@ -17,21 +19,22 @@ import java.util.Vector;
 public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     extends MyTableModel<T> {
 
-    private Vector<Integer> mvEditableExceptionCols;
+    private List<Integer> mlstEditableExceptionCols;
     private boolean mbEditable;
 
-    public MyEditableTableModel(Object[] cols, Class[] colClasses, String[] colProps
-            , Vector<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyEditableTableModel(Object[] cols, Class[] colClasses
+            , String[] colProps
+            , List<T> rows, SortKeySwapper sortKeySwapper) {
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
-    public MyEditableTableModel(Vector<Object> cols, Class[] colClasses
-            , String[] colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyEditableTableModel(List<Object> cols, Class[] colClasses
+            , String[] colProps, List<T> rows, SortKeySwapper sortKeySwapper) {
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
-    public MyEditableTableModel(Vector<Object> cols, Vector<Class> colClasses
-            , Vector<String> colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyEditableTableModel(List<Object> cols, List<Class> colClasses
+            , List<String> colProps, List<T> rows, SortKeySwapper sortKeySwapper) {
         super(cols, colClasses, colProps, rows, sortKeySwapper);
         initialize();
     }
@@ -39,11 +42,11 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     // Initialize variables
     private void initialize() {
         mbEditable = false;
-        mvEditableExceptionCols = new Vector<Integer>();
+        mlstEditableExceptionCols = new ArrayList<Integer>();
     }
     public void addEditableException(int col) {
-        if (! mvEditableExceptionCols.contains(col))
-            mvEditableExceptionCols.add(col);
+        if (! mlstEditableExceptionCols.contains(col))
+            mlstEditableExceptionCols.add(col);
     }
     // Adds an editable exception for the first column with the given identifier
     public void addEditableException(Object colIdentifier) {
@@ -57,7 +60,7 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     @Override
     public boolean isCellEditable(int row, int column) {
         //System.out.println("isCellEditable(" + row + ", " + column + ")");
-        if (mvEditableExceptionCols.contains(column)) {
+        if (mlstEditableExceptionCols.contains(column)) {
             //System.out.println("Returning " + ! mbEditable);
             return ! mbEditable;
         }
@@ -68,9 +71,10 @@ public class MyEditableTableModel<T extends MyPropertyGetter & MyPropertySetter>
     }
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        T oRow = (T) mvRowData.get(rowIndex);
+        T oRow = (T) mlstRowData.get(rowIndex);
         // Get the user readable version of the property:
-        oRow.setProperty(mvColumnPropertyNames.get(columnIndex).toString(), aValue);
+        oRow.setProperty(mlstColumnPropertyNames.get(columnIndex).toString()
+                , aValue);
         fireUpdated(rowIndex, rowIndex);
     }
 }

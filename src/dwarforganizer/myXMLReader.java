@@ -41,7 +41,7 @@ public class myXMLReader {
             System.err.println(e);
         } catch (NullPointerException e) {
             System.err.println("Null pointer exception for file = " + file.getName());
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
     public myXMLReader(InputStream is) {

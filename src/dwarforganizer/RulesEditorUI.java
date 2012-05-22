@@ -5,13 +5,13 @@
 
 package dwarforganizer;
 
-import dwarforganizer.dirty.DirtyListener;
-import dwarforganizer.dirty.DirtyForm;
-import dwarforganizer.swing.MyTableModel;
-import dwarforganizer.swing.SortKeySwapper;
-import dwarforganizer.swing.PlaceholderTextField;
 import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.Broadcaster;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.dirty.DirtyListener;
+import dwarforganizer.swing.MyTableModel;
+import dwarforganizer.swing.PlaceholderTextField;
+import dwarforganizer.swing.SortKeySwapper;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -20,20 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
+import java.util.*;
+import javax.swing.*;
 import myutils.DefaultFocus;
 import myutils.MyHandyTable;
 
@@ -49,7 +37,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
 
     private static final int NUM_TEXT_COLUMNS = 49; // For preferred width
 
-    private static final Vector<Object> mvHeadings = new Vector<Object>(
+    private static final List<Object> mvHeadings = new ArrayList<Object>(
             Arrays.asList(new Object[]
             { "Entry Type", "First Labor", "Second Labor", "Comment"}));
 
@@ -99,7 +87,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         }
     } */
 
-    public RulesEditorUI(Vector<Labor> vLabors) { // Vector<String[]> ruleFileContents
+    public RulesEditorUI(List<Labor> vLabors) { // Vector<String[]> ruleFileContents
 
         // Super constructor----------------------------------------------------
         super();
@@ -111,8 +99,8 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
         //moDirtyHandler = new DirtyHandler();
         defaultButtonBroadcaster = new Broadcaster();
 
-        Vector<String> vLaborNames = getLaborNames(vLabors);
-        vLaborNames.add(0, DEFAULT_LABOR);
+        final List<String> lstLaborNames = getLaborNames(vLabors);
+        lstLaborNames.add(0, DEFAULT_LABOR);
 
         // Dummy data vector
         //Vector<String[]> ruleFileContents = new Vector<String[]>();
@@ -126,7 +114,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
                 , "comment" };
         SortKeySwapper swapper = new SortKeySwapper();
         mmdlRules = new MyTableModel<LaborRule>(mvHeadings, aColClasses
-                , aColProps, new Vector<LaborRule>(), swapper);
+                , aColProps, new ArrayList<LaborRule>(), swapper);
 
         // Create table---------------------------------------------------------
         mtblRules = MyHandyTable.createSmarterFocusTable(new JTable(mmdlRules));
@@ -158,15 +146,16 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
             }
         };
 
-        mcboType = new JComboBox(new String[] { DEFAULT_TYPE, "BLACKLIST", "WHITELIST" });
+        mcboType = new JComboBox(new String[] { DEFAULT_TYPE, "BLACKLIST"
+                , "WHITELIST" });
         mcboType.addActionListener(alUpdateMeaning);
         mcboType.setPrototypeDisplayValue("BLACKLISTXX");
 
-        mcboFirstLabor = new JComboBox(vLaborNames);
+        mcboFirstLabor = new JComboBox(lstLaborNames.toArray());
         mcboFirstLabor.addActionListener(alUpdateMeaning);
         mcboFirstLabor.setPrototypeDisplayValue("Small Animal DissectionXX");
 
-        mcboSecondLabor = new JComboBox(vLaborNames);
+        mcboSecondLabor = new JComboBox(lstLaborNames.toArray());
         mcboSecondLabor.addActionListener(alUpdateMeaning);
         mcboSecondLabor.setPrototypeDisplayValue("Small Animal DissectionXX");
 
@@ -334,7 +323,7 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     }
 
     // Load the given rule file contents
-    public void loadData(Vector<LaborRule> ruleFileContents) { // String[]
+    public void loadData(List<LaborRule> ruleFileContents) { // String[]
         // Clear input----------------------------------------------------------
         moRulesEditor.clearInput(); // clearInput();
 
@@ -353,18 +342,18 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
     }
 
     // Returns the current file data in Vector<LaborRule> format
-    protected Vector<LaborRule> getCurrentFile() { // String[]
+    protected List<LaborRule> getCurrentFile() { // String[]
         return mmdlRules.getRowData();
     }
 
     // Converts Vector<Labor> into Vector<String> (.name property)
-    private Vector<String> getLaborNames(Vector<Labor> vLabors) {
-        Vector<String> vReturn = new Vector<String>(vLabors.size());
+    private ArrayList<String> getLaborNames(final List<Labor> lstLabors) {
+        ArrayList<String> lstReturn = new ArrayList<String>(lstLabors.size());
 
-        for (Labor labor : vLabors)
-            vReturn.add(labor.getName());
-        Collections.sort(vReturn);
-        return vReturn;
+        for (final Labor labor : lstLabors)
+            lstReturn.add(labor.getName());
+        Collections.sort(lstReturn);
+        return lstReturn;
     }
 
     // Updates the text description of the current contents of the input controls

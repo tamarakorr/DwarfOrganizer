@@ -70,7 +70,7 @@ public class PlaceholderTextField extends JTextField {
             return;
         TextPlaceholder tp = new TextPlaceholder(mstrPlaceholderText, this
                 , TextPlaceholder.Show.ALWAYS);
-        tp.setForeground(Color.GRAY);
+        tp.getLabel().setForeground(Color.GRAY);
         tp.setAlpha(128);
     }
     private void enableAutoHighlight() {

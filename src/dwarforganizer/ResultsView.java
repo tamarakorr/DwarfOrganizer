@@ -13,29 +13,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Vector;
-import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTable;
-import javax.swing.RowFilter;
-import javax.swing.SwingConstants;
-import javax.swing.SwingWorker;
-import javax.swing.WindowConstants;
+import java.util.List;
+import javax.swing.*;
 import javax.swing.table.TableRowSorter;
-import myutils.MyHTMLUtils;
-import myutils.MyHandyTable;
-import myutils.MyHandyWindow;
-import myutils.MySimpleTableModel;
-import myutils.MyTCRStripedHighlight;
+import myutils.*;
 
 /**
  *
@@ -45,7 +26,7 @@ import myutils.MyTCRStripedHighlight;
  * See MIT license in license.txt
  *
  */
-public class ResultsView implements ActionListener {
+public class ResultsView { //  implements ActionListener {
 
     private static final int LABOR_COLUMN = 3;      // Labors column index in the table
     private static final int REMINDER_COLUMN = 4;   // Reminder column index in the table
@@ -60,6 +41,8 @@ public class ResultsView implements ActionListener {
     private static final String ACTION_CMD_NOBLE = "NOBLE";
     private static final String ACTION_CMD_REMINDER = "REMINDER";
 
+    private static final int LOW_ALTRUISM_THRESHOLD = 39;
+
     // Table and filters
     private JTable moTable;
     private RowFilter mrfNoble;
@@ -67,9 +50,9 @@ public class ResultsView implements ActionListener {
     private RowFilter mrfHasReminder;
 
     // Local variables set via constructor
-    private Vector<Dwarf> mvDwarves;
+    private List<Dwarf> mlstDwarves;
     private boolean[][] mbSolution;
-    private Vector<Job> mvJobs;
+    private List<Job> mlstJobs;
     private double[] mdblScores;
 
     // mbShowJobs index matches up with ChangeType
@@ -91,67 +74,11 @@ public class ResultsView implements ActionListener {
 
     private static final boolean DEFAULT_NICKNAME_VIS = false;
 
-    private class DisplayableChange {
-
-        private String text;
-        private ChangeType changeType;
-
-        public DisplayableChange(String text, ChangeType changeType) {
-            this.text = text;
-            this.changeType = changeType;
-        }
-
-        @Override
-        public String toString() {
-            if (this.changeType == ChangeType.STAY_SAME
-                    && mbShowJobs[ChangeType.STAY_SAME.getIndex()]) {
-                return getAddRemoveText("", this.text, true, "=", COLOR_STAY_SAME);
-            }
-            else if (this.changeType == ChangeType.ADD
-                    && mbShowJobs[ChangeType.ADD.getIndex()]) {
-                return getAddRemoveText("", this.text, true, "+", COLOR_ADD);
-            }
-            else if ((this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
-                    && mbShowJobs[ChangeType.REMOVE_ALWAYS_SHOW.getIndex()])
-                    || ((this.changeType == ChangeType.REMOVE)
-                    && mbShowJobs[ChangeType.REMOVE.getIndex()])) { //  mbShowRemoveJobs
-
-                boolean bolden = (this.changeType == ChangeType.REMOVE_ALWAYS_SHOW);
-                return getAddRemoveText("", this.text, bolden, "-", COLOR_REMOVE);
-            }
-            // Else if not shown
-            else if (this.changeType == ChangeType.REMOVE
-                    || this.changeType == ChangeType.ADD
-                    || this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
-                    || this.changeType == ChangeType.STAY_SAME) {
-                    return "";
-            }
-            else
-                return "Undefined DisplayableChange";
-        }
-    }
-
-    private class DisplayableChanges extends Vector<DisplayableChange> {
-
-        @Override
-        public String toString() {
-
-            String strReturn = "";
-            for (DisplayableChange displayableChange : this) {
-                if (! strReturn.equals("") && ! displayableChange.toString().equals(""))
-                    strReturn += MyHTMLUtils.LINE_BREAK;
-                strReturn += displayableChange.toString();
-            }
-
-            return MyHTMLUtils.toHTML(strReturn);
-        }
-    }
-
     public ResultsView(JobOptimizer.Solution solution) {
 
-        mvDwarves = solution.dwarves;
+        mlstDwarves = solution.getDwarves();
         mbSolution = solution.dwarfjobmap;
-        mvJobs = solution.jobs;
+        mlstJobs = solution.getJobs();
         mdblScores = solution.dwarfscores;
 
         // Create the table filters
@@ -213,18 +140,19 @@ public class ResultsView implements ActionListener {
         //oSP.setPreferredSize(oTable.getPreferredScrollableViewportSize());
 
         // Create view filter buttons
+        final ActionListener filterActionListener = createActionListener();
         JRadioButton btnViewAll = new JRadioButton("View All");
         btnViewAll.setSelected(true);
         btnViewAll.setActionCommand(ACTION_CMD_ALL);
-        btnViewAll.addActionListener(this);
+        btnViewAll.addActionListener(filterActionListener);
 
         JRadioButton btnViewNobles = new JRadioButton("Nobles Only");
         btnViewNobles.setActionCommand(ACTION_CMD_NOBLE);
-        btnViewNobles.addActionListener(this);
+        btnViewNobles.addActionListener(filterActionListener);
 
         JRadioButton btnViewReminders = new JRadioButton("Has Reminder");
         btnViewReminders.setActionCommand(ACTION_CMD_REMINDER);
-        btnViewReminders.addActionListener(this);
+        btnViewReminders.addActionListener(filterActionListener);
 
         ButtonGroup optView = new ButtonGroup();
         optView.add(btnViewAll);
@@ -262,6 +190,62 @@ public class ResultsView implements ActionListener {
         frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frList.setVisible(true);
 
+    }
+    private class DisplayableChange {
+
+        private String text;
+        private ChangeType changeType;
+
+        public DisplayableChange(String text, ChangeType changeType) {
+            this.text = text;
+            this.changeType = changeType;
+        }
+
+        @Override
+        public String toString() {
+            if (this.changeType == ChangeType.STAY_SAME
+                    && mbShowJobs[ChangeType.STAY_SAME.getIndex()]) {
+                return getAddRemoveText("", this.text, true, "=", COLOR_STAY_SAME);
+            }
+            else if (this.changeType == ChangeType.ADD
+                    && mbShowJobs[ChangeType.ADD.getIndex()]) {
+                return getAddRemoveText("", this.text, true, "+", COLOR_ADD);
+            }
+            else if ((this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
+                    && mbShowJobs[ChangeType.REMOVE_ALWAYS_SHOW.getIndex()])
+                    || ((this.changeType == ChangeType.REMOVE)
+                    && mbShowJobs[ChangeType.REMOVE.getIndex()])) { //  mbShowRemoveJobs
+
+                boolean bolden = (this.changeType == ChangeType.REMOVE_ALWAYS_SHOW);
+                return getAddRemoveText("", this.text, bolden, "-", COLOR_REMOVE);
+            }
+            // Else if not shown
+            else if (this.changeType == ChangeType.REMOVE
+                    || this.changeType == ChangeType.ADD
+                    || this.changeType == ChangeType.REMOVE_ALWAYS_SHOW
+                    || this.changeType == ChangeType.STAY_SAME) {
+                    return "";
+            }
+            else
+                return "Undefined DisplayableChange";
+        }
+    }
+
+    private class DisplayableChanges extends ArrayList<DisplayableChange> {
+
+        @Override
+        public String toString() {
+
+            String strReturn = "";
+            for (DisplayableChange displayableChange : this) {
+                if (! strReturn.equals("")
+                        && ! displayableChange.toString().equals(""))
+                    strReturn += MyHTMLUtils.LINE_BREAK;
+                strReturn += displayableChange.toString();
+            }
+
+            return MyHTMLUtils.toHTML(strReturn);
+        }
     }
 
     private void setNicknameVisible(boolean visible) {
@@ -329,17 +313,20 @@ public class ResultsView implements ActionListener {
     private MySimpleTableModel createResultsModel() { // throws SolutionImpossibleException
 
         //Vector<String> columns = new Vector<String>();
-        Vector<String> vColumns = new Vector<String>(Arrays.asList(new String[] {
-            "Dwarf", "Nickname", "Scheduled", "Job", "Reminder", "Score"
-        }));
-        String strFeed = "Feed Patients/Prisoners";
-        String strRecover = "Recovering Wounded";
+        /*Vector<String> vColumns = new Vector<String>(
+                Arrays.asList(new String[] { "Dwarf", "Nickname", "Scheduled"
+                        , "Job", "Reminder", "Score"
+        })); */
+        final String[] columns = { "Dwarf", "Nickname", "Scheduled", "Job"
+                , "Reminder", "Score"};
+        final String strFeed = "Feed Patients/Prisoners";
+        final String strRecover = "Recovering Wounded";
 
         // Find the maximum number of jobs held by a dwarf.
         int intMaxJobs = 0;
-        for (int dCount = 0; dCount < mvDwarves.size(); dCount++) {
+        for (int dCount = 0; dCount < mlstDwarves.size(); dCount++) {
             int intThisDwarfJobs = 0;
-            for (int jCount = 0; jCount < mvJobs.size(); jCount++)    // NUM_JOBS
+            for (int jCount = 0; jCount < mlstJobs.size(); jCount++)    // NUM_JOBS
                 if (mbSolution[jCount][dCount])
                     intThisDwarfJobs++;
             if (intThisDwarfJobs > intMaxJobs)
@@ -347,35 +334,36 @@ public class ResultsView implements ActionListener {
         }
 
         // Create table columns and model.
-        MySimpleTableModel oModel = new MySimpleTableModel(vColumns
-                , mvDwarves.size());
+        final MySimpleTableModel oModel = new MySimpleTableModel(columns
+                , mlstDwarves.size());
 
         // Fill in a row for each dwarf.
-        for (int row = 0; row < mvDwarves.size(); row++) {
-            oModel.setValueAt(mvDwarves.get(row).getName(), row, 0);
-            oModel.setValueAt(mvDwarves.get(row).getNickname(), row, 1);
+        for (int row = 0; row < mlstDwarves.size(); row++) {
+            oModel.setValueAt(mlstDwarves.get(row).getName(), row, 0);
+            oModel.setValueAt(mlstDwarves.get(row).getNickname(), row, 1);
             oModel.setValueAt( //NumberFormat.getInstance().format(
-                    JobOptimizer.MAX_TIME - mvDwarves.get(row).getTime(), row, 2);   // getPercentInstance()
+                    JobOptimizer.MAX_TIME - mlstDwarves.get(row).getTime(), row
+                    , 2);   // getPercentInstance()
             oModel.setValueAt( //NumberFormat.getNumberInstance().format(
                     mdblScores[row], row, 5);  // getSkillSum(row)
 
             int jobCount = 0;
-            Dwarf thisDwarf = mvDwarves.get(row);
+            Dwarf thisDwarf = mlstDwarves.get(row);
             String strReminderText = "";
             DisplayableChanges vChanges = new DisplayableChanges();
 
-            for (int job = 0; job < mvJobs.size(); job++) {   // NUM_JOBS
-                Job thisJob = mvJobs.get(job);
+            for (int job = 0; job < mlstJobs.size(); job++) {   // NUM_JOBS
+                Job thisJob = mlstJobs.get(job);
                 boolean bHasReminder = ! thisJob.getReminder().equals("");
 
                 if (mbSolution[job][row]) {
 
                     // Display any change from the current labors
-                    if (thisDwarf.labors.contains(thisJob.getName())) {
+                    if (thisDwarf.getLabors().contains(thisJob.getName())) {
 
                         vChanges.add(new DisplayableChange(getJobAndPotentialText(
                                 thisJob.getName()
-                                , thisDwarf.balancedPotentials.get(
+                                , thisDwarf.getBalancedPotentials().get(
                                 thisJob.getName()))
                                 , ChangeType.STAY_SAME));
                     }
@@ -383,7 +371,7 @@ public class ResultsView implements ActionListener {
 
                         vChanges.add(new DisplayableChange(getJobAndPotentialText(
                                 thisJob.getName()
-                                , thisDwarf.balancedPotentials.get(
+                                , thisDwarf.getBalancedPotentials().get(
                                 thisJob.getName()))
                                 , ChangeType.ADD));
 
@@ -400,12 +388,12 @@ public class ResultsView implements ActionListener {
                 }
 
                 // Check for printing any labors to remove
-                else if (thisDwarf.labors.contains(thisJob.getName())) {
+                else if (thisDwarf.getLabors().contains(thisJob.getName())) {
                     //intChangeCount++;
 
                     vChanges.add(new DisplayableChange(getJobAndPotentialText(
                                 thisJob.getName()
-                                , thisDwarf.balancedPotentials.get(
+                                , thisDwarf.getBalancedPotentials().get(
                                 thisJob.getName()))
                                 , ChangeType.REMOVE));
 
@@ -421,15 +409,16 @@ public class ResultsView implements ActionListener {
 
             // If Recover Wounded or Feed Patients/Prisoners is enabled and
             // Altruism is low enough to give a bad thought, add these to the list.
-            if (thisDwarf.statValues.get("Altruism") != null) {
-                boolean lowAltruism = (thisDwarf.statValues.get("Altruism") <= 39);
+            if (thisDwarf.getStatValues().get("Altruism") != null) {
+                boolean lowAltruism = (thisDwarf.getStatValues().get("Altruism")
+                        <= LOW_ALTRUISM_THRESHOLD);
 
-                if (thisDwarf.labors.contains(strFeed) && lowAltruism) {
+                if (thisDwarf.getLabors().contains(strFeed) && lowAltruism) {
                     vChanges.add(new DisplayableChange(strFeed
                                 , ChangeType.REMOVE_ALWAYS_SHOW));
                 }
 
-                if (thisDwarf.labors.contains(strRecover) && lowAltruism) {
+                if (thisDwarf.getLabors().contains(strRecover) && lowAltruism) {
                     vChanges.add(new DisplayableChange(strRecover
                                 , ChangeType.REMOVE_ALWAYS_SHOW));
                 }
@@ -442,36 +431,40 @@ public class ResultsView implements ActionListener {
         return oModel;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-        final RowFilter rf;
-        if (e.getActionCommand().equals(ACTION_CMD_NOBLE))
-            rf = mrfNoble;
-        else if (e.getActionCommand().equals(ACTION_CMD_REMINDER))
-            rf = mrfHasReminder;
-        else
-            rf = mrfAll;
-
-        // Do this lengthy processing on a background thread, maintaining
-        // some semblance of UI responsiveness.
-        final SwingWorker worker = new SwingWorker() {
+    private ActionListener createActionListener() {
+        return new ActionListener() {
             @Override
-            protected Object doInBackground() throws Exception {
-                // Set the current table filter
-                return setCurrentTableFilter(moTable, rf);
-            }
+            public void actionPerformed(ActionEvent e) {
 
-            // Adjust the multiline row height when done
-            @Override
-            protected void done() {
-                try {
-                    MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
-                } catch (Exception ignore) {
-                }
+                final RowFilter rf;
+                if (e.getActionCommand().equals(ACTION_CMD_NOBLE))
+                    rf = mrfNoble;
+                else if (e.getActionCommand().equals(ACTION_CMD_REMINDER))
+                    rf = mrfHasReminder;
+                else
+                    rf = mrfAll;
+
+                // Do this lengthy processing on a background thread, maintaining
+                // some semblance of UI responsiveness.
+                final SwingWorker worker = new SwingWorker() {
+                    @Override
+                    protected Object doInBackground() throws Exception {
+                        // Set the current table filter
+                        return setCurrentTableFilter(moTable, rf);
+                    }
+
+                    // Adjust the multiline row height when done
+                    @Override
+                    protected void done() {
+                        try {
+                            MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
+                        } catch (Exception ignore) {
+                        }
+                    }
+                };
+                worker.execute();
             }
         };
-        worker.execute();
     }
     // Adjust multiline row height when this setting is changed
     private void updateShowRemoveJobs() {

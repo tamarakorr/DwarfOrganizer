@@ -5,9 +5,10 @@
 
 package dwarforganizer.bins;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Vector;
+import java.util.List;
 
 /**
  *
@@ -20,33 +21,33 @@ public class BinPack<T extends Binnable> {
     // decreasing (FFD) algorithm.
     // Returns a vector whose size is the number of bins used. Each entry
     // in the vector is another vector containing the list of items in that bin.
-    public Vector<Vector<T>> binPack(Vector<T> items, int binSize
-            , BinRule<T> binRule) {
+    public ArrayList<ArrayList<T>> binPack(final ArrayList<T> items
+            , final int binSize, final BinRule<T> binRule) {
 
         final int MAX_BINS = items.size();
-        Vector<Vector<T>> vReturn = new Vector<Vector<T>>();
+        final ArrayList<ArrayList<T>> lstReturn = new ArrayList<ArrayList<T>>();
 
         // Initialize used bin size to zero
-        Vector<Integer> vBinSize = new Vector<Integer>(MAX_BINS);   // Stores used bin size
+        final ArrayList<Integer> lstBinSize = new ArrayList<Integer>(MAX_BINS);   // Stores used bin size
         for (int iCount = 0; iCount < MAX_BINS; iCount++)
-            vBinSize.add(0);
+            lstBinSize.add(0);
 
         // Create a sorted (descending) list of the items.
-        Vector<T> vOrderedItems = (Vector<T>) items.clone();
-        Comparator comparator = Collections.reverseOrder();
-        Collections.sort(vOrderedItems, comparator);
+        final ArrayList<T> lstOrderedItems = (ArrayList<T>) items.clone();
+        final Comparator comparator = Collections.reverseOrder();
+        Collections.sort(lstOrderedItems, comparator);
         //System.out.println("Finding bins for items");
 
         // Find a bin for each item.
-        for (T item : vOrderedItems) {
+        for (final T item : lstOrderedItems) {
 
-            int intItemSize = (Integer) item.getProperty("size", false);
+            final int intItemSize = (Integer) item.getProperty("size", false);
             //System.out.println("Finding bin for item of size " + intItemSize);
 
             // Find the item a bin
             for (int bin = 0; bin < MAX_BINS; bin++) {
-                int intBinSize = vBinSize.get(bin);
-                int intSizeRemaining = binSize - intBinSize;
+                final int intBinSize = lstBinSize.get(bin);
+                final int intSizeRemaining = binSize - intBinSize;
                 //System.out.println("bin #" + bin + " current used size = " + intBinSize);
 
                 // If the item fits in the bin
@@ -54,22 +55,22 @@ public class BinPack<T extends Binnable> {
 
                     // If placing this item in this bin does not violate a rule
                     boolean bAccept;
-                    if (vReturn.size() >= (bin + 1))
-                        bAccept = binAccepts(vReturn.get(bin), item, binRule);
+                    if (lstReturn.size() >= (bin + 1))
+                        bAccept = binAccepts(lstReturn.get(bin), item, binRule);
                     else
                         bAccept = true;
 
                     if (bAccept) {
 
                         // Create a bin if needed
-                        if (vReturn.size() < bin + 1) {
+                        if (lstReturn.size() < bin + 1) {
                             //System.out.println("Creating bin #" + (bin + 1));
-                            vReturn.add(new Vector<T>());
+                            lstReturn.add(new ArrayList<T>());
                         }
-                        vReturn.get(bin).add(item);
+                        lstReturn.get(bin).add(item);
 
                         // Update the used bin size
-                        vBinSize.set(bin, intBinSize + intItemSize);
+                        lstBinSize.set(bin, intBinSize + intItemSize);
                         //System.out.println("Bin #" + bin + " +" + item);
                         break;
                     }
@@ -78,12 +79,13 @@ public class BinPack<T extends Binnable> {
 
         }
         //System.out.println("Returning");
-        return vReturn;
+        return lstReturn;
 
     }
 
     // Returns true if the given bin items can be combined with the given item
-    private boolean binAccepts(Vector<T> bin, T item, BinRule binRule) {
+    private boolean binAccepts(final List<T> bin, final T item
+            , final BinRule binRule) {
 
         for (T binnedItem : bin) {
             if (! binRule.canItemsBeBinned(binnedItem, item))

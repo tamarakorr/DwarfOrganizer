@@ -5,7 +5,9 @@
 
 package dwarforganizer.dirty;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -15,13 +17,13 @@ import java.util.Vector;
 public class DirtyHandler {
 
     private boolean mbDirty;
-    private Vector<DirtyListener> mvDirtyListener;
+    private List<DirtyListener> mlstDirtyListener;
 
     public DirtyHandler() {
         super();
 
         mbDirty = false;
-        mvDirtyListener = new Vector<DirtyListener>();
+        mlstDirtyListener = new ArrayList<DirtyListener>();
     }
     public boolean isDirty() {
         return mbDirty;
@@ -39,14 +41,22 @@ public class DirtyHandler {
     }
 
     public void notifyDirtyListeners() {
-        Vector<DirtyListener> v = (Vector<DirtyListener>) mvDirtyListener.clone();
-        for (DirtyListener listener : v)
-            listener.dirtyChanged(mbDirty);
+        //Vector<DirtyListener> v = (Vector<DirtyListener>) mlstDirtyListener.clone();
+        final List<DirtyListener> list = Collections.synchronizedList(
+                mlstDirtyListener);
+        synchronized(list) {
+            for (final DirtyListener listener : list)
+                listener.dirtyChanged(mbDirty);
+        }
     }
 
     public void addDirtyListener(DirtyListener listener) {
-        Vector<DirtyListener> v = (Vector<DirtyListener>) mvDirtyListener.clone();
-        if (! v.contains(listener))
-            mvDirtyListener.add(listener);
+        //Vector<DirtyListener> v = (Vector<DirtyListener>) mlstDirtyListener.clone();
+        final List<DirtyListener> list = Collections.synchronizedList(
+                mlstDirtyListener);
+        synchronized(list) {
+            if (! list.contains(listener))
+                list.add(listener);
+        }
     }
 }

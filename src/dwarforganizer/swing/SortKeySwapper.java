@@ -48,7 +48,7 @@ public class SortKeySwapper {
                     moKeyHolder = (List<SortKey>) moTable.getRowSorter().getSortKeys();
                     moTable.getRowSorter().setSortKeys(temp);
                 } catch (NullPointerException e) {
-                    e.printStackTrace();
+                    e.printStackTrace(System.out);
                     System.err.println("Failed to swap sort keys. Did you"
                             + " remember to do SortKeySwapper.setTable() before"
                             + " adding any rows?");

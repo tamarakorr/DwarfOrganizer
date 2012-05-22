@@ -5,50 +5,30 @@
 
 package dwarforganizer;
 
-import dwarforganizer.dirty.DirtyListener;
-import dwarforganizer.dirty.DirtyForm;
-import dwarforganizer.swing.MenuMnemonicSetter;
-import dwarforganizer.swing.MyFileChooser;
-import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.BroadcastListener;
+import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.deepclone.DeepCloneUtils;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.dirty.DirtyListener;
 import dwarforganizer.swing.MenuCombiner;
 import dwarforganizer.swing.MenuHelper;
+import dwarforganizer.swing.MenuMnemonicSetter;
+import dwarforganizer.swing.MyFileChooser;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDesktopPane;
-import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
@@ -100,15 +80,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private static final String FILE_CHOOSER_DWARVES = "Dwarves";
     private Map<String, MyFileChooser> mmFileChoosers;
 
-    private Vector<Labor> mvLabors;
-    private Vector<LaborGroup> mvLaborGroups;
+    private List<Labor> mlstLabors;
+    private List<LaborGroup> mlstLaborGroups;
     private JobBlacklist moJobBlacklist;
     private JobList moJobWhitelist;
     private DwarfOrganizerIO moIO;
-    private Vector<Dwarf> mvDwarves;
-    private Vector<Exclusion> mvExclusions;
-    private Hashtable<Integer, Boolean> mhtActiveExclusions;
-    private Vector<GridView> mvViews; // TODO: This really shouldn't be messed with in MainWindow
+    private List<Dwarf> mlstDwarves;
+    private List<Exclusion> mlstExclusions;
+    private Map<Integer, Boolean> mmapActiveExclusions;
+    private List<GridView> mlstViews; // TODO: This really shouldn't be messed with in MainWindow
 
     private static enum JobListMenuAccelerator {
         SAVE(KeyStroke.getKeyStroke("control S"))
@@ -141,7 +121,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         try {
             fileData = readFiles();
         } catch (Exception e) {
-            e.printStackTrace();
+            e.printStackTrace(System.out);
             System.err.println("Failed to read at least one critical file.");
         }
         setExclusionsActive();      // Combine exclusions from user prefs with data from file
@@ -191,8 +171,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         moJobWhitelist = new JobList();
         moIO = new DwarfOrganizerIO();
         moAboutScreen = new AboutScreen(this);
-        mvLabors = new Vector<Labor>();
-        mvLaborGroups = new Vector<LaborGroup>();
+        mlstLabors = new ArrayList<Labor>();
+        mlstLaborGroups = new ArrayList<LaborGroup>();
         moDesktop = new JDesktopPane();
         moDesktop.setPreferredSize(new Dimension(DESKTOP_WIDTH
                 , DESKTOP_HEIGHT));
@@ -243,35 +223,36 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         };
     }
     private void prepareFrameUIs(final FileData fileData) {
-        moRulesEditor = new RulesEditorUI(mvLabors);    // Create rules editor
+        moRulesEditor = new RulesEditorUI(mlstLabors);    // Create rules editor
         moExclusionManager = new ExclusionPanel(moIO);  // Create exclusions manager
         moViewManager = new ViewManagerUI(); // Create view manager
 
         // Create dwarf list window
         try {
-            moDwarfListWindow = createDwarfListWindow(mvLabors, fileData
-                    , mvLaborGroups, mvViews, mvDwarves, mvExclusions
+            moDwarfListWindow = createDwarfListWindow(mlstLabors, fileData
+                    , mlstLaborGroups, mlstViews, mlstDwarves, mlstExclusions
                     , moExclusionManager);
         } catch (final NullPointerException e) {
             System.err.println("Failed to create Dwarf List interface:"
                     + " NullPointerException");
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
 
         // Display a grid of the jobs to assign
         try {
-            moJobListPanel = new JobListPanel(mvLabors
-                , mvLaborGroups, moJobBlacklist, moIO);
+            moJobListPanel = new JobListPanel(mlstLabors
+                , mlstLaborGroups, moJobBlacklist, moIO);
+            moJobListPanel.initialize();
         } catch (final JobListPanel.CouldntProcessFileException e) {
             System.err.println("JobListPanel.CouldntProcessFileException");
-            e.printStackTrace();
+            e.printStackTrace(System.out);
         }
     }
     // Create Dwarf List window
-    private DwarfListWindow createDwarfListWindow(final Vector<Labor> vLabors
-            , final FileData fileData, final Vector<LaborGroup> vLaborGroup
-            , final Vector<GridView> vViews, final Vector<Dwarf> vDwarves
-            , final Vector<Exclusion> vExclusions
+    private DwarfListWindow createDwarfListWindow(final List<Labor> vLabors
+            , final FileData fileData, final List<LaborGroup> vLaborGroup
+            , final List<GridView> vViews, final List<Dwarf> vDwarves
+            , final List<Exclusion> vExclusions
             , final ExclusionPanel ePanel) {
 
         final DwarfListWindow win = new DwarfListWindow(vLabors
@@ -306,7 +287,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         public AboutScreen(final MainWindow main) {
             final JLabel lblVersion = new JLabel("Dwarf Organizer version "
-                    + Main.VERSION);
+                    + DwarfOrganizer.VERSION);
 
             final JTextArea txtLicense = new JTextArea(moIO.getLicense());
             txtLicense.setEditable(false);
@@ -449,9 +430,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , "Save Views?"
                 , "Would you like to save your changes to views?");
     }
-    private void saveViews(final Vector<GridView> views) {
+    private void saveViews(final List<GridView> views) {
         moIO.writeViews(views);
-        mvViews = views;            // Update local copy
+        mlstViews = views;            // Update local copy
         // (Don't set anything clean here since we don't know which window
         // initiated the save.)
     }
@@ -611,17 +592,17 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // and exclusions
         final FileData fileData;
 
-        mvLaborGroups = moIO.readLaborGroups();
-        mvLabors = moIO.readLabors();           // Read labor-list.txt
+        mlstLaborGroups = moIO.readLaborGroups();
+        mlstLabors = moIO.readLabors();           // Read labor-list.txt
 
         moIO.readRuleFile();
         setBlacklistStructures();
 
         fileData = readDwarves();
 
-        mvExclusions = moIO.readExclusions(mvDwarves); // mhtActiveExclusions
+        mlstExclusions = moIO.readExclusions(mlstDwarves); // mhtActiveExclusions
 
-        mvViews = moIO.readViews();
+        mlstViews = moIO.readViews();
 
         return fileData;
     }
@@ -630,7 +611,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         moJobWhitelist = moIO.getWhitelist();
 
         // (Post-processing must be done after mvLabors is set)
-        addWhitelistToBlacklist(moJobBlacklist, moJobWhitelist, mvLabors);
+        addWhitelistToBlacklist(moJobBlacklist, moJobWhitelist, mlstLabors);
     }
     private ActionListener createShowListener(final String frameKey) {
         return new ActionListener() {
@@ -660,12 +641,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 @Override
                 protected Object doInBackground() throws Exception {
                     // Optimizer
-                    final Vector<Job> vJobs = jobListPanel.getJobs();
-                    final Vector<Dwarf> vDwarves = getDwarves();
+                    final List<Job> lstJobs = jobListPanel.getJobs();
+                    final List<Dwarf> lstDwarves = getDwarves();
 
-                    setBalancedPotentials(vDwarves, vJobs);
-                    final JobOptimizer opt = new JobOptimizer(vJobs, vDwarves
-                            , moJobBlacklist);
+                    setBalancedPotentials(lstDwarves, lstJobs);
+                    final JobOptimizer opt = new JobOptimizer(lstJobs
+                            , lstDwarves, moJobBlacklist);
                     return opt.optimize();
                 }
             };
@@ -705,7 +686,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             // Use a clone for the table model. Otherwise
             // unsaved changes will persist when window is closed
             // and reopened.
-            final Vector<LaborRule> vRulesClone = DeepCloneUtils.deepClone(
+            final List<LaborRule> vRulesClone = DeepCloneUtils.deepClone(
                     moIO.getRuleFileContents());
             moRulesEditor.loadData(vRulesClone);
         }
@@ -717,9 +698,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private class ExclLoader implements DataLoader {
         @Override
         public void loadData() {
-            final Vector<Exclusion> exclDeepClone = DeepCloneUtils.deepClone(
-                    mvExclusions);
-            moExclusionManager.loadData(exclDeepClone, mvDwarves);
+            final List<Exclusion> exclDeepClone = DeepCloneUtils.deepClone(
+                    mlstExclusions);
+            moExclusionManager.loadData(exclDeepClone, mlstDwarves);
         }
     }
     private ActionListener createTutorialAL() {
@@ -736,7 +717,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 } catch (Exception ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(
                             Level.SEVERE, null, ex);
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.out);
                     System.err.println("Failed to open " + TUTORIAL_FILE
                             + " with default browser.");
                 }
@@ -873,11 +854,11 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             try {
                 readDwarves();
             } catch (final Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
                 System.err.println("Failed to read dwarves.xml.");
             }
             moDwarfListWindow.setVisible(false);
-            moDwarfListWindow.loadData(mvDwarves, mvExclusions);
+            moDwarfListWindow.loadData(mlstDwarves, mlstExclusions);
             moDwarfListWindow.setVisible(true);
         }
     }
@@ -996,14 +977,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         // Exclusions active
         final int maxID = prefs.getInt("MaxExclusionID", 0);
-        mhtActiveExclusions = new Hashtable<Integer, Boolean>();
+        mmapActiveExclusions = new HashMap<Integer, Boolean>();
         for (int iCount = 0; iCount <= maxID; iCount++) { // moIO.getMaxUsedExclusionID() <- not set yet!
             //System.out.println("ExclusionsActive_" + iCount + ", " + DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE);
             // (.active in the mvExclusions object is set later, after exclusions are read)
             final boolean value = prefs.getBoolean("ExclusionsActive_" + iCount
                     , DwarfOrganizerIO.DEFAULT_EXCLUSION_ACTIVE);
             //setExclusionActive(iCount, value);
-            mhtActiveExclusions.put(iCount, value);
+            mmapActiveExclusions.put(iCount, value);
         }
     }
     private void savePreferences() {
@@ -1014,10 +995,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         // Exclusions active
         prefs.putInt("MaxExclusionID", moIO.getMaxUsedExclusionID());
-        for (final int key : mhtActiveExclusions.keySet()) {
+        for (final int key : mmapActiveExclusions.keySet()) {
             //System.out.println("ExclusionsActive_" + key + " " + mhtActiveExclusions.get(key));
             prefs.putBoolean("ExclusionsActive_" + key
-                    , mhtActiveExclusions.get(key));
+                    , mmapActiveExclusions.get(key));
         }
         //System.out.println("    Done saving preferences.");
     }
@@ -1025,18 +1006,18 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     // Updates the initial active state of the exclusions from mhtActiveExclusions
     // Must be called after loadPreferences() and after readFiles()
     private void setExclusionsActive() {
-        for (final int key : mhtActiveExclusions.keySet()) {
+        for (final int key : mmapActiveExclusions.keySet()) {
             //System.out.println("Setting exclusion #" + key + " " + mhtActiveExclusions.get(key));
-            setExclusionActive(key, mhtActiveExclusions.get(key));
+            setExclusionActive(key, mmapActiveExclusions.get(key));
         }
     }
     private void setExclusionActive(final int ID, final boolean active) {
-        if (mvExclusions == null) {
+        if (mlstExclusions == null) {
             System.err.println("Could not set active exclusion: exclusion list is null");
             return;
         }
 
-        for (final Exclusion excl : mvExclusions) {
+        for (final Exclusion excl : mlstExclusions) {
             if (excl.getID() == ID) {
                 excl.setActive(active);
                 return;
@@ -1047,15 +1028,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     private FileData readDwarves() {
         // Set dummy values:
-        mvDwarves = new Vector<Dwarf>();
-        Map<String, Stat> mapStat = new Hashtable<String, Stat>();
-        Map<String, Skill> mapSkill = new Hashtable<String, Skill>();
-        Map<String, MetaSkill> mapMetaSkill
-                = new Hashtable<String, MetaSkill>();
+        mlstDwarves = new ArrayList<Dwarf>();
+        Map<String, Stat> mapStat;
+        Map<String, Skill> mapSkill;
+        Map<String, MetaSkill> mapMetaSkill;
 
         final DwarfOrganizerIO.DwarfIO dwarfIO = new DwarfOrganizerIO.DwarfIO();
         dwarfIO.readDwarves(mstrDwarvesXML);
-        mvDwarves = dwarfIO.getDwarves();
+        mlstDwarves = dwarfIO.getDwarves();
         mapStat = dwarfIO.getStats();
         mapSkill = dwarfIO.getSkills();
         mapMetaSkill = dwarfIO.getMetaSkills();
@@ -1063,23 +1043,23 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return new FileData(mapStat, mapSkill, mapMetaSkill);
     }
 
-    private Vector<Dwarf> getDwarves() {
+    private ArrayList<Dwarf> getDwarves() {
         // Get included dwarves and reset all dwarf.time
         // TODO clone() probably isn't doing what it's supposed to
-        final Vector<Dwarf> vIncluded = (Vector<Dwarf>)
+        final ArrayList<Dwarf> lstIncluded = (ArrayList<Dwarf>)
                 moDwarfListWindow.getIncludedDwarves().clone();
-        for (final Dwarf dwarf : vIncluded) {
+        for (final Dwarf dwarf : lstIncluded) {
             dwarf.setTime(JobOptimizer.MAX_TIME);
         }
-        return vIncluded;
+        return lstIncluded;
     }
 
     // Note that balanced potentials are keyed by job name, not skill name.
-    private void setBalancedPotentials(final Vector<Dwarf> vDwarves
-            , final Vector<Job> vJobs) {
+    private void setBalancedPotentials(final List<Dwarf> lstDwarves
+            , final List<Job> lstJobs) {
 
-        for (final Dwarf dwarf : vDwarves) {
-            for (final Job job : vJobs) {
+        for (final Dwarf dwarf : lstDwarves) {
+            for (final Job job : lstJobs) {
 
                 final double dblCurrentSkillPct = ((double)
                         job.getCurrentSkillWeight()) / 100.0d;
@@ -1091,10 +1071,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 final double dblBalancedPotential = (dblCurrentSkillPct
                         * skillLevelToPercent(skillLevel))
                         + (dblPotentialPct
-                        * ((double) dwarf.skillPotentials.get(
+                        * ((double) dwarf.getSkillPotentials().get(
                         job.getSkillName())));
 
-                dwarf.balancedPotentials.put(job.getName()
+                dwarf.getBalancedPotentials().put(job.getName()
                         , Math.round(dblBalancedPotential));
             }
         }
@@ -1107,7 +1087,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
 
     private void addWhitelistToBlacklist(final JobBlacklist blacklist
-            , final JobList whitelist, final Vector<Labor> labors) {
+            , final JobList whitelist, final List<Labor> labors) {
         for (final String wlJobName : whitelist.keySet()) {
             for (final Labor labor : labors) {
                 // Add all non-whitelisted jobs to the blacklist.
@@ -1145,7 +1125,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void handleDwarfListMessage(final BroadcastMessage message) {
         if (message.getSource().equals("DwarfListSaveViews")) {
             final List<GridView> views = (List<GridView>) message.getTarget();
-            saveViews(new Vector(views));
+            saveViews(new ArrayList(views));
         }
         else if (message.getSource().equals("DwarfListManageViews")) {
             loadViewManager();
@@ -1161,8 +1141,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
         else if (message.getSource().equals("ExclusionPanelActiveExclusions")) {
             try {
-                mhtActiveExclusions
-                        = (Hashtable<Integer, Boolean>) message.getTarget();
+                mmapActiveExclusions
+                        = (HashMap<Integer, Boolean>) message.getTarget();
             } catch (Exception e) {
                 System.err.println(e.getMessage()
                         + " Failed to set active exclusions");
@@ -1172,9 +1152,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             closeExclusions();
         }
         else if (message.getSource().equals("ExclusionPanelApply")) {
-            final Vector<Exclusion> colExclusion
-                    = (Vector<Exclusion>) message.getTarget();
-            updateActiveExclusions(colExclusion);
+            final ArrayList<Exclusion> lstExclusion
+                    = (ArrayList<Exclusion>) message.getTarget();
+            updateActiveExclusions(lstExclusion);
         }
         else
             System.out.println("[MainWindow.handleExclusionMessage]"
@@ -1209,7 +1189,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     + " Unknown broadcast message received");
     }
     private void saveViewManagerViews() {
-        final Vector<GridView> vView = moViewManager.getViews();
+        final ArrayList<GridView> vView = moViewManager.getViews();
         saveViews(vView);
         moViewManager.setClean();
         moDwarfListWindow.updateViews(vView);
@@ -1221,8 +1201,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                         // Use a clone for the table model. Otherwise
                         // unsaved changes will persist when window is closed
                         // and reopened.
-                        final Vector<GridView> vViewClone
-                                = DeepCloneUtils.deepClone(mvViews);
+                        final List<GridView> vViewClone
+                                = DeepCloneUtils.deepClone(mlstViews);
                         moViewManager.loadData(vViewClone);
                     }
                 };
@@ -1252,14 +1232,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         frame.getRootPane().setDefaultButton(btn);
     }
-    private void updateActiveExclusions(final Vector<Exclusion> vExclusion) {
+    private void updateActiveExclusions(final List<Exclusion> vExclusion) {
 
         // Rebuild mhtActiveExclusions
-        mhtActiveExclusions = new Hashtable<Integer, Boolean>();
+        mmapActiveExclusions = new HashMap<Integer, Boolean>();
         for (final Exclusion excl : vExclusion) {
-            mhtActiveExclusions.put(excl.getID(), excl.isActive());
+            mmapActiveExclusions.put(excl.getID(), excl.isActive());
         }
-        mvExclusions = vExclusion;
+        mlstExclusions = vExclusion;
     }
     private abstract class MyAbstractInternalFrame {
         private JInternalFrame internalFrame;

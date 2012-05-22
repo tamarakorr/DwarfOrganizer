@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package dwarforganizer;
 
 import javax.swing.JOptionPane;
@@ -13,7 +12,7 @@ import myutils.MyNimbus;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class Main {
+public class DwarfOrganizer {
     public static final String VERSION = "1.3";
 
     /**
@@ -21,12 +20,12 @@ public class Main {
      */
     public static void main(String[] args) {
         MyNimbus.setNimbus();
-        new MainWindow();
+        MainWindow mainWindow = new MainWindow();
     }
     // Voluntarily crash the program
     public static void crash(final String message, final Exception e) {
         System.err.println(message);
-        e.printStackTrace();
+        e.printStackTrace(System.out);
         JOptionPane.showMessageDialog(null, message, "Application Failure"
                 , JOptionPane.ERROR_MESSAGE);
         System.exit(0);
@@ -42,4 +41,5 @@ public class Main {
         JOptionPane.showMessageDialog(null, errMessage + message, "Warning"
                 , JOptionPane.WARNING_MESSAGE);
     }
+
 }

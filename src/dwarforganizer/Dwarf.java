@@ -6,8 +6,10 @@
 package dwarforganizer;
 
 import dwarforganizer.deepclone.DeepCloneable;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -27,29 +29,29 @@ public class Dwarf implements MyPropertyGetter, Comparable
     private String nickname;
     private String gender;
     private int age;
-    protected Hashtable<String, Integer> statValues;
-    protected Hashtable<String, Integer> statPercents;
+    private Map<String, Integer> statValues;
+    private Map<String, Integer> statPercents;
     private int time;
-    protected Hashtable<String, Long> skillPotentials;
-    private Hashtable<String, Long> skillLevels;
-    protected Hashtable<String, Long> balancedPotentials;
+    private Map<String, Long> skillPotentials;
+    private Map<String, Long> skillLevels;
+    private Map<String, Long> balancedPotentials;
     private String jobText;
-    protected Vector<String> labors;
+    private List<String> labors;
 
     public Dwarf() {
         super();
-        skillPotentials = new Hashtable<String, Long>();
-        skillLevels = new Hashtable<String, Long>();
-        balancedPotentials = new Hashtable<String, Long>();
-        labors = new Vector<String>();
+        skillPotentials = new HashMap<String, Long>();
+        skillLevels = new HashMap<String, Long>();
+        balancedPotentials = new HashMap<String, Long>();
+        labors = new ArrayList<String>();
     }
     public Dwarf(String name, String nickname, String gender, int age
-            , Hashtable<String, Integer> statValues
-            , Hashtable<String, Integer> statPercents
-            , int time, Hashtable<String, Long> skillPotentials
-            , Hashtable<String, Long> skillLevels
-            , Hashtable<String, Long> balancedPotentials
-            , String jobText, Vector<String> labors) {
+            , Map<String, Integer> statValues
+            , Map<String, Integer> statPercents
+            , int time, Map<String, Long> skillPotentials
+            , Map<String, Long> skillLevels
+            , Map<String, Long> balancedPotentials
+            , String jobText, List<String> labors) {
         super();
         this.name = name;
         this.nickname = nickname;
@@ -63,6 +65,34 @@ public class Dwarf implements MyPropertyGetter, Comparable
         this.balancedPotentials = balancedPotentials;
         this.jobText = jobText;
         this.labors = labors;
+    }
+
+    public void setStatPercents(Map<String, Integer> statPercents) {
+        this.statPercents = statPercents;
+    }
+
+    public void setStatValues(Map<String, Integer> statValues) {
+        this.statValues = statValues;
+    }
+
+    public Map<String, Long> getBalancedPotentials() {
+        return balancedPotentials;
+    }
+
+    public List<String> getLabors() {
+        return labors;
+    }
+
+    public Map<String, Long> getSkillPotentials() {
+        return skillPotentials;
+    }
+
+    public Map<String, Integer> getStatPercents() {
+        return statPercents;
+    }
+
+    public Map<String, Integer> getStatValues() {
+        return statValues;
     }
 
     public boolean isJuvenile() {
@@ -117,7 +147,7 @@ public class Dwarf implements MyPropertyGetter, Comparable
         this.time = time;
     }
 
-    public Hashtable<String, Long> getSkillLevels() {
+    public Map<String, Long> getSkillLevels() {
         return skillLevels;
     }
 

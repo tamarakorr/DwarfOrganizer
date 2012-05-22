@@ -5,12 +5,12 @@
 
 package dwarforganizer;
 
-import dwarforganizer.dirty.DirtyForm;
-import dwarforganizer.swing.MyTableModel;
-import dwarforganizer.swing.SortKeySwapper;
-import dwarforganizer.swing.PlaceholderTextField;
 import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.Broadcaster;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.swing.MyTableModel;
+import dwarforganizer.swing.PlaceholderTextField;
+import dwarforganizer.swing.SortKeySwapper;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -18,18 +18,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Vector;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 /**
  * Allows the user to rename and delete views
@@ -42,7 +35,7 @@ public class ViewManagerUI extends AbstractEditor<GridView>
 
     private JPanel uiPanel;
     private JTextField txtName;
-    private Vector<GridView> vViews;
+    private ArrayList<GridView> mlstViews;
     private MyTableModel model;
     private Broadcaster broadcaster;
     private JButton btnUpdate;
@@ -55,11 +48,10 @@ public class ViewManagerUI extends AbstractEditor<GridView>
         Object[] cols = new Object[] { "All Views" };
         Class[] colClass = new Class[] { String.class };
         String[] colProps = new String[] { "name" };
-        vViews = new Vector<GridView>();
+        mlstViews = new ArrayList<GridView>();
         SortKeySwapper swapper = new SortKeySwapper();
 
-        model = new MyTableModel(cols, colClass, colProps, vViews
-                , swapper);
+        model = new MyTableModel(cols, colClass, colProps, mlstViews, swapper);
         JTable table = new JTable(model);
         table.setPreferredScrollableViewportSize(new Dimension(220, 175));
 
@@ -141,13 +133,13 @@ public class ViewManagerUI extends AbstractEditor<GridView>
                 , true, true, txtName);
     }
 
-    public void loadData(Collection<GridView> colView) {
+    public void loadData(final Collection<GridView> colView) {
         // Clear input----------------------------------------------------------
         clearInput();
 
         // Set data-------------------------------------------------------------
-        vViews = new Vector<GridView>(colView);
-        model.setRowData(vViews);
+        mlstViews = new ArrayList<GridView>(colView);
+        model.setRowData(mlstViews);
 
         // Adjust components----------------------------------------------------
         uiPanel.validate();
@@ -158,8 +150,8 @@ public class ViewManagerUI extends AbstractEditor<GridView>
     public JButton getDefaultButton() {
         return btnUpdate;
     }
-    public Vector<GridView> getViews() {
-        return vViews;
+    public ArrayList<GridView> getViews() {
+        return mlstViews;
     }
     public JPanel getUIPanel() {
         return uiPanel;
@@ -173,7 +165,7 @@ public class ViewManagerUI extends AbstractEditor<GridView>
     @Override
     public boolean validateInput() {
         // Ensure no other view has the same name:
-        for (GridView view : vViews)
+        for (GridView view : mlstViews)
             if (view.getName().equals(txtName.getText())) {
                 JOptionPane.showMessageDialog(uiPanel
                         , "There is already a view with that name."
@@ -191,7 +183,7 @@ public class ViewManagerUI extends AbstractEditor<GridView>
 
         String name = txtName.getText();
 
-        GridView view = vViews.get(super.getCurrentEditedRow());
+        GridView view = mlstViews.get(super.getCurrentEditedRow());
         view.setName(name);
         return view;
     }

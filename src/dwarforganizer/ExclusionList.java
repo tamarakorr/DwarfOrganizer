@@ -6,7 +6,8 @@
 package dwarforganizer;
 
 import dwarforganizer.deepclone.DeepCloneable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -16,17 +17,17 @@ import java.util.Vector;
 public class ExclusionList extends Exclusion
         implements DeepCloneable<Exclusion> {
 
-    private Vector<String> mvCitizenNames;
+    private List<String> mvCitizenNames;
 
     public ExclusionList(Integer ID, String name, boolean active
-            , Vector<String> citizenList) {
+            , List<String> citizenList) {
         super(ID, name, active);
         this.mvCitizenNames = citizenList;
     }
-    public Vector<String> getCitizenList() {
+    public List<String> getCitizenList() {
         return mvCitizenNames;
     }
-    public void setCitizenList(Vector<String> vCitizenNames) {
+    public void setCitizenList(List<String> vCitizenNames) {
         this.mvCitizenNames = vCitizenNames;
     }
 
@@ -44,7 +45,7 @@ public class ExclusionList extends Exclusion
 
     @Override
     public ExclusionList deepClone() {
-        Vector<String> vNames = new Vector<String>(mvCitizenNames.size());
+        ArrayList<String> vNames = new ArrayList<String>(mvCitizenNames.size());
         for (String name : mvCitizenNames) {
             vNames.add(name);
         }

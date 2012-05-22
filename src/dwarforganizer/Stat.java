@@ -5,7 +5,7 @@
 
 package dwarforganizer;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  *
@@ -14,7 +14,18 @@ import java.util.Vector;
  */
 public class Stat {
 
-    protected class StatHint {
+    private String name;
+    private int[] range;
+    private String xmlName;
+    private ArrayList<StatHint> lstStatHints;
+
+    public Stat(String name, int[] range) {
+        this.name = name;
+        this.range = range;
+
+        lstStatHints = new ArrayList<StatHint>();
+    };
+    public class StatHint {
         protected String hintText;
         protected int hintMin;
         protected int hintMax;
@@ -24,20 +35,8 @@ public class Stat {
             this.hintMax = hintMax;
         }
     }
-
-    private String name;
-    private int[] range;
-    private String xmlName;
-    protected Vector<StatHint> vStatHints;
-
-    public Stat(String name, int[] range) {
-        this.name = name;
-        this.range = range;
-
-        vStatHints = new Vector<StatHint>();
-    };
     public void addStatHint(String hintText, int hintMin, int hintMax) {
-        vStatHints.add(new StatHint(hintText, hintMin, hintMax));
+        lstStatHints.add(new StatHint(hintText, hintMin, hintMax));
     }
 
     public String getName() {
@@ -54,6 +53,10 @@ public class Stat {
 
     public int[] getRange() {
         return range;
+    }
+
+    public ArrayList<StatHint> getStatHints() {
+        return lstStatHints;
     }
 
 }

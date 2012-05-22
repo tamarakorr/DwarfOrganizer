@@ -5,7 +5,7 @@
 
 package dwarforganizer;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  *
@@ -13,12 +13,12 @@ import java.util.Vector;
  * See MIT license in license.txt
  */
 public class Skill extends GenericSkill implements NamedThing {
-    private Vector<Stat> mvStats;
+    private List<Stat> mvStats;
 
-    public Skill(String name, Vector<Stat> stats) {
+    public Skill(String name, List<Stat> stats) {
         super(name);
         mvStats = stats;
     }
-    public Vector<Stat> getStats() { return mvStats; }
+    public List<Stat> getStats() { return mvStats; }
 
 }

@@ -5,23 +5,24 @@
 
 package dwarforganizer;
 
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class JobList extends Hashtable<String, Vector<String>> {
+public class JobList extends HashMap<String, List<String>> {
 
     public JobList() { super(); }
 
     public void print() {
         for (String key : this.keySet()) {
             System.out.println("Whitelist for " + key + ":");
-            Vector<String> vec = this.get(key);
-            for (String element : vec)
+            final List<String> list = this.get(key);
+            for (String element : list)
                 System.out.println("     " + element);
         }
     }
@@ -32,9 +33,9 @@ public class JobList extends Hashtable<String, Vector<String>> {
         if (this.containsKey(keyJob))
             this.get(keyJob).add(valueJob);
         else {
-            Vector<String> vec = new Vector<String>();
-            vec.add(valueJob);
-            this.put(keyJob, vec);
+            final List<String> list = new ArrayList<String>();
+            list.add(valueJob);
+            this.put(keyJob, list);
         }
     }
 

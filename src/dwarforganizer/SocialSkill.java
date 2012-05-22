@@ -5,7 +5,7 @@
 
 package dwarforganizer;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  *
@@ -20,7 +20,7 @@ public class SocialSkill extends SecondarySkill {
     private int noStatMin;
     private int noStatMax;
 
-    public SocialSkill(String name, Vector<Stat> stats, String noStatName
+    public SocialSkill(String name, List<Stat> stats, String noStatName
             , int noStatMin, int noStatMax) {
         super(name, stats);
         this.noStatName = noStatName;

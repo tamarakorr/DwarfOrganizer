@@ -11,15 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Vector;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.TransferHandler;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumnModel;
@@ -64,33 +56,37 @@ public class CopyCutPastingTable extends JTable {
         super(dm, cm, sm);
         initialize();
     }
-    public CopyCutPastingTable(Vector rowData, Vector columnNames) {
-        super(rowData, columnNames);
+    // Vector "obsolete"
+/*    public CopyCutPastingTable(final List rowData, final List columnNames) {
+        super(new Vector(rowData), new Vector(columnNames));
         initialize();
-    }
+    } */
     private void initialize() {
         setCutCopyPasteMappings(this);
     }
 
     // This class is based on Sun "CCP in a non text component" tutorial
-    protected class TransferActionListener implements ActionListener,
-                                                  PropertyChangeListener {
+    protected class TransferActionListener implements ActionListener {
         private JComponent focusOwner = null;
 
         public TransferActionListener() {
             KeyboardFocusManager manager = KeyboardFocusManager.
                getCurrentKeyboardFocusManager();
-            manager.addPropertyChangeListener("permanentFocusOwner", this);
+            manager.addPropertyChangeListener("permanentFocusOwner"
+                    , createPropChangeListener());
         }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent e) {
-            Object o = e.getNewValue();
-            if (o instanceof JComponent) {
-                focusOwner = (JComponent)o;
-            } else {
-                focusOwner = null;
-            }
+        private PropertyChangeListener createPropChangeListener() {
+            return new PropertyChangeListener() {
+                @Override
+                public void propertyChange(final PropertyChangeEvent e) {
+                    final Object o = e.getNewValue();
+                    if (o instanceof JComponent) {
+                        focusOwner = (JComponent)o;
+                    } else {
+                        focusOwner = null;
+                    }
+                }
+            };
         }
 
         @Override

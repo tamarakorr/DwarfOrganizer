@@ -5,7 +5,7 @@
 
 package dwarforganizer;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  *
@@ -15,7 +15,7 @@ import java.util.Vector;
 public class SecondarySkill extends Skill {
     // Secondary skills are a convenience for filtering the list. They
     // look just like a Skill otherwise.
-    public SecondarySkill(String name, Vector<Stat> stats) {
+    public SecondarySkill(String name, List<Stat> stats) {
         super(name, stats);
     }
 }

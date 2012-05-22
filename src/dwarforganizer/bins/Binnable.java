@@ -5,7 +5,7 @@
 
 package dwarforganizer.bins;
 
-import dwarforganizer.*;
+import dwarforganizer.MyPropertyGetter;
 
 /**
  *

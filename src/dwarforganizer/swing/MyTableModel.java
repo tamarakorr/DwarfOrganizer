@@ -5,9 +5,10 @@
 
 package dwarforganizer.swing;
 
-import dwarforganizer.*;
+import dwarforganizer.MyPropertyGetter;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Vector;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 
@@ -25,45 +26,46 @@ public class MyTableModel<T extends MyPropertyGetter>
         extends AbstractTableModel {
 
     private Object[] maoColumnHeadings;
-    private Vector<Class> mvColumnClass;
-    protected Vector<String> mvColumnPropertyNames;
-    protected Vector<T> mvRowData;
+    private List<Class> mlstColumnClass;
+    protected List<String> mlstColumnPropertyNames;
+    protected List<T> mlstRowData;
     private SortKeySwapper moSortKeySwapper;    // For preventing API bug with fireTableRowsInserted() on sorted table
 
     public MyTableModel(Object[] cols, Class[] colClasses, String[] colProps
-            , Vector<T> rows, SortKeySwapper sortKeySwapper) {
+            , List<T> rows, SortKeySwapper sortKeySwapper) {
         //super();
         maoColumnHeadings = cols;
-        mvColumnClass = new Vector<Class>(Arrays.asList(colClasses));
-        mvColumnPropertyNames = new Vector<String>(Arrays.asList(colProps));
-        mvRowData = rows;
+        mlstColumnClass = new ArrayList<Class>(Arrays.asList(colClasses));
+        mlstColumnPropertyNames = new ArrayList<String>(Arrays.asList(
+                colProps));
+        mlstRowData = rows;
         moSortKeySwapper = sortKeySwapper;
 
         //initialize();
     }
-    public MyTableModel(Vector<Object> cols, Class[] colClasses
-            , String[] colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyTableModel(List<Object> cols, Class[] colClasses
+            , String[] colProps, List<T> rows, SortKeySwapper sortKeySwapper) {
         //super();
         maoColumnHeadings = cols.toArray();
-        mvColumnClass = new Vector<Class>(Arrays.asList(colClasses));
-        mvColumnPropertyNames = new Vector<String>(Arrays.asList(colProps));
-        mvRowData = rows;
+        mlstColumnClass = new ArrayList<Class>(Arrays.asList(colClasses));
+        mlstColumnPropertyNames = new ArrayList<String>(Arrays.asList(colProps));
+        mlstRowData = rows;
         moSortKeySwapper = sortKeySwapper;
 
         //initialize();
     }
-    public MyTableModel(Vector<Object> cols, Vector<Class> colClasses
-            , Vector<String> colProps, Vector<T> rows, SortKeySwapper sortKeySwapper) {
+    public MyTableModel(List<Object> cols, List<Class> colClasses
+            , List<String> colProps, List<T> rows, SortKeySwapper sortKeySwapper) {
         maoColumnHeadings = cols.toArray();
-        mvColumnClass = colClasses;
-        mvColumnPropertyNames = colProps;
-        mvRowData = rows;
+        mlstColumnClass = colClasses;
+        mlstColumnPropertyNames = colProps;
+        mlstRowData = rows;
         moSortKeySwapper = sortKeySwapper;
     }
 
     @Override
     public int getRowCount() {
-        return mvRowData.size();
+        return mlstRowData.size();
     }
 
     @Override
@@ -73,9 +75,9 @@ public class MyTableModel<T extends MyPropertyGetter>
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        T oRow = mvRowData.get(rowIndex);
+        T oRow = mlstRowData.get(rowIndex);
         // Get the user readable version of the property:
-        return oRow.getProperty(mvColumnPropertyNames.get(columnIndex).toString()
+        return oRow.getProperty(mlstColumnPropertyNames.get(columnIndex).toString()
                 , true);
     }
 
@@ -90,16 +92,16 @@ public class MyTableModel<T extends MyPropertyGetter>
     } */
 
     public void addRow(T newRow) {
-        int index = mvRowData.size();
-        mvRowData.add(newRow);
+        int index = mlstRowData.size();
+        mlstRowData.add(newRow);
         fireInserted(index, index);
     }
 
-    public void addRows(Vector<T> newRows) {
-        final int firstIndex = mvRowData.size();
+    public void addRows(final List<T> newRows) {
+        final int firstIndex = mlstRowData.size();
         final int lastIndex = firstIndex + newRows.size() - 1;
         //System.out.println("Rows added in range " + firstIndex + " to " + lastIndex);
-        mvRowData.addAll(newRows);
+        mlstRowData.addAll(newRows);
 
         if (newRows.size() > 0) fireInserted(firstIndex, lastIndex);
     }
@@ -129,8 +131,8 @@ public class MyTableModel<T extends MyPropertyGetter>
 
     public boolean containsKey(long key) {
         boolean bReturn = false;
-        if (mvRowData != null)
-            for (T obj : mvRowData)
+        if (mlstRowData != null)
+            for (T obj : mlstRowData)
                 if (obj.getKey() == key) {
                     bReturn = true;
                     break;
@@ -139,7 +141,7 @@ public class MyTableModel<T extends MyPropertyGetter>
     }
 
     public void removeRow(int rowIndex) {
-        mvRowData.remove(rowIndex);
+        mlstRowData.remove(rowIndex);
         //this.fireTableRowsDeleted(rowIndex, rowIndex);
         fireDeleted(rowIndex, rowIndex);
     }
@@ -194,13 +196,13 @@ public class MyTableModel<T extends MyPropertyGetter>
     }
 
     public long getKeyForRow(int rowIndex) {
-        return mvRowData.get(rowIndex).getKey();
+        return mlstRowData.get(rowIndex).getKey();
     }
 
     // Updates the first row found that has the given key.
     public void updateRowByKey(long key, T newData) {
 
-        for (int iCount = 0; iCount < mvRowData.size(); iCount++) {
+        for (int iCount = 0; iCount < mlstRowData.size(); iCount++) {
             if (key == getKeyForRow(iCount)) {
                 updateRow(iCount, newData);
                 break;
@@ -209,8 +211,9 @@ public class MyTableModel<T extends MyPropertyGetter>
     }
 
     public void updateRow(int rowIndex, T newData) {
-        mvRowData.remove(rowIndex);
-        mvRowData.insertElementAt(newData, rowIndex);
+        mlstRowData.remove(rowIndex);
+        //mlstRowData.insertElementAt(newData, rowIndex);
+        mlstRowData.add(rowIndex, newData);
         //this.fireTableRowsUpdated(rowIndex, rowIndex);
         fireUpdated(rowIndex, rowIndex);
     }
@@ -220,11 +223,11 @@ public class MyTableModel<T extends MyPropertyGetter>
         return maoColumnHeadings[columnIndex].toString();
     }
 
-    public Vector<T> getRowData() {
-        return mvRowData;
+    public List<T> getRowData() {
+        return mlstRowData;
     }
-    public void setRowData(Vector<T> newRowData) {
-        mvRowData = newRowData;
+    public void setRowData(List<T> newRowData) {
+        mlstRowData = newRowData;
         this.fireTableDataChanged();
     }
 
@@ -233,9 +236,9 @@ public class MyTableModel<T extends MyPropertyGetter>
         try {
 
             // If column class array is set, use its value
-            if (mvColumnClass != null) {
+            if (mlstColumnClass != null) {
                 //System.out.println("Returning " + maColumnClass[columnIndex].getSimpleName());
-                return mvColumnClass.get(columnIndex);
+                return mlstColumnClass.get(columnIndex);
             }
             // If column class array is not set, guess the value by looking
             // for a non-null in the specified column
@@ -254,7 +257,7 @@ public class MyTableModel<T extends MyPropertyGetter>
 
     // Calls for a repaints when the underlying object was changed
     public void fireUpdateForKey(long key) {
-        for (int iCount = 0; iCount < mvRowData.size(); iCount++) {
+        for (int iCount = 0; iCount < mlstRowData.size(); iCount++) {
             if (key == getKeyForRow(iCount)) {
                 fireUpdated(iCount, iCount);
                 break;

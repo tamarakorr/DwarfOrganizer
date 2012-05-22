@@ -5,8 +5,8 @@
 
 package dwarforganizer;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
 /**
  * For converting a list of (or single) MyPropertyGetter(s) to a data vector
@@ -22,28 +22,34 @@ public class DataVectorMaker<T extends MyPropertyGetter> {
         super();
     }
 
-    public Vector<Vector<Object>> toDataVector(List<T> list
-            , Vector<Object> vColProperties, Vector<Integer> vColIndices
-            , boolean humanReadable, int numCols) {
-        Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(list.size());
+    public ArrayList<ArrayList<Object>> toDataVector(final List<T> list
+            , final List<Object> lstColProperties
+            , final List<Integer> lstColIndices
+            , final boolean humanReadable, final int numCols) {
 
-        for (MyPropertyGetter item : list) {
-            vReturn.add(toRowData(item, vColProperties, vColIndices
+        final int size = list.size();
+        final ArrayList<ArrayList<Object>> lstReturn
+                = new ArrayList<ArrayList<Object>>(size);
+
+        for (final MyPropertyGetter item : list) {
+            lstReturn.add(toRowData(item, lstColProperties, lstColIndices
                     , humanReadable, numCols));
         }
 
-        return vReturn;
+        return lstReturn;
     }
-    public Vector<Object> toRowData(MyPropertyGetter rowItem, Vector<Object> vColProperties
-            , Vector<Integer> vColIndices, boolean humanReadable, int numCols) {
-        Vector<Object> vReturn = new Vector<Object>();
-        vReturn.setSize(numCols);
-        for (int index = 0; index < vColProperties.size(); index++) {   // for (Object col : vColProperties)
-            Object col = vColProperties.get(index);
-            Integer colIndex = vColIndices.get(index);
-            vReturn.set(colIndex
+    public ArrayList<Object> toRowData(final MyPropertyGetter rowItem
+            , final List<Object> lstColProperties
+            , final List<Integer> lstColIndices, final boolean humanReadable
+            , final int numCols) {
+
+        final ArrayList<Object> lstReturn = new ArrayList<Object>(numCols);
+        for (int index = 0; index < lstColProperties.size(); index++) {   // for (Object col : vColProperties)
+            final Object col = lstColProperties.get(index);
+            final int colIndex = lstColIndices.get(index);
+            lstReturn.set(colIndex
                     , rowItem.getProperty(col.toString(), humanReadable));
         }
-        return vReturn;
+        return lstReturn;
     }
 }

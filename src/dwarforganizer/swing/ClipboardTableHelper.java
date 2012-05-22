@@ -107,7 +107,7 @@ public class ClipboardTableHelper {
         int startRow = tables[0].getSelectedRows()[0];
         int startCol = tables[0].getSelectedColumns()[0];
 
-        String pasteString = "";
+        String pasteString;
         try {
             pasteString = (String) (CLIPBOARD.getContents(
                     this).getTransferData(DataFlavor.stringFlavor));

@@ -5,8 +5,8 @@
 
 package dwarforganizer;
 
-import dwarforganizer.swing.HideableTableColumnModel;
 import dwarforganizer.deepclone.DeepCloneable;
+import dwarforganizer.swing.HideableTableColumnModel;
 import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;

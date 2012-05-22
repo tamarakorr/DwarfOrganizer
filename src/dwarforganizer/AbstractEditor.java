@@ -5,20 +5,15 @@
 
 package dwarforganizer;
 
+import dwarforganizer.dirty.DirtyForm;
 import dwarforganizer.dirty.DirtyHandler;
 import dwarforganizer.dirty.DirtyListener;
-import dwarforganizer.dirty.DirtyForm;
 import dwarforganizer.swing.MyTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import javax.swing.JTable;
-import javax.swing.KeyStroke;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import myutils.Adapters.KeyTypedAdapter;

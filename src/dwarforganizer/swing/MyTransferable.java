@@ -24,12 +24,15 @@ public class MyTransferable implements Transferable {
     protected ArrayList<DataFlavor> aFlavors = new ArrayList<DataFlavor>();
     protected DataFlavor objectFlavor;
 
-    protected static List<DataFlavor> stringFlavors = new ArrayList<DataFlavor>(3);
+    protected static final List<DataFlavor> stringFlavors
+            = new ArrayList<DataFlavor>(3);
 
     static {
         try {
-            stringFlavors.add(new DataFlavor("text/plain;class=java.lang.String"));
-            stringFlavors.add(new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType
+            stringFlavors.add(new DataFlavor(
+                    "text/plain;class=java.lang.String"));
+            stringFlavors.add(new DataFlavor(
+                    DataFlavor.javaJVMLocalObjectMimeType
                     + ";class=java.lang.String"));
             stringFlavors.add(DataFlavor.stringFlavor);
         } catch (ClassNotFoundException e) {

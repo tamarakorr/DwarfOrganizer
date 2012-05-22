@@ -5,8 +5,8 @@
 package dwarforganizer.swing;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -94,7 +94,7 @@ public class MenuMnemonicSetter {
     }
 
     private static char getMnemonic(String text, char[] mnemonics) {
-        Vector words = new Vector();
+        ArrayList words = new ArrayList();
         StringTokenizer t = new StringTokenizer(text);
         int maxSize = 0;
 
@@ -103,7 +103,7 @@ public class MenuMnemonicSetter {
             if (word.length() > maxSize) {
                 maxSize = word.length();
             }
-            words.addElement(word);
+            words.add(word);
         }
         words.trimToSize();
 
@@ -117,11 +117,13 @@ public class MenuMnemonicSetter {
         return ' ';
     }
 
-    private static char getMnemonic(Vector words, char[] mnemonics, int index) {
+    private static char getMnemonic(ArrayList words, char[] mnemonics
+            , int index) {
+
         int numwords = words.size();
 
         for (int i = 0; i < numwords; ++i) {
-            String word = ((String) words.elementAt(i)).toLowerCase();
+            String word = ((String) words.get(i)).toLowerCase();
             if (index >= word.length()) {
                 continue;
             }

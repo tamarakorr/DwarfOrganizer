@@ -5,7 +5,7 @@
 
 package dwarforganizer;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  *
@@ -13,8 +13,8 @@ import java.util.Vector;
  * See MIT license in license.txt
  */
 public class MetaSkill extends GenericSkill implements NamedThing {
-    protected Vector<Skill> vSkills;
-    public MetaSkill(String name, Vector<Skill> skills) {
+    protected List<Skill> vSkills;
+    public MetaSkill(String name, List<Skill> skills) {
         super(name);
         this.vSkills = skills;
     }

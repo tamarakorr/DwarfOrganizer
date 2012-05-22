@@ -10,18 +10,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JViewport;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.RowSorterEvent;
-import javax.swing.event.RowSorterListener;
-import javax.swing.event.TableColumnModelEvent;
-import javax.swing.event.TableColumnModelListener;
+import javax.swing.*;
+import javax.swing.event.*;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import myutils.MyHandyTable;
@@ -54,7 +44,7 @@ import myutils.MyTableWidthAdjuster;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class ColumnFreezingTable implements RowSorterListener {
+public class ColumnFreezingTable {
 
     private static final int DEFAULT_SNAP = 5;
     private static final int DIVIDER_SIZE = 6;
@@ -108,7 +98,8 @@ public class ColumnFreezingTable implements RowSorterListener {
         leftTable.setRowSorter(rightTable.getRowSorter());
         leftTable.setPreferredScrollableViewportSize(
                 leftTable.getPreferredSize());
-        leftTable.getRowSorter().addRowSorterListener(this);
+        leftTable.getRowSorter().addRowSorterListener(
+                createRowSorterListener());
 
         // Copy object cell renderers
         // There seems to be no easy way to enumerate installed renderers.
@@ -462,21 +453,25 @@ public class ColumnFreezingTable implements RowSorterListener {
     }
 
     // When the sorter does something, maintain the selected rows
-    @Override
-    public void sorterChanged(RowSorterEvent e) {
-        // This only works if events are guaranteed to always
-        // be received in order (SORT_ORDER_CHANGED, SORTED)...
+    private RowSorterListener createRowSorterListener() {
+        return new RowSorterListener() {
+            @Override
+            public void sorterChanged(RowSorterEvent e) {
+                // This only works if events are guaranteed to always
+                // be received in order (SORT_ORDER_CHANGED, SORTED)...
 
-        // Capture the current selected model row just before the sort
-        if (e.getType().equals(RowSorterEvent.Type.SORT_ORDER_CHANGED)) {
-            //System.out.println("Capturing");
-            captureSelectedRows();
-        }
-        // Re-select the appropriate rows after the sort
-        else if (e.getType().equals(RowSorterEvent.Type.SORTED)) {
-            //System.out.println("Setting selected");
-            setSelectedRows();
-        }
+                // Capture the current selected model row just before the sort
+                if (e.getType().equals(RowSorterEvent.Type.SORT_ORDER_CHANGED)) {
+                    //System.out.println("Capturing");
+                    captureSelectedRows();
+                }
+                // Re-select the appropriate rows after the sort
+                else if (e.getType().equals(RowSorterEvent.Type.SORTED)) {
+                    //System.out.println("Setting selected");
+                    setSelectedRows();
+                }
+            }
+        };
     }
     // Saves the currently selected rows by model index
     private void captureSelectedRows() {

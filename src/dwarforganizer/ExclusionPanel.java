@@ -5,48 +5,22 @@
 
 package dwarforganizer;
 
-import dwarforganizer.dirty.DirtyHandler;
-import dwarforganizer.dirty.DirtyListener;
-import dwarforganizer.dirty.DirtyForm;
-import dwarforganizer.swing.MyEditableTableModel;
-import dwarforganizer.swing.MyTableModel;
-import dwarforganizer.swing.SortKeySwapper;
-import dwarforganizer.swing.PlaceholderTextField;
 import dwarforganizer.broadcast.BroadcastMessage;
 import dwarforganizer.broadcast.Broadcaster;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
+import dwarforganizer.dirty.DirtyForm;
+import dwarforganizer.dirty.DirtyHandler;
+import dwarforganizer.dirty.DirtyListener;
+import dwarforganizer.swing.MyEditableTableModel;
+import dwarforganizer.swing.MyTableModel;
+import dwarforganizer.swing.PlaceholderTextField;
+import dwarforganizer.swing.SortKeySwapper;
+import java.awt.*;
+import java.awt.event.*;
 import java.text.Collator;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
-import javax.swing.BorderFactory;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SortOrder;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.MatteBorder;
+import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -54,11 +28,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import myutils.Adapters.KeyTypedAdapter;
-import myutils.MyHandyTable;
-import myutils.MyNumeric;
-import myutils.MySimpleTableModel;
-import myutils.MyTCRStripedHighlight;
-import myutils.SortedComboBoxModel;
+import myutils.*;
 
 /**
  * For creating rules that exclude dwarves, and lists of excluded dwarves
@@ -66,7 +36,7 @@ import myutils.SortedComboBoxModel;
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
+public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyListener
 
     private enum ExclusionAction { ADD, UPDATE, DELETE, EDIT }
 
@@ -109,7 +79,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     private JScrollPane mspList;
 
     private DwarfOrganizerIO moIO;
-    private Vector<Dwarf> mlstCitizen;
+    private List<Dwarf> mlstCitizen;
 
     private MasterDirtyHandler moMasterDirtyHandler;
 
@@ -119,7 +89,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 
     protected enum EditingState { NEW, EDIT }
 
-    public ExclusionPanel(DwarfOrganizerIO io) {
+    public ExclusionPanel(final DwarfOrganizerIO io) {
         super();
 
         // Set local variables--------------------------------------------------
@@ -133,13 +103,13 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         closeBroadcaster = new Broadcaster();
 
         // Defaults-------------------------------------------------------------
-        mlstCitizen = new Vector<Dwarf>();
+        mlstCitizen = new ArrayList<Dwarf>();
 
         // Create combo box models----------------------------------------------
         moCompStringModel = new DefaultComboBoxModel(merge(UNSELECTED_COMPARISON
-            , ExclusionRule.STRING_COMPARATORS));
+            , ExclusionRule.STRING_COMPARATORS).toArray());
         moCompNumModel = new DefaultComboBoxModel(merge(UNSELECTED_COMPARISON
-            , ExclusionRule.NUMERIC_COMPARATORS));
+            , ExclusionRule.NUMERIC_COMPARATORS).toArray());
         moCompUnknownModel = new DefaultComboBoxModel(new Object[] {
             COMPARISON_TEXT_ATTR_UNSELECTED });
 
@@ -174,10 +144,11 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         moRuleCitizen = new CitizenList();  // Must be created before tables
         moListCitizen = new DeletableCitizenList();
 
+        final DirtyListener dirtyListener = createDirtyListener();
         moRuleTable = new RuleExclusionTable(moRuleCitizen);
-        moRuleTable.addDirtyListener(this);
+        moRuleTable.addDirtyListener(dirtyListener);
         moListTable = new ListExclusionTable(moListCitizen);
-        moListTable.addDirtyListener(this);
+        moListTable.addDirtyListener(dirtyListener);
         moListCitizen.setEditor(moListTable);
 
         final ExclusionActionButton cmdAddRule = new ExclusionActionButton("Add New"
@@ -199,8 +170,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         ExclusionActionButton btnDeleteList = new ExclusionActionButton("Delete List"
                 , ExclusionAction.DELETE, moListTable);
 
-        mspRule = moRuleTable.create(new Vector<Exclusion>(), 325, 100, btnUpdateRule); // lstExclusion
-        mspList = moListTable.create(new Vector<Exclusion>(), 325, 100, btnUpdateList); // lstExclusion
+        mspRule = moRuleTable.create(new ArrayList<Exclusion>(), 325, 100
+                , btnUpdateRule); // lstExclusion
+        mspList = moListTable.create(new ArrayList<Exclusion>(), 325, 100
+                , btnUpdateList); // lstExclusion
 
         mtxtListName = new PlaceholderTextField(20
                 , "Enter a list name (optional)", true);
@@ -406,7 +379,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 
     }
     public void loadData(Collection<Exclusion> colExclusion
-            , Vector<Dwarf> vCitizen) {
+            , List<Dwarf> lstCitizen) {
 
         //for (Exclusion excl : colExclusion)
             //System.out.println("Exclusion #" + excl.getID() + " is "
@@ -416,14 +389,14 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         setMessage("(Message)");
         moRuleTable.clearInput();
         moListTable.clearInput();
-        moRuleCitizen.setList(new Vector<String>());
-        moListCitizen.setList(new Vector<String>());
+        moRuleCitizen.setList(new ArrayList<String>());
+        moListCitizen.setList(new ArrayList<String>());
 
         // Set citizen list-----------------------------------------------------
         // Must be done before loading rule/list tables, or citizen counts will
         // be inaccurate
-        moCitizenNameCombo.setCitizenList(vCitizen);
-        mlstCitizen = vCitizen;
+        moCitizenNameCombo.setCitizenList(lstCitizen);
+        mlstCitizen = lstCitizen;
 
         // Set exclusion rules/lists--------------------------------------------
         moRuleTable.loadData(colExclusion);
@@ -508,13 +481,17 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         setMessage("(Saving...)");
 
         // Translate list contents to a list of exclusions
-        Vector<Exclusion> lstExclusion = new Vector<Exclusion>();
-        AbstractExclusionEditor[] editors = new AbstractExclusionEditor[] {
-            moRuleTable, moListTable
-        };
+        final AbstractExclusionEditor[] editors
+                = new AbstractExclusionEditor[] { moRuleTable, moListTable };
+        int size = 0;
+        for (AbstractExclusionEditor editor : editors) {
+            size += editor.getModel().getRowData().size();
+        }
+        final ArrayList<Exclusion> lstExclusion
+                = new ArrayList<Exclusion>(size);
 
         for (AbstractExclusionEditor editor : editors) {
-            Vector<TableItem> vItem = editor.getModel().getRowData();
+            final List<TableItem> vItem = editor.getModel().getRowData();
             for (TableItem item : vItem) {
                 lstExclusion.add(item.getExclusion());
             }
@@ -642,17 +619,18 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         private MyEditableTableModel<TableItem> exclModel;
         private JTable exclTable;
 
-        private Vector<String> EMPTY_CITIZEN_LIST;
+        private ArrayList<String> EMPTY_CITIZEN_LIST;
 
         private TableItem moCurrentTableItem;
         private CitizenList moCitizenList;
 
         private boolean bCreating;
 
-        public abstract Vector<Object> getTableCols();
+        public abstract ArrayList<Object> getTableCols();
         public abstract Class[] getColClasses();
         public abstract String[] getColProperties();
-        public abstract Vector<TableItem> toTableItems(Collection<Exclusion> lstExclusion);
+        public abstract ArrayList<TableItem> toTableItems(
+                Collection<Exclusion> lstExclusion);
         //public abstract Vector<C> toCitizenListFormat(Vector<Dwarf> vDwarf);
         public abstract void setCitizenList(TableItem tableItem);   // Should do getCitizenList().setCitizenList()
 
@@ -660,12 +638,12 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             super();
 
             // Set "constants"--------------------------------------------------
-            EMPTY_CITIZEN_LIST = new Vector<String>(1);
+            EMPTY_CITIZEN_LIST = new ArrayList<String>(1);
 
             // Set variables
             moCitizenList = citizenList;  // List of citizens for this exclusion
 
-            setCurrentTableItem(null);
+            moCurrentTableItem = null;
         }
 
         public CitizenList getCitizenList() {
@@ -699,7 +677,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 
         // Always use this function to set the current selected exclusion
         // @see getCurrentExclusion()
-        protected void setCurrentTableItem(TableItem tableItem) {
+        protected void setCurrentTableItem(final TableItem tableItem) {
             moCurrentTableItem = tableItem;
         }
 
@@ -767,7 +745,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
                                 // Set the citizen list to the first selected exclusion
                                 int modelIndex = exclTable.convertRowIndexToModel(
                                         iCount);
-                                Vector<TableItem> items = exclModel.getRowData();
+                                final List<TableItem> items
+                                        = exclModel.getRowData();
                                 setCurrentTableItem(items.get(modelIndex));
                                 setCitizenList(modelIndex);
                                 break;
@@ -795,7 +774,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
 
         protected void setCitizenList(int modelRow) {
             if (modelRow >= 0) {
-                Vector<TableItem> items = exclModel.getRowData();
+                final List<TableItem> items = exclModel.getRowData();
                 TableItem tableItem = items.get(modelRow);
                 setCitizenList(tableItem);
             }
@@ -950,7 +929,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
                 ID = this.getModel().getRowData().get(this.getCurrentEditedRow()).getID();
 
             ExclusionList list = new ExclusionList(ID
-                , mtxtListName.getText(), true, new Vector<String>());
+                , mtxtListName.getText(), true, new ArrayList<String>());
             return new TableItem(list.getID(), list, 0); // true
         }
 
@@ -961,8 +940,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         }
 
         @Override
-        public Vector<Object> getTableCols() {
-            return new Vector<Object>(Arrays.asList(
+        public ArrayList<Object> getTableCols() {
+            return new ArrayList<Object>(Arrays.asList(
                 new Object[] { ACTIVE_COL_IDENTIFIER, "Name", "Citizens"}));
         }
 
@@ -977,16 +956,18 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         }
 
         @Override
-        public Vector<TableItem> toTableItems(Collection<Exclusion> lstExclusion) {
-            Vector<TableItem> vReturn = new Vector<TableItem>();
+        public ArrayList<TableItem> toTableItems(
+                Collection<Exclusion> lstExclusion) {
+
+            final ArrayList<TableItem> lstReturn = new ArrayList<TableItem>();
             for (Exclusion excl : lstExclusion) {
                 if (excl.getClass().equals(ExclusionList.class)) {
                     ExclusionList list = (ExclusionList) excl;
-                    vReturn.add(new TableItem(excl.getID(), excl
+                    lstReturn.add(new TableItem(excl.getID(), excl
                         , super.getNumCitizens(list))); // excl.isActive(),
                 }
             }
-            return vReturn;
+            return lstReturn;
         }
 
 /*        @Override
@@ -1001,12 +982,13 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         }
     }
 
-    private Vector<String> vDwarfToVString(Vector<Dwarf> vDwarf) {
-        Vector<String> vReturn = new Vector<String>(vDwarf.size());
-        for (Dwarf dwarf : vDwarf) {
-            vReturn.add(dwarf.getName());
+    private ArrayList<String> createNameList(final List<Dwarf> lstDwarf) {
+        final ArrayList<String> lstReturn = new ArrayList<String>(
+                lstDwarf.size());
+        for (final Dwarf dwarf : lstDwarf) {
+            lstReturn.add(dwarf.getName());
         }
-        return vReturn;
+        return lstReturn;
     }
 
     private class RuleExclusionTable extends AbstractExclusionEditor<ExclusionRule> { // AbstractEditor<TableItem> {
@@ -1016,16 +998,16 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         }
 
         @Override
-        public Vector<TableItem> toTableItems(Collection<Exclusion> lstExclusion) {
-            Vector<TableItem> vReturn = new Vector<TableItem>();
-            for (Exclusion excl : lstExclusion) {
+        public ArrayList<TableItem> toTableItems(Collection<Exclusion> lstExclusion) {
+            final ArrayList<TableItem> lstReturn = new ArrayList<TableItem>();
+            for (final Exclusion excl : lstExclusion) {
                 if (excl.getClass().equals(ExclusionRule.class)) {
-                    ExclusionRule rule = (ExclusionRule) excl;
-                    vReturn.add(new TableItem(excl.getID(), excl
+                    final ExclusionRule rule = (ExclusionRule) excl;
+                    lstReturn.add(new TableItem(excl.getID(), excl
                         , getNumCitizens(rule))); // excl.isActive(),
                 }
             }
-            return vReturn;
+            return lstReturn;
         }
 
         // Clears input controls
@@ -1109,10 +1091,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         }
 
         @Override
-        public Vector<Object> getTableCols() {
-            return new Vector<Object>(Arrays.asList(
-                new Object[] { ACTIVE_COL_IDENTIFIER, "Citizens", "Name", "Attribute"
-                        , "Comparison", "Value" }));  // Column identifiers
+        public ArrayList<Object> getTableCols() {
+            return new ArrayList<Object>(Arrays.asList(
+                new Object[] { ACTIVE_COL_IDENTIFIER, "Citizens", "Name"
+                        , "Attribute", "Comparison", "Value" }));  // Column identifiers
         }
 
         @Override
@@ -1130,15 +1112,16 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
                 , "exclusion.comparator", "exclusion.value"};     // MyPropertyGetter properties
         }
 
-        public Vector<String> toCitizenListFormat(Vector<Dwarf> vDwarf) {
-            return vDwarfToVString(vDwarf);
+        public ArrayList<String> toCitizenListFormat(final List<Dwarf> vDwarf) {
+            return createNameList(vDwarf);
         }
 
         @Override
-        public void setCitizenList(TableItem tableItem) {
-            Vector<Dwarf> list = new Vector<Dwarf>();
-            for (Dwarf citizen : mlstCitizen) {
-                if (((ExclusionRule) tableItem.getExclusion()).appliesTo(citizen)) {
+        public void setCitizenList(final TableItem tableItem) {
+            final ArrayList<Dwarf> list = new ArrayList<Dwarf>();
+            for (final Dwarf citizen : mlstCitizen) {
+                if (((ExclusionRule) tableItem.getExclusion()).appliesTo(
+                        citizen)) {
                     list.add(citizen);
                 }
             }
@@ -1190,8 +1173,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         //private MyTableModel<Dwarf> model;
         private MySimpleTableModel model;
         private JTable table;
-        private Vector<Object> columns = new Vector<Object>(Arrays.asList(
-                new Object[] { "Citizen" }));
+        private Object[] columns = { "Citizen" }; // List<Object> new ArrayList<Object>(Arrays.asList( new Object[]
 
         public CitizenList() {
             super();
@@ -1214,21 +1196,31 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             spReturn.setPreferredSize(new Dimension(220, 100)); // w, h
             return spReturn;
         }
-        public void setList(Vector<String> list) {
+        public void setList(List<String> list) {
             //model.setRowData(list);
-            model.setDataVector(toVVO(list), columns);  // Seems to eat sorting
+            model.setDataVector(toDataArray(list), columns);  // Seems to eat sorting; toVVO
             MyHandyTable.sortByCol(table, 0, SortOrder.ASCENDING);   // setDataVector ate our sortkeys
         }
-        private Vector<Vector<Object>> toVVO(Vector<String> list) {
-            Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(list.size());
+/*        private Vector<Vector<Object>> toVVO(final List<String> list) {
+            Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(
+                    list.size());
             for (String item : list) {
-                vReturn.add(new Vector<Object>(Arrays.asList(new Object[] { item })));
+                vReturn.add(new Vector<Object>(Arrays.asList(
+                        new Object[] { item })));
             }
             return vReturn;
+        } */
+        private Object[][] toDataArray(final List<String> list) {
+            final Object[][] aReturn = new Object[list.size()][1];
+            for (int iCount = 0; iCount < list.size(); iCount++) {
+                final String item = list.get(iCount);
+                aReturn[iCount][0] = item;
+            }
+            return aReturn;
         }
-        public void addCitizen(String citizen) {
+        public void addCitizen(final String citizen) {
             //model.addRow(citizen);
-            model.addRow(new Vector<Object>(Arrays.asList(new Object[] { citizen })));
+            model.addRow(new Object[] { citizen }); // new ArrayList<Object>(Arrays.asList(
         }
         // Removes the current selected citizen from the list
         public void removeCitizen() {
@@ -1239,11 +1231,13 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         }
         public String getSelectedCitizen() {
             String oReturn = null;
-            int tableRow = table.getSelectedRow();
+            final int tableRow = table.getSelectedRow();
             if (tableRow >=0) {
                 //oReturn = model.getRowData().get(table.convertRowIndexToModel(tableRow));
-                Vector<Object> vRow = (Vector<Object>) model.getDataVector().get(table.convertRowIndexToModel(tableRow));
-                oReturn = vRow.get(0).toString();   // "Citizen" column
+                List<Object> lstRow
+                        = (List<Object>) model.getDataVector().get(
+                        table.convertRowIndexToModel(tableRow));
+                oReturn = lstRow.get(0).toString();   // "Citizen" column
             }
 
             return oReturn;
@@ -1276,23 +1270,24 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
         moMasterDirtyHandler.setDirty(true);        // For now, make the form dirty when "Active" is changed
     }
 
-    private Vector<String> getCitizenNames(List<Dwarf> list) {
-        Vector<String> vReturn = new Vector<String>(list.size());
-        for (Dwarf dwarf : list) {
-            vReturn.add(dwarf.getName());
+    private ArrayList<String> getCitizenNames(final List<Dwarf> list) {
+        final ArrayList<String> lstReturn = new ArrayList<String>(list.size());
+        for (final Dwarf dwarf : list) {
+            lstReturn.add(dwarf.getName());
         }
-        return vReturn;
+        return lstReturn;
     }
 
-    private Vector<String> merge(String entry, String[] array) {
-        Vector<String> vReturn = new Vector<String>(Arrays.asList(array));
-        vReturn.add(0, entry);
-        return vReturn;
+    private ArrayList<String> merge(final String entry, final String[] array) {
+        final ArrayList<String> lstReturn = new ArrayList<String>(
+                Arrays.asList(array));
+        lstReturn.add(0, entry);
+        return lstReturn;
     }
 
     private JComboBox createAttributeCombo() {
-        JComboBox cmbReturn = new JComboBox(merge(UNSELECTED_ATTRIBUTE
-                , masDwarfProperties));
+        final JComboBox cmbReturn = new JComboBox(merge(
+                UNSELECTED_ATTRIBUTE, masDwarfProperties).toArray());
         cmbReturn.setPrototypeDisplayValue("NicknameX");    // Add "X" because otherwise Nimbus will put "..." instead of last two characters
         cmbReturn.addActionListener(new ActionListener() {
             @Override
@@ -1336,9 +1331,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
             combo = new JComboBox(model);
             return combo;
         }
-        public void setCitizenList(Vector<Dwarf> lstCitizen) {
+        public void setCitizenList(List<Dwarf> lstCitizen) {
             model = new SortedComboBoxModel<Dwarf>(
-                    getCitizenNames(lstCitizen), Collator.getInstance());
+                    getCitizenNames(lstCitizen).toArray()
+                    , Collator.getInstance()); //new Vector(
             combo.setModel(model);
         }
         public Dwarf getSelectedCitizen() {
@@ -1382,10 +1378,14 @@ public class ExclusionPanel extends JPanel implements DirtyForm, DirtyListener {
     } */
 
     // If children are dirty, consider the whole form to be dirty
-    @Override
-    public void dirtyChanged(boolean newDirtyState) {
-        moMasterDirtyHandler.setDirty(
-                moMasterDirtyHandler.isDirty() || newDirtyState);
+    private DirtyListener createDirtyListener() {
+        return new DirtyListener() {
+            @Override
+            public void dirtyChanged(boolean newDirtyState) {
+                moMasterDirtyHandler.setDirty(
+                        moMasterDirtyHandler.isDirty() || newDirtyState);
+            }
+        };
     }
 
     // Sets children clean when set clean
