@@ -39,7 +39,8 @@ public class ExclusionList extends Exclusion
             return mvCitizenNames.contains(dwarf.getName());
         }
         else {
-            System.out.println("[ExclusionList] Class of object is not Dwarf");
+            DwarfOrganizer.showInfo(null, "[ExclusionList.appliesTo]"
+                    + " Class of object is not Dwarf", "Problem");
             return false;
         }
     }

@@ -494,6 +494,7 @@ public class ResultsView { //  implements ActionListener {
         MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
     }
     // Sets the current table filter and adjusts row height as necessary.
+    // TODO: Why is this so slow now?
     private int setCurrentTableFilter(final JTable table, final RowFilter rf) {
         final TableRowSorter sorter = (TableRowSorter) table.getRowSorter(); //new TableRowSorter(oModel);
         sorter.setRowFilter(rf);

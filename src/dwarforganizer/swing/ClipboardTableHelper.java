@@ -9,8 +9,11 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingUtilities;
 import myutils.MyHandyTable;
 
 /**
@@ -28,6 +31,9 @@ import myutils.MyHandyTable;
  * @see javax.swing.JTable
  */
 public class ClipboardTableHelper {
+
+    private static final Logger logger = Logger.getLogger(
+            ClipboardTableHelper.class.getName());
 
     private static final String PASTE_UNSUPPORTED_MSG = "Paste is currently"
             + " unsupported for multiple tables";
@@ -57,7 +63,7 @@ public class ClipboardTableHelper {
         mbAllowCopy = allowCopy;
         mbAllowCut = allowCut;
         if (table.length > 1 && allowPaste) {
-            System.err.println(PASTE_UNSUPPORTED_MSG);
+            logger.warning(PASTE_UNSUPPORTED_MSG);
             mbAllowPaste = false;
         }
         else
@@ -99,10 +105,23 @@ public class ClipboardTableHelper {
         MyHandyTable.copyToClipboard(tables, true);
     }
     public void doPaste() {
-        if (tables.length > 1)
-            System.err.println(PASTE_UNSUPPORTED_MSG);
+        if (tables.length > 1) {
+            logger.warning(PASTE_UNSUPPORTED_MSG);
+        }
         cancelEdit();
         pasteFromClipboard();
+    }
+    private void warn(final String message, final Exception e) {
+        logger.log(Level.SEVERE, message, e);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(null, message
+                        , "ClipboardTableHelper Warning"
+                        , JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
     // TODO: Consider moving to MyHandyTable
     private void pasteFromClipboard() {
@@ -113,9 +132,8 @@ public class ClipboardTableHelper {
         try {
             pasteString = (String) (CLIPBOARD.getContents(
                     this).getTransferData(DataFlavor.stringFlavor));
-        } catch (final Exception ignore) {
-            JOptionPane.showMessageDialog(null, "Invalid Paste Type"
-                    , "Invalid Paste Type", JOptionPane.ERROR_MESSAGE);
+        } catch (final Exception e) {
+            warn("Invalid paste type", e);
             return;
         }
 

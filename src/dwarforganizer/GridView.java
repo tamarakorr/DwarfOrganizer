@@ -8,6 +8,7 @@ package dwarforganizer;
 import dwarforganizer.deepclone.DeepCloneable;
 import dwarforganizer.swing.HideableTableColumnModel;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.table.TableColumnModel;
 
@@ -17,7 +18,8 @@ import javax.swing.table.TableColumnModel;
  * See MIT license in license.txt
  */
 public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
-
+    private static final Logger logger = Logger.getLogger(
+            GridView.class.getName());
     public static final String UNSAVED_VIEW_NAME = "Unsaved View";
 
     private String mstrName;
@@ -132,7 +134,7 @@ public class GridView implements MyPropertyGetter, DeepCloneable<GridView> {
     private void hideColumns(final TableColumnModel columnModel) { //JTable table
         if (! HideableTableColumnModel.class.isAssignableFrom(
                 columnModel.getClass())) {
-            System.err.println("[GridView] Could not set column visibility: "
+            logger.severe("[GridView] Could not set column visibility: "
                     + "table must use HideableTableColumnModel.");
         }
         else {

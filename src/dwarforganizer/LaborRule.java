@@ -6,6 +6,7 @@
 package dwarforganizer;
 
 import dwarforganizer.deepclone.DeepCloneable;
+import java.util.logging.Logger;
 
 /**
  *
@@ -13,6 +14,8 @@ import dwarforganizer.deepclone.DeepCloneable;
  * See MIT license in license.txt
  */
 public class LaborRule implements MyPropertyGetter, DeepCloneable<LaborRule> {
+    private static final Logger logger = Logger.getLogger(
+            LaborRule.class.getName());
     private String type;
     private String firstLabor;
     private String secondLabor;
@@ -78,7 +81,7 @@ public class LaborRule implements MyPropertyGetter, DeepCloneable<LaborRule> {
         else {
             final String strReturn = "[LaborRule] Unknown property: "
                     + propName;
-            System.err.println(strReturn);
+            logger.severe(strReturn);
             return strReturn;
         }
     }

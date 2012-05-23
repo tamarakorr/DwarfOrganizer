@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.swing.*;
 
 /**
@@ -32,6 +33,9 @@ import javax.swing.*;
  */
 public class ViewManagerUI extends AbstractEditor<GridView>
         implements DirtyForm {
+
+    private static final Logger logger = Logger.getLogger(
+            ViewManagerUI.class.getName());
 
     private JPanel uiPanel;
     private JTextField txtName;
@@ -167,9 +171,9 @@ public class ViewManagerUI extends AbstractEditor<GridView>
         // Ensure no other view has the same name:
         for (final GridView view : mlstViews)
             if (view.getName().equals(txtName.getText())) {
-                JOptionPane.showMessageDialog(uiPanel
+                DwarfOrganizer.showInfo(uiPanel
                         , "There is already a view with that name."
-                        , "Cannot Update", JOptionPane.WARNING_MESSAGE);
+                        , "Cannot Update");
                 return false;
             }
         return true;
@@ -179,7 +183,7 @@ public class ViewManagerUI extends AbstractEditor<GridView>
     public GridView createRowData(final boolean isNew) {
 
         if (isNew)
-            System.err.println("[ViewManagerUI] New views are unsupported");
+            logger.severe("[ViewManagerUI] New views are unsupported");
 
         final String name = txtName.getText();
 

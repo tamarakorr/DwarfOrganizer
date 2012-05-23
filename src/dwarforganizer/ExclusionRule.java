@@ -97,13 +97,16 @@ public class ExclusionRule extends Exclusion
                 return intObj != intThis;
         }
         else {
-            System.out.println("[Exclusion] Unknown value class: "
-                    + valueObj.getClass().getSimpleName());
-            System.out.println(valueObj + " " + valueThis);
+            final String message = "[Exclusion.compareWith]"
+                    + " Unknown value class: "
+                    + valueObj.getClass().getSimpleName()
+                    + "\n" + valueObj + " " + valueThis;
+            DwarfOrganizer.showInfo(null, message, "Problem");
             return false;
         }
 
-        System.out.println("Unsupported comparator: " + this.comparator);
+        DwarfOrganizer.showInfo(null, "[ExclusionRule.compareWith]"
+                + " Unsupported comparator: " + this.comparator, "Problem");
         return false;
     }
 

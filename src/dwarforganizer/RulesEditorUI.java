@@ -295,8 +295,8 @@ public class RulesEditorUI extends JPanel implements DirtyForm {
             return true;
         }
         private void warn(final String messageBody) {
-            JOptionPane.showMessageDialog(dialogParent, messageBody
-                    , "Cannot add rule", JOptionPane.OK_OPTION);
+            DwarfOrganizer.showInfo(dialogParent, messageBody
+                    , "Cannot add rule");
         }
 
         @Override

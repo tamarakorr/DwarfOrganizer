@@ -5,6 +5,8 @@
 
 package dwarforganizer;
 
+import java.util.logging.Logger;
+
 /**
  * Allows incremented requests for incrementing states and doing
  * something at a threshold (such as accumulating requests to show/hide
@@ -14,6 +16,9 @@ package dwarforganizer;
  * See MIT license in license.txt
  */
 public class StateIncrementHandler {
+    private static final Logger logger = Logger.getLogger(
+            StateIncrementHandler.class.getName());
+
     protected enum DefaultState {
         NEGATIVE_STATE, POSITIVE_STATE
     }
@@ -41,7 +46,7 @@ public class StateIncrementHandler {
     public void decrement() {
 
         if (thresholdFunctions == null) {
-            System.err.println("[StateIncrementHandler] Must be initialized"
+            logger.severe("[StateIncrementHandler] Must be initialized"
                     + " before incrementing.");
             return;
         }
@@ -54,7 +59,7 @@ public class StateIncrementHandler {
     }
     public void increment() {
         if (thresholdFunctions == null) {
-            System.err.println("[StateIncrementHandler] Must be initialized"
+            logger.severe("[StateIncrementHandler] Must be initialized"
                     + " before incrementing.");
             return;
         }

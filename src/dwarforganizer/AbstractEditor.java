@@ -13,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -35,6 +37,9 @@ import myutils.MyHandyTable;
  */
 public abstract class AbstractEditor<T extends MyPropertyGetter>
         implements DirtyForm {
+
+    private static final Logger logger = Logger.getLogger(
+            AbstractEditor.class.getName());
 
     private JTable moTable;
     private MyTableModel moModel; // DefaultTableModel
@@ -163,8 +168,8 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
             }
             else
                 return false;
-        } catch (Exception e) {
-            System.err.println(e.getMessage() + " Failed to add or update row.");
+        } catch (final Exception e) {
+            logger.log(Level.SEVERE, "Failed to add row.", e);
             return false;
         }
     }
@@ -176,7 +181,7 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
                 if (mbClearAfterEdit) clearInput();
             }
         } catch (final Exception e) {
-            System.err.println(e.getMessage() + " Failed to update row.");
+            logger.log(Level.SEVERE, "Failed to update row.", e);
             return false;
         }
 

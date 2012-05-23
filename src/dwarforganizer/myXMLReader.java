@@ -8,6 +8,8 @@ package dwarforganizer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -20,6 +22,8 @@ import org.xml.sax.SAXException;
  * See MIT license in license.txt
  */
 public class MyXMLReader {
+    private static final Logger logger = Logger.getLogger(
+            MyXMLReader.class.getName());
 
     private Document mDoc;
 
@@ -34,14 +38,14 @@ public class MyXMLReader {
             mDoc = docBuilder.parse(file);
 
         } catch (final ParserConfigurationException e) {
-            System.err.println(e);
+            logger.log(Level.SEVERE, null, e);
         } catch (final SAXException e) {
-            System.err.println(e);
+            logger.log(Level.SEVERE, null, e);
         } catch (final IOException e) {
-            System.err.println(e);
+            logger.log(Level.SEVERE, null, e);
         } catch (final NullPointerException e) {
-            System.err.println("Null pointer exception for file = " + file.getName());
-            e.printStackTrace(System.out);
+            logger.log(Level.SEVERE, "Null pointer exception for file = {0}"
+                    , file.getName());
         }
     }
     public MyXMLReader(final InputStream is) {
@@ -51,11 +55,11 @@ public class MyXMLReader {
             mDoc = docBuilder.parse(is);
 
         } catch (final ParserConfigurationException e) {
-            System.err.println(e);
+            logger.log(Level.SEVERE, null, e);
         } catch (final SAXException e) {
-            System.err.println(e);
+            logger.log(Level.SEVERE, null, e);
         } catch (final IOException e) {
-            System.err.println(e);
+            logger.log(Level.SEVERE, null, e);
         }
     }
     public Document getDocument() {

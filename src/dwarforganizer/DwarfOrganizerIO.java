@@ -33,11 +33,12 @@ import org.xml.sax.SAXException;
  */
 public class DwarfOrganizerIO {
 
-    public static final boolean DEFAULT_EXCLUSION_ACTIVE = true;
+    private static final Logger logger = Logger.getLogger(
+            DwarfOrganizerIO.class.getName());
 
+    public static final boolean DEFAULT_EXCLUSION_ACTIVE = true;
     private static final String USER_FILES_DIR = "config/";
     private static final String DEFAULT_FILES_DIR = "config/default/";
-
     private static final String GROUP_LIST_FILE_NAME = "group-list.txt";
     private static final String LABOR_LIST_FILE_NAME = "labor-list.txt";
     private static final String RULE_FILE_NAME = "rules.txt";
@@ -83,8 +84,9 @@ public class DwarfOrganizerIO {
         if (new File(defaultFile).exists())
             return defaultFile;
         else {
-            System.err.println("User file and default file for " + fileName
-                    + " do not exist");
+            logger.log(Level.SEVERE
+                    , "User file and default file for {0} do not exist"
+                    , fileName);
             return fileName;
         }
     }
@@ -104,9 +106,10 @@ public class DwarfOrganizerIO {
                     , "\t", 1);
             for (final String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
-                    System.err.println("A line in group-list.txt contains an"
-                            + " inappropriate"
-                            + " number of columns: " + array.length);
+                    logger.log(Level.SEVERE
+                            , "A line in group-list.txt contains an"
+                            + " inappropriate number of columns: {0}"
+                            , array.length);
                 else
                     vReturn.add(new LaborGroup(array[0], array[1]
                             , Integer.parseInt(array[2])
@@ -135,9 +138,9 @@ public class DwarfOrganizerIO {
 
             for (final String[] array : vData) {
                 if (array.length != EXPECTED_COLUMNS)
-                    System.err.println("A line in " + LABOR_LIST_FILE_NAME
-                            + " contains an inappropriate"
-                            + " number of columns: " + array.length);
+                    logger.log(Level.SEVERE,"A line in " + LABOR_LIST_FILE_NAME
+                            + " contains an inappropriate number of columns:"
+                            + " {0}", array.length);
                 else
                     vReturn.add(new Labor(array[0], array[1], array[2]));
             }
@@ -191,7 +194,7 @@ public class DwarfOrganizerIO {
                 if (! jobs[LABOR_RULE_INDEX_TYPE].equals("COMMENT")) {
                     //System.out.println(jobs.length);
                     if (jobs.length < LABOR_RULE_MIN_COLS) {
-                        System.err.println("Warning: A line in "
+                        logger.severe("Warning: A line in "
                                 + RULE_FILE_NAME + " is improperly formatted.");
                     }
                     else {
@@ -232,7 +235,6 @@ public class DwarfOrganizerIO {
             DwarfOrganizer.warn(ERROR_MESSAGE, e);
         } catch (final Exception e) {
             DwarfOrganizer.warn(ERROR_MESSAGE, e);
-            e.printStackTrace(System.out);
         }
     }
     protected JobBlacklist getBlacklist() {
@@ -289,8 +291,8 @@ public class DwarfOrganizerIO {
                 //    + fields[2]);
             }
             else {
-                System.err.println("Warning: Unknown labor rule type "
-                        + laborRule.getType());
+                logger.log(Level.SEVERE, "Warning: Unknown labor rule type {0}"
+                        , laborRule.getType());
             }
         }
     }
@@ -307,7 +309,7 @@ public class DwarfOrganizerIO {
             final FileWriter fstream = new FileWriter(getOutputFile(
                     RULE_FILE_NAME));
             final BufferedWriter out = new BufferedWriter(fstream);
-            System.out.println("Writing " + RULE_FILE_NAME);
+            logger.info("Writing " + RULE_FILE_NAME);
 
             // Write the first line
             out.write(RULES_NOTE);
@@ -315,18 +317,9 @@ public class DwarfOrganizerIO {
             out.flush();
 
             // Write all subsequent lines
-            //for (String[] line : vData) {
             for (final LaborRule line : vData) {
-//                boolean bFirst = true;
                 out.write(line.getType() + "\t" + line.getFirstLabor() + "\t"
                         + line.getSecondLabor() + "\t" + line.getComment());
-//                for (String field : line) {
-//                    if (field != null) {
-//                        if (! bFirst) out.write("\t");
-//                        out.write(field);
-//                        bFirst = false;
-//                    }
-//                }
                 out.newLine();
                 out.flush();
             }
@@ -339,10 +332,8 @@ public class DwarfOrganizerIO {
             createRuleStructures(mvRuleFile);
 
         } catch (final IOException e) {
-            e.printStackTrace(System.out);
-            System.err.println("Failed to write " + RULE_FILE_NAME);
+            logger.log(Level.SEVERE, "Failed to write " + RULE_FILE_NAME, e);
         }
-
     }
 
     // DwarfIO has been imported from DwarfListWindow and is a little more messy
@@ -415,11 +406,10 @@ public class DwarfOrganizerIO {
                 final NodeList nodes
                         = xmlFileReader.getDocument().getElementsByTagName(
                         "Creature");
-                System.out.println("Dwarves.xml contains " + nodes.getLength()
-                        + " creatures.");
+                logger.log(Level.INFO, "Dwarves.xml contains {0} creatures."
+                        , nodes.getLength());
                 parseDwarves(nodes);
             } catch (final Exception e) {
-                //System.err.println(e.getMessage() + " Failed to read dwarves.XML");
                 DwarfOrganizer.warn("Failed to read the last dwarves.XML", e);
             }
         }
@@ -547,7 +537,6 @@ public class DwarfOrganizerIO {
                 DwarfOrganizer.warn(ERROR_MESSAGE, e);
             } catch (final Exception e) {
                 DwarfOrganizer.warn(ERROR_MESSAGE, e);
-                e.printStackTrace(System.out);
             }
         }
 
@@ -687,8 +676,9 @@ public class DwarfOrganizerIO {
                                     , strTrait, intMin, intMax));
                         }
                         else
-                            System.err.println("classItem is not of a recognized type."
-                                    + " Ignoring skill " + strName);
+                            logger.log(Level.SEVERE,"classItem is not of a"
+                                    + " recognized type. Ignoring skill {0}"
+                                    , strName);
                     }
                 }
 
@@ -821,10 +811,9 @@ public class DwarfOrganizerIO {
                     }
 
                 } catch (final java.lang.NullPointerException ignore) {
-                    System.err.println(
-                            "Skills are not present in the given dwarves.xml"
-                            + " file. " + oDwarf.getName()
-                            + " will not have skill levels.");
+                    logger.log(Level.SEVERE, "Skills are not present in the"
+                            + " given dwarves.xml file. {0} will not have skill"
+                            + " levels.", oDwarf.getName());
                 }
 
                 // Simple skill potentials
@@ -883,7 +872,7 @@ public class DwarfOrganizerIO {
             if (matcher.find())
                 return Long.parseLong(matcher.group(2));
             else
-                System.err.println("Pattern not matched.");
+                logger.severe("Pattern not matched.");
 
             return 0;
         }
@@ -942,14 +931,13 @@ public class DwarfOrganizerIO {
                 }
 
             } catch (final java.lang.NullPointerException ignore) {
-                System.err.println(
-                        "Error encountered when retrieving XML value "
-                        + keyValue + " by key.");
+                logger.log(Level.SEVERE, "Error encountered when retrieving XML"
+                        + " value {0} by key.", keyValue);
                 return nullValue;
             }
 
-            System.err.println(tagName + ":" + keyName + ":" + valueName
-                    + " was not found in xml data");
+            logger.log(Level.SEVERE, "{0}:{1}:{2} was not found in xml data"
+                    , new Object[]{tagName, keyName, valueName});
             return nullValue;
         }
         private String getTagList(final Element creature
@@ -979,15 +967,13 @@ public class DwarfOrganizerIO {
             in.close();
 
         } catch (final FileNotFoundException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
-            ex.printStackTrace(System.out);
-            strReturn += "Error: License not found.";
+            final String message = "Error: License not found.";
+            logger.log(Level.SEVERE, message, ex);
+            strReturn += message;
         } catch (final IOException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
-            ex.printStackTrace(System.out);
-            strReturn += "Error: Failed to read license.";
+            final String message = "Error: Failed to read license.";
+            logger.log(Level.SEVERE, message, ex);
+            strReturn += message;
         }
         return strReturn;
     }
@@ -995,6 +981,7 @@ public class DwarfOrganizerIO {
     // Loads job settings from file
     public void readJobSettings(final File file, final List<Job> vLaborSettings
             , final String defaultReminder) {
+
         final String ERROR_MESSAGE = "Failed to load job file.";
 
         try {
@@ -1019,16 +1006,15 @@ public class DwarfOrganizerIO {
                 }
 
                 else
-                    System.err.println("WARNING: Job '" + job.getName()
-                            + "' was not found"
+                    logger.log(Level.SEVERE, "WARNING: Job ''{0}"
+                            + "'' was not found"
                             + " in the file. Its settings will be the"
-                            + " defaults.");
+                            + " defaults.", job.getName());
             }
-        } catch (final FileNotFoundException ignore) {
-            System.err.println(ERROR_MESSAGE);
+        } catch (final FileNotFoundException e) {
+            logger.log(Level.SEVERE, ERROR_MESSAGE, e);
         } catch (final Exception e) {
-            System.err.println(ERROR_MESSAGE);
-            e.printStackTrace(System.out);
+            logger.log(Level.SEVERE, ERROR_MESSAGE, e);
         }
     }
 
@@ -1122,16 +1108,13 @@ public class DwarfOrganizerIO {
             transformer.transform(source, result);
 
         } catch (final ParserConfigurationException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
             return false;
         } catch (final TransformerConfigurationException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
             return false;
         } catch (final TransformerException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
             return false;
         }
 
@@ -1206,16 +1189,10 @@ public class DwarfOrganizerIO {
                 returnObject = processDocument(doc, returnObject);
 
             } catch (final ParserConfigurationException ex) {
-                Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
-                        Level.SEVERE, null, ex);
                 DwarfOrganizer.warn(errorMessage, ex);
             } catch (final SAXException ex) {
-                Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
-                        Level.SEVERE, null, ex);
                 DwarfOrganizer.warn(errorMessage, ex);
             } catch (final IOException ex) {
-                Logger.getLogger(DwarfOrganizerIO.class.getName()).log(
-                        Level.SEVERE, null, ex);
                 DwarfOrganizer.warn(errorMessage, ex);
             }
 
@@ -1301,16 +1278,13 @@ public class DwarfOrganizerIO {
             transformer.transform(source, result);
 
         } catch (final ParserConfigurationException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
             return false;
         } catch (final TransformerConfigurationException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
             return false;
         } catch (final TransformerException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
             return false;
         }
         return true;        // Success
@@ -1371,8 +1345,8 @@ public class DwarfOrganizerIO {
                     lstReturn.add(srf.createExclusion());
 
                 } catch (final Exception e) {
-                    System.err.println(e.getMessage()
-                            + " Failed to read a(n) " + tagName);
+                    logger.log(Level.SEVERE, "Failed to read a(n) {0}"
+                            , tagName);
                 }
             }
         }
@@ -1463,14 +1437,11 @@ public class DwarfOrganizerIO {
                     , version));
 
         } catch (final ParserConfigurationException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
         } catch (final SAXException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
         } catch (final IOException ex) {
-            Logger.getLogger(DwarfOrganizerIO.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
 
         return vReturn;

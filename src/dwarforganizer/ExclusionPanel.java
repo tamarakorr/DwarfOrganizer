@@ -19,6 +19,8 @@ import java.awt.event.*;
 import java.text.Collator;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.ListSelectionEvent;
@@ -37,6 +39,9 @@ import myutils.*;
  * See MIT license in license.txt
  */
 public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyListener
+
+    private static final Logger logger = Logger.getLogger(
+            ExclusionPanel.class.getName());
 
     private enum ExclusionAction { ADD, UPDATE, DELETE, EDIT }
 
@@ -470,8 +475,10 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
                         editor.deleteItem();
                     else if (action.equals(ExclusionAction.EDIT))
                         editor.editItem();
-                    else
-                        System.err.println("Unknown ExclusionAction: " + action);
+                    else {
+                        logger.log(Level.SEVERE, "Unknown ExclusionAction: {0}"
+                                , action);
+                    }
                 }
             });
         }
@@ -583,10 +590,14 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
                 else if (prop.startsWith("exclusion."))
                     getExclusion().setProperty(
                             propName.replace("exclusion.", ""), value);
-                else
-                    System.err.println("Unknown TableItem property: " + propName);
-            } catch (Exception e) {
-                System.err.println(e.getMessage() + " Failed to set TableItem property.");
+                else {
+                    logger.log(Level.SEVERE, "Unknown TableItem property: {0}"
+                            , propName);
+                }
+            } catch (Exception ignore) {
+                logger.log(Level.SEVERE
+                        , "Failed to set TableItem property: {0} = {1}"
+                        , new Object[]{propName, value.toString()});
             }
         }
     }

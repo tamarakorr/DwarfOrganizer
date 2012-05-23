@@ -9,8 +9,9 @@ import dwarforganizer.MyPropertyGetter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.SwingUtilities;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
+import myutils.MyThreadUtils;
 
 /**
  * A less simple table model.
@@ -25,6 +26,8 @@ import javax.swing.table.AbstractTableModel;
 public class MyTableModel<T extends MyPropertyGetter>
         extends AbstractTableModel {
 
+    private static final Logger logger = Logger.getLogger(
+            MyTableModel.class.getName());
     private Object[] maoColumnHeadings;
     private List<Class> mlstColumnClass;
     private List<String> mlstColumnPropertyNames;
@@ -126,18 +129,6 @@ public class MyTableModel<T extends MyPropertyGetter>
             }
         });
     }
-    private void runSynchronousOnEDT(final Runnable runnable) {
-        if (SwingUtilities.isEventDispatchThread())
-            runnable.run();
-        else {
-            try {
-                SwingUtilities.invokeAndWait(runnable);
-            } catch (final Exception e) {
-                System.err.println(e.getMessage()
-                        + "Failed to update table correctly");
-            }
-        }
-    }
 
     public boolean containsKey(final long key) {
         boolean bReturn = false;
@@ -169,7 +160,8 @@ public class MyTableModel<T extends MyPropertyGetter>
                 fwf.fireIt();
             }
         };
-        runSynchronousOnEDT(runnable);
+        MyThreadUtils.runSynchronousOnEDT(runnable
+                , "Failed to update table correctly", logger);
     }
     private void fireDeleted(final int firstIndex, final int lastIndex) {
         runFireOnEDT(new FiringFunction() {

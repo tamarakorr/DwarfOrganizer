@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
@@ -30,7 +32,8 @@ import javax.swing.event.InternalFrameListener;
  * See MIT license in license.txt
  */
 public class MenuCombiner {
-
+    private static final Logger logger = Logger.getLogger(
+            MenuCombiner.class.getName());
     private PriorityQueue<MenuQueue> mqMainQueue;
 
     // Comparators are created by init()
@@ -406,9 +409,9 @@ public class MenuCombiner {
             , final int menusLength) {
 
         if (orderingLength != menusLength) {
-            System.err.println("The ordering array must have the same number of"
-                    + " elements as the menu count (" + orderingLength + "!="
-                    + menusLength);
+            logger.log(Level.SEVERE,"The ordering array must have the same"
+                    + " number of elements as the menu count ({0}!={1}"
+                    , new Object[]{orderingLength, menusLength});
             return false;
         }
         return true;

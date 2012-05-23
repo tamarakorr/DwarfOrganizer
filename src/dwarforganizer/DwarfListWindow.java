@@ -39,6 +39,8 @@ import myutils.MyTCRStripedHighlightCheckBox;
  */
 public class DwarfListWindow extends JPanel implements BroadcastListener {
 
+    private static final Logger logger = Logger.getLogger(
+            DwarfListWindow.class.getName());
     private static final int INCLUDE_COLUMN = 0;  // Index of the "Include" column in the table
     private static final String DEFAULT_VIEW_NAME = "Default View";
     private static final int BABY_AGE_UNDER = 1;
@@ -617,11 +619,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             ArrayList<String> lstSecondaryCols;
 
             if (mhtStats == null) {
-                System.err.println("Failed to create column groups: stat table is null");
+                logger.severe("Failed to create column groups: stat table is"
+                        + " null");
                 return new HashMap<String, ColumnGroup>();
             }
             if (mhtSkills == null) {
-                System.err.println("Failed to create column groups: skill table is null");
+                logger.severe("Failed to create column groups: skill table is"
+                        + " null");
                 return new HashMap<String, ColumnGroup>();
             }
 
@@ -1110,7 +1114,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     }
     // Returns false if cancelled by user; true otherwise.
     private boolean saveCurrentView() {
-
         final Object response = JOptionPane.showInputDialog(this
                 , "Enter a name for this view:", "Save View"
                 , JOptionPane.PLAIN_MESSAGE);
@@ -1126,8 +1129,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     || JOptionPane.CLOSED_OPTION == overwrite)
                 return false;
             else {
-                System.out.println("overwrite = " + overwrite
-                        + "; Deleting view '" + name + "'");
+                logger.log(Level.INFO, "overwrite = {0}; Deleting view ''{1}''"
+                        , new Object[]{overwrite, name});
                 moViews.remove(name);
             }
         }
@@ -1180,7 +1183,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                     || response == JOptionPane.CLOSED_OPTION) {
                 return false;
             }
-            else if (response == JOptionPane.YES_OPTION) {
+
+            if (response == JOptionPane.YES_OPTION) {
                 if (! saveCurrentView()) // Same return values as this function
                     return false;
             }
@@ -1188,8 +1192,8 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 // Do nothing
             }
             else {
-                System.err.println("[DwarfListWindow.checkForChanges()]"
-                        + " Unknown response from JOptionPane: " + response);
+                logger.log(Level.SEVERE,"[DwarfListWindow.checkForChanges()]"
+                        + " Unknown response from JOptionPane: {0}", response);
             }
         }
 
@@ -1278,7 +1282,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             currentLevelFormat = newFormat;
         }
         else {
-            System.err.println("Unknown format option: " + which);
+            logger.log(Level.SEVERE, "Unknown format option: {0}", which);
         }
         resizeColumns(which);   // Resize relevant columns
 
@@ -1332,8 +1336,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 }
             }
         }
-        else
-            System.err.println("Unknown format option: " + which);
+        else {
+            logger.log(Level.SEVERE, "Unknown format option: {0}", which);
+        }
     }
     private interface ColumnNameGetter {
         public String getColumnName(final String key);
@@ -1522,18 +1527,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             out.flush();
 
         } catch (final IOException ex) {
-            ex.printStackTrace(System.out);
-            Logger.getLogger(DwarfListWindow.class.getName()).log(Level.SEVERE
-                    , null, ex);
+            logger.log(Level.SEVERE, null, ex);
         } catch (final Exception ex) {
-            ex.printStackTrace(System.out);
+            logger.log(Level.SEVERE, null, ex);
         } finally {
             try {
                 fstream.close();
             } catch (final IOException ex) {
-                ex.printStackTrace(System.out);
-                Logger.getLogger(DwarfListWindow.class.getName()).log(
-                        Level.SEVERE, null, ex);
+                logger.log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -1722,13 +1723,16 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                    setRangedCombatLevels(value.toString());
                else if (prop.equals("closecombatlevels"))
                    setCloseCombatLevels(value.toString());
-               else
-                   System.err.println("[DwarfListItem] Unknown setProperty: "
-                           + propName);
+               else {
+                   logger.log(Level.SEVERE
+                           , "[DwarfListItem] Unknown setProperty: {0}"
+                           , propName);
+               }
 
-            } catch (final Exception e) {
-                System.err.println("[DwarfListItem] Failed to set property "
-                        + propName);
+            } catch (final Exception ignore) {
+                logger.log(Level.SEVERE
+                        , "[DwarfListItem] Failed to set property {0}"
+                        , propName);
             }
         }
     }
@@ -1847,14 +1851,14 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                         = (Collection<Exclusion>) message.getTarget();
                 applyExclusions(lstExclusion);
             } catch (final Exception e) {
-                System.err.println(e.getMessage()
-                        + " [Dwarf List]Failed to apply exclusions.");
+                logger.log(Level.SEVERE
+                        , "[Dwarf List] Failed to apply exclusions.", e);
             }
         }
         else {
-            System.err.println(
-                    "[Dwarf List]Unknown broadcast message received: "
-                    + message.getSource());
+            logger.log(Level.SEVERE
+                    , "[Dwarf List]Unknown broadcast message received: {0}"
+                    , message.getSource());
         }
     }
     public void updateViews(final List<GridView> newViews) {

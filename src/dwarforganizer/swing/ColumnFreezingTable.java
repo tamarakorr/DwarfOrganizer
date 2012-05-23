@@ -10,6 +10,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.TableColumn;
@@ -45,7 +46,8 @@ import myutils.MyTableWidthAdjuster;
  * See MIT license in license.txt
  */
 public class ColumnFreezingTable {
-
+    private static final Logger logger = Logger.getLogger(
+            ColumnFreezingTable.class.getName());
     private static final int DEFAULT_SNAP = 5;
     private static final int DIVIDER_SIZE = 6;
 
@@ -69,17 +71,17 @@ public class ColumnFreezingTable {
         // Otherwise a scrollbar shown in one pane but not the other
         // puts the row display out of sync
         if (rightPane.getHorizontalScrollBarPolicy()
-                == ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-            System.err.println("[ColumnFreezingTable] Invalid horizontal"
+                == ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED) {
+            logger.severe("[ColumnFreezingTable] Invalid horizontal"
                     + " scrollbar policy: The object will have unexpected"
                     + " behavior");
-
+        }
         rightTable = (JTable) rightPane.getViewport().getView();
-        if (rightTable.getUpdateSelectionOnSort())
-            System.err.println("[ColumnFreezingTable] Invalid value for"
+        if (rightTable.getUpdateSelectionOnSort()) {
+            logger.severe("[ColumnFreezingTable] Invalid value for"
                     + " table.getUpdateSelectionOnSort() : true. Selections"
                     + " will show unexpected behavior on sorting.");
-
+        }
         // .setAutoCreateColumnsFromModel(false); May be important
 
         // Set column model and create it from rightTable's columns

@@ -6,6 +6,8 @@
 package dwarforganizer.swing;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTable;
 import javax.swing.RowSorter.SortKey;
 
@@ -25,6 +27,9 @@ import javax.swing.RowSorter.SortKey;
         // @see ExclusionPanel.java for an example of how it is used
  */
 public class SortKeySwapper {
+
+    private static final Logger logger = Logger.getLogger(
+            SortKeySwapper.class.getName());
 
     private List<SortKey> moKeyHolder = null;
     private JTable moTable;
@@ -49,10 +54,9 @@ public class SortKeySwapper {
                             moTable.getRowSorter().getSortKeys();
                     moTable.getRowSorter().setSortKeys(temp);
                 } catch (final NullPointerException e) {
-                    e.printStackTrace(System.out);
-                    System.err.println("Failed to swap sort keys. Did you"
+                    logger.log(Level.SEVERE, "Failed to swap sort keys. Did you"
                             + " remember to do SortKeySwapper.setTable() before"
-                            + " adding any rows?");
+                            + " adding any rows?", e);
                 }
             }
         }

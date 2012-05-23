@@ -35,6 +35,7 @@ import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
 import myutils.MyHandyOptionPane;
 import myutils.MyHandyWindow;
+import myutils.MySimpleLogDisplay;
 import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
@@ -46,11 +47,15 @@ import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
  */
 public class MainWindow extends JFrame implements BroadcastListener { // implements DirtyListener
 
+    private static final Logger logger = Logger.getLogger(
+            MainWindow.class.getName());
     protected static final long MAX_SKILL_LEVEL = 20L;
     //private static final String DEFAULT_DWARVES_XML
     //        = "C://DwarfFortress//DwarfGuidanceCounselor//0.0.6//Dwarves.xml";
-    private static final String DEFAULT_DWARVES_XML = "samples/dwarves/sample-7-dwarves.xml";
-    private static final String TUTORIAL_FILE = "tutorial/ReadmeSlashTutorial.html";
+    private static final String DEFAULT_DWARVES_XML
+            = "samples/dwarves/sample-7-dwarves.xml";
+    private static final String TUTORIAL_FILE
+            = "tutorial/ReadmeSlashTutorial.html";
 
     // Keys for internal frames
     private static final String INTERNAL_DWARF_LIST = "Dwarf List";
@@ -58,6 +63,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private static final String INTERNAL_RULES_EDITOR = "Rules Editor";
     private static final String INTERNAL_EXCLUSIONS = "Exclusions";
     private static final String INTERNAL_VIEW_MANAGER = "View Manager";
+    private static final String INTERNAL_LOG = "Log";
     private Map<String, MyAbstractInternalFrame> mhmInternalFrames;
     private JFrame moAboutScreen;
     private JDesktopPane moDesktop;
@@ -72,6 +78,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private RulesEditorUI moRulesEditor;
     private ExclusionPanel moExclusionManager;
     private ViewManagerUI moViewManager;
+    private MySimpleLogDisplay moLog;
+    private static final int LOG_MAX_LINES = 500;
+    private static final Level LOG_LEVEL = Level.INFO;
 
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
     private File mfilLastFile;
@@ -121,8 +130,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         try {
             fileData = readFiles();
         } catch (Exception e) {
-            e.printStackTrace(System.out);
-            System.err.println("Failed to read at least one critical file.");
+            logger.log(Level.SEVERE
+                    , "Failed to read at least one critical file.", e);
         }
         setExclusionsActive();      // Combine exclusions from user prefs with data from file
         prepareFrameUIs(fileData);  // Prepare data objects
@@ -210,8 +219,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         try {
             getInternalFrame(frameKey).setSelected(true);
         } catch (final PropertyVetoException ignore) {
-            System.out.println("[MainWindow.frameToTop] Failed to activate"
-                    + " frame " + frameKey);
+            logger.log(Level.WARNING
+                    ,"[MainWindow.frameToTop] Failed to activate frame {0}"
+                    , frameKey);
         }
     }
     private WindowAdapter createExitListener() {
@@ -223,6 +233,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         };
     }
     private void prepareFrameUIs(final FileData fileData) {
+        moLog = new MySimpleLogDisplay(LOG_LEVEL, LOG_MAX_LINES);
+        logger.addHandler(moLog);
+
         moRulesEditor = new RulesEditorUI(mlstLabors);    // Create rules editor
         moExclusionManager = new ExclusionPanel(moIO);  // Create exclusions manager
         moViewManager = new ViewManagerUI(); // Create view manager
@@ -233,9 +246,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     , mlstLaborGroups, mlstViews, mlstDwarves, mlstExclusions
                     , moExclusionManager);
         } catch (final NullPointerException e) {
-            System.err.println("Failed to create Dwarf List interface:"
-                    + " NullPointerException");
-            e.printStackTrace(System.out);
+            logger.log(Level.SEVERE, "Failed to create Dwarf List interface:"
+                    + " NullPointerException", e);
         }
 
         // Display a grid of the jobs to assign
@@ -244,8 +256,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , mlstLaborGroups, moJobBlacklist, moIO);
             moJobListPanel.initialize();
         } catch (final JobListPanel.CouldntProcessFileException e) {
-            System.err.println("JobListPanel.CouldntProcessFileException");
-            e.printStackTrace(System.out);
+            logger.log(Level.SEVERE, "JobListPanel.CouldntProcessFileException"
+                    , e);
         }
     }
     // Create Dwarf List window
@@ -280,6 +292,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , moDwarfListWindow, "Dwarf List"));
         map.put(INTERNAL_JOB_LIST, new JobListFrame(this, moDesktop
                 , moJobListPanel, "Job Settings"));
+        map.put(INTERNAL_LOG, new LogFrame(this, moDesktop, moLog.createUI()
+                , "Log"));
         return map;
     }
     private class AboutScreen extends JFrame {
@@ -319,6 +333,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private void exit() {
 
         // Prompts to save changes
+        // TODO: Is moDwarfListWindow.exit() running on EDT? It needs to...
         if (! moDwarfListWindow.exit()) {
             return;
         }
@@ -328,6 +343,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             MyHandyWindow.clickClose(getInternalFrame(key));
         }
         moAboutScreen.dispose();    // Destroy "about" screen
+        mhmInternalFrames.get(INTERNAL_LOG).getInternalFrame().dispose(); // Dispose of log
+
         savePreferences();          // Save preferences
         this.dispose();
     }
@@ -365,21 +382,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , final boolean closable, final boolean maximizable
                 , final boolean iconifiable, final int closeBehavior) {
 
-            final JInternalFrame frameToCreate;
-
             final Container uiObject = createUIObject();
             addListeners();
 
-            frameToCreate = new JInternalFrame(title, resizable, closable
-                    , maximizable, iconifiable);
-            frameToCreate.setDefaultCloseOperation(closeBehavior);
-            //frameToCreate.setJMenuBar(jMenuBar);
-            frameToCreate.setLayout(new BorderLayout());
-            frameToCreate.add(uiObject);
-            //frameToCreate.pack();  <-Done by Window menu
-            desktop.add(frameToCreate);
-
-            return frameToCreate;
+            return MyHandyWindow.createInternalFrame(desktop, title, resizable
+                    , closable, maximizable, iconifiable, closeBehavior
+                    , uiObject);
         }
     }
     private abstract class AbstractEditorFrameCreator
@@ -613,16 +621,22 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // (Post-processing must be done after mvLabors is set)
         addWhitelistToBlacklist(moJobBlacklist, moJobWhitelist, mlstLabors);
     }
+    private void showFrameByKey(final String frameKey) {
+        final JInternalFrame frame = getInternalFrame(frameKey);
+
+        frame.setVisible(true);
+        try {
+            frame.setIcon(false);
+            frame.setSelected(true);
+        } catch (PropertyVetoException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
+    }
     private ActionListener createShowListener(final String frameKey) {
         return new ActionListener() {
             @Override
             public void actionPerformed(final ActionEvent e) {
-                try {
-                    getInternalFrame(frameKey).setSelected(true);
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(
-                            Level.SEVERE, null, ex);
-                }
+                showFrameByKey(frameKey);
             }
         };
     }
@@ -646,7 +660,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
                     setBalancedPotentials(lstDwarves, lstJobs);
                     final JobOptimizer opt = new JobOptimizer(lstJobs
-                            , lstDwarves, moJobBlacklist);
+                            , lstDwarves, moJobBlacklist, moLog); //, moDesktop);
                     return opt.optimize();
                 }
             };
@@ -659,6 +673,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             public void actionPerformed(final ActionEvent e) {
                 // Disable the menu item while running
                 optimizeItem.setEnabled(false);
+                showFrameByKey(INTERNAL_LOG);
 
                 // Do this lengthy processing on a background thread, maintaining
                 // UI responsiveness.
@@ -715,10 +730,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     BareBonesBrowserLaunch.openURL(new File(
                             TUTORIAL_FILE).toURI().toURL().toString());
                 } catch (final Exception ex) {
-                    Logger.getLogger(MainWindow.class.getName()).log(
-                            Level.SEVERE, null, ex);
-                    ex.printStackTrace(System.out);
-                    System.err.println("Failed to open " + TUTORIAL_FILE
+                    logger.log(Level.SEVERE, null, ex);
+                    logger.severe("Failed to open " + TUTORIAL_FILE
                             + " with default browser.");
                 }
             }
@@ -772,6 +785,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         final int PRIO_JOB = 20;
         final int PRIO_RULES = 30;
         final int PRIO_EXCL = 40;
+        final int PRIO_LOG = 50;
 
         final JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
         menuBar.add(menu);
@@ -790,7 +804,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , createShowOrLoadListener(INTERNAL_EXCLUSIONS
                 , new ExclLoader()), KeyEvent.VK_E);
         addMenuItem(menu, menuItem, lstReturn, PRIO_EXCL);
-
+        menuItem = MenuHelper.createMenuItem("Log"
+                , createShowListener(INTERNAL_LOG), KeyEvent.VK_L
+                , KeyStroke.getKeyStroke("F4"));
+        addMenuItem(menu, menuItem, lstReturn, PRIO_LOG);
         return lstReturn;
     }
     private ArrayList<Integer> createHelpMenu(final JMenuBar menuBar) {
@@ -843,8 +860,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         try {
             frame.setSelected(true);
         } catch (final PropertyVetoException ex) {
-            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null
-                    , ex);
+            logger.log(Level.SEVERE, null, ex);
         }
     }
     // Set dwarves.xml location & read it
@@ -854,8 +870,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             try {
                 readDwarves();
             } catch (final Exception e) {
-                e.printStackTrace(System.out);
-                System.err.println("Failed to read dwarves.xml.");
+                logger.log(Level.SEVERE, "Failed to read dwarves.xml.", e);
             }
             moDwarfListWindow.setVisible(false);
             moDwarfListWindow.loadData(mlstDwarves, mlstExclusions);
@@ -962,8 +977,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             String strSelectedLoc = chooser.getCurrentDirectory() + "\\"
                 + chooser.getSelectedFile().getName();
             strSelectedLoc = strSelectedLoc.replace("\\", "//");
-            System.out.println("Selected Dwarves.xml location: " +
-                strSelectedLoc);
+            logger.log(Level.INFO, "Selected Dwarves.xml location: {0}"
+                    , strSelectedLoc);
             //textField.setText(strSelectedLoc);
             mstrDwarvesXML = strSelectedLoc;
         }
@@ -1013,7 +1028,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private void setExclusionActive(final int ID, final boolean active) {
         if (mlstExclusions == null) {
-            System.err.println("Could not set active exclusion: exclusion list is null");
+            logger.severe("Could not set active exclusion: exclusion list is"
+                    + " null");
             return;
         }
 
@@ -1113,14 +1129,15 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println("Requesting focus");
                     comp.requestFocusInWindow();
                 }
             });
         }
-        else
-            System.out.println("[MainWindow.handleViewManagerMessage]"
-                    + " Unknown broadcast message received.");
+        else {
+            DwarfOrganizer.showInfo(this
+                    , "[MainWindow.handleViewManagerMessage]"
+                    + " Unknown broadcast message received.", "Problem");
+        }
     }
     private void handleDwarfListMessage(final BroadcastMessage message) {
         if (message.getSource().equals("DwarfListSaveViews")) {
@@ -1130,9 +1147,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         else if (message.getSource().equals("DwarfListManageViews")) {
             loadViewManager();
         }
-        else
-            System.out.println("[MainWindow.handleDwarfListMessage]"
-                    + " Unknown broadcast message received");
+        else {
+            DwarfOrganizer.showInfo(this, "[MainWindow.handleDwarfListMessage]"
+                    + " Unknown broadcast message received", "Problem");
+        }
     }
     private void handleExclusionMessage(final BroadcastMessage message) {
         if (message.getSource().equals("ExclusionPanelDefaultButton")) {
@@ -1143,9 +1161,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             try {
                 mmapActiveExclusions
                         = (HashMap<Integer, Boolean>) message.getTarget();
-            } catch (Exception e) {
-                System.err.println(e.getMessage()
-                        + " Failed to set active exclusions");
+            } catch (Exception ignore) {
+                logger.severe("Failed to set active exclusions");
             }
         }
         else if (message.getSource().equals("ExclusionPanelClose")) {
@@ -1156,17 +1173,20 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     = (ArrayList<Exclusion>) message.getTarget();
             updateActiveExclusions(lstExclusion);
         }
-        else
-            System.out.println("[MainWindow.handleExclusionMessage]"
-                    + " Unknown broadcast message received");
+        else {
+            DwarfOrganizer.showInfo(this, "[MainWindow.handleExclusionMessage]"
+                    + " Unknown broadcast message received", "Problem");
+        }
     }
     private void handleRulesEditorMessage(final BroadcastMessage message) {
         if (message.getSource().equals("RulesEditorDefaultButton")) {
             setDefaultButton(message, getInternalFrame(INTERNAL_RULES_EDITOR));
         }
-        else
-            System.out.println("[MainWindow.handleRulesEditorMessage]"
-                    + " Unknown broadcast message received");
+        else {
+            DwarfOrganizer.showInfo(this
+                    , "[MainWindow.handleRulesEditorMessage]"
+                    + " Unknown broadcast message received", "Problem");
+        }
     }
     // For receiving broadcast messages
     @Override
@@ -1184,9 +1204,10 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         else if (message.getSource().startsWith("RulesEditor")) {
             handleRulesEditorMessage(message);
         }
-        else
-            System.out.println("[MainWindow]"
-                    + " Unknown broadcast message received");
+        else {
+            DwarfOrganizer.showInfo(this, "[MainWindow.broadcast]"
+                    + " Unknown broadcast message received", "Problem");
+        }
     }
     private void saveViewManagerViews() {
         final ArrayList<GridView> vView = moViewManager.getViews();
@@ -1224,7 +1245,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     setDefaultButton(btn, frame);
             }
         } catch (final Exception e) {
-            System.err.println(e.getMessage() + " Failed to set default button");
+            logger.log(Level.SEVERE, "Failed to set default button", e);
         }
     }
     private void setDefaultButton(final JButton btn
@@ -1301,8 +1322,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         }
     }
-    private abstract class MyAbstractSimpleFrame
-            extends MyAbstractMenuFrame {
+    private abstract class MyAbstractSimpleFrame extends MyAbstractMenuFrame {
 
         private JDesktopPane desktop;
         private Container ui;
@@ -1776,6 +1796,32 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 list.add(priority++);
             }
             return list;
+        }
+    }
+    private class LogFrame extends MyAbstractInternalFrame {
+
+        private JDesktopPane desktop;
+        private Container ui;
+        private String title;
+
+        public LogFrame(final MainWindow mainWindow
+                , final JDesktopPane desktop, final Container ui
+                , final String title) {
+
+            super(mainWindow);
+            this.desktop = desktop;
+            this.ui = ui;
+            this.title = title;
+        }
+
+        @Override
+        public JInternalFrame createFrame() {
+            final JInternalFrame frame = MyHandyWindow.createInternalFrame(
+                    desktop, title, true, true, true, true
+                    , WindowConstants.HIDE_ON_CLOSE, ui);
+            frame.setSize(700, 250);
+            frame.setVisible(true);
+            return frame;
         }
     }
 }

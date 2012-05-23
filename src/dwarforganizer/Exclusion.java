@@ -6,6 +6,8 @@
 package dwarforganizer;
 
 import dwarforganizer.deepclone.DeepCloneable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -15,6 +17,8 @@ import dwarforganizer.deepclone.DeepCloneable;
 public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
     , DeepCloneable<Exclusion> {
 
+    private static final Logger logger = Logger.getLogger(
+            Exclusion.class.getName());
     private static final String[] SUPPORTED_PROPERTIES = new String[] {
         "id", "name" };
 
@@ -99,10 +103,13 @@ public abstract class Exclusion implements MyPropertyGetter, MyPropertySetter
                 this.setID((Integer) value);
             else if (prop.equals("active"))
                 this.setActive((Boolean) value);
-            else
-                System.err.println("Unknown Exclusion property: " + propName);
-        } catch (Exception e) {
-            System.err.println("Failed to set Exclusion property " + propName);
+            else {
+                logger.log(Level.SEVERE, "Unknown Exclusion property: {0}"
+                        , propName);
+            }
+        } catch (Exception ignore) {
+            logger.log(Level.SEVERE, "Failed to set Exclusion property {0}"
+                    , propName);
         }
     }
 }

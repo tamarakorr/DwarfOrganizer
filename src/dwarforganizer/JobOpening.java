@@ -6,6 +6,8 @@
 package dwarforganizer;
 
 import dwarforganizer.bins.Binnable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents a single job opening
@@ -13,7 +15,8 @@ import dwarforganizer.bins.Binnable;
  * See MIT license in license.txt
  */
 public class JobOpening extends Binnable {
-
+    private static final Logger logger = Logger.getLogger(
+            JobOpening.class.getName());
     private static String[] SUPPORTED_PROPERTIES = new String[] { "size" };
 
     private String name;
@@ -52,7 +55,8 @@ public class JobOpening extends Binnable {
         if (propName.equals("size"))
             return this.time;
         else {
-            System.err.println("Unknown property: clsJobOpening." + propName);
+            logger.log(Level.SEVERE, "Unknown property: clsJobOpening.{0}"
+                    , propName);
             return -1;
         }
     }

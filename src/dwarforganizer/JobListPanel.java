@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -37,16 +39,16 @@ import myutils.MyTCRStripedHighlight;
  */
 public class JobListPanel extends JPanel {
 
+    private static final Logger logger = Logger.getLogger(
+            JobListPanel.class.getName());
+
     private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
-
     private static final int MAX_DWARF_TIME = 100;
-
     private static final int DEFAULT_QTY = 0;
     private static final int DEFAULT_TIME = MAX_DWARF_TIME;      // 1.0d
     private static final double DEFAULT_WT = 1.0d;
     private static final int DEFAULT_SKILL_WT = 50;
     private static final String DEFAULT_REMINDER = "";
-
     private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
 
     // DEFAULT SETTINGS shouldn't be used - it just exists as a read-only file
@@ -437,7 +439,8 @@ public class JobListPanel extends JPanel {
         try {
             // Open the output file.
 
-            System.out.println("Writing to file " + file.getAbsolutePath());
+            logger.log(Level.INFO, "Writing to file {0}"
+                    , file.getAbsolutePath());
             dir.mkdirs();           // Create the directory if it does not exist.
             file.createNewFile();   // Create the file if it does not exist.
 
@@ -459,8 +462,7 @@ public class JobListPanel extends JPanel {
             out.close();
 
         } catch (final IOException ex) {
-            //Logger.getLogger(JobListWindow.class.getName()).log(Level.SEVERE, null, ex);
-            System.err.println(ex.toString());
+            logger.log(Level.SEVERE, null, ex);
         }
 
     }

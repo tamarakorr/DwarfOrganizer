@@ -11,6 +11,8 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -18,6 +20,8 @@ import java.util.List;
  * See MIT license in license.txt
  */
 public class MyTransferable implements Transferable {
+    private static final Logger logger = Logger.getLogger(
+            MyTransferable.class.getName());
 
     private Object object;
     private String string;
@@ -36,7 +40,7 @@ public class MyTransferable implements Transferable {
                     + ";class=java.lang.String"));
             stringFlavors.add(DataFlavor.stringFlavor);
         } catch (final ClassNotFoundException e) {
-            System.err.println("Error initializing MyTransferable: " + e);
+            logger.log(Level.SEVERE, "Error initializing MyTransferable.", e);
         }
     }
 
