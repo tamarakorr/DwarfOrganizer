@@ -766,7 +766,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         menuBar.add(menu);
 
         final JMenuItem optimizeItem = MenuHelper.createMenuItem(
-                "Optimize Now!", KeyEvent.VK_O);
+                "Optimize Now!", KeyEvent.VK_O, KeyStroke.getKeyStroke("F5"));
         optimizeItem.addActionListener(createOptimizeAL(optimizeItem
                 , jobListPanel));
         addMenuItem(menu, optimizeItem, lstReturn, OPTIMIZE_PRIO);
@@ -781,33 +781,38 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     }
     private ArrayList<Integer> createWindowMenu(final JMenuBar menuBar) {
         final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
-        final int PRIO_DWARF = 10;
-        final int PRIO_JOB = 20;
-        final int PRIO_RULES = 30;
-        final int PRIO_EXCL = 40;
-        final int PRIO_LOG = 50;
+        final int PRIO_DWARF = 20;
+        final int PRIO_JOB = 30;
+        final int PRIO_RULES = 40;
+        final int PRIO_EXCL = 50;
+        final int PRIO_LOG = 10;
 
         final JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
         menuBar.add(menu);
 
-        JMenuItem menuItem = MenuHelper.createMenuItem("Dwarf List"
-                , createShowListener(INTERNAL_DWARF_LIST), KeyEvent.VK_D);
-        addMenuItem(menu, menuItem, lstReturn, PRIO_DWARF);
-        menuItem = MenuHelper.createMenuItem("Job Settings"
-                , createShowListener(INTERNAL_JOB_LIST), KeyEvent.VK_J);
-        addMenuItem(menu, menuItem, lstReturn, PRIO_JOB);
-        menuItem = MenuHelper.createMenuItem("Rules Editor"
-                , createShowOrLoadListener(INTERNAL_RULES_EDITOR
-                , new RulesLoader()), KeyEvent.VK_R);
-        addMenuItem(menu, menuItem, lstReturn, PRIO_RULES);
-        menuItem = MenuHelper.createMenuItem("Exclusion Manager"
-                , createShowOrLoadListener(INTERNAL_EXCLUSIONS
-                , new ExclLoader()), KeyEvent.VK_E);
-        addMenuItem(menu, menuItem, lstReturn, PRIO_EXCL);
+        JMenuItem menuItem;
         menuItem = MenuHelper.createMenuItem("Log"
                 , createShowListener(INTERNAL_LOG), KeyEvent.VK_L
                 , KeyStroke.getKeyStroke("F4"));
         addMenuItem(menu, menuItem, lstReturn, PRIO_LOG);
+        menuItem = MenuHelper.createMenuItem("Dwarf List"
+                , createShowListener(INTERNAL_DWARF_LIST), KeyEvent.VK_D
+                , KeyStroke.getKeyStroke("F6"));
+        addMenuItem(menu, menuItem, lstReturn, PRIO_DWARF);
+        menuItem = MenuHelper.createMenuItem("Job Settings"
+                , createShowListener(INTERNAL_JOB_LIST), KeyEvent.VK_J
+                , KeyStroke.getKeyStroke("F7"));
+        addMenuItem(menu, menuItem, lstReturn, PRIO_JOB);
+        menuItem = MenuHelper.createMenuItem("Rules Editor"
+                , createShowOrLoadListener(INTERNAL_RULES_EDITOR
+                , new RulesLoader()), KeyEvent.VK_R
+                , KeyStroke.getKeyStroke("F8"));
+        addMenuItem(menu, menuItem, lstReturn, PRIO_RULES);
+        menuItem = MenuHelper.createMenuItem("Exclusion Manager"
+                , createShowOrLoadListener(INTERNAL_EXCLUSIONS
+                , new ExclLoader()), KeyEvent.VK_E
+                , KeyStroke.getKeyStroke("F9"));
+        addMenuItem(menu, menuItem, lstReturn, PRIO_EXCL);
         return lstReturn;
     }
     private ArrayList<Integer> createHelpMenu(final JMenuBar menuBar) {
@@ -820,7 +825,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         menuBar.add(menu);
 
         JMenuItem menuItem = MenuHelper.createMenuItem("Tutorial"
-                , createTutorialAL(), KeyEvent.VK_T);
+                , createTutorialAL(), KeyEvent.VK_T
+                , KeyStroke.getKeyStroke("F1"));
         addMenuItem(menu, menuItem, lstReturn, PRIO_TUTORIAL);
         //----------------------------------------------------------------------
         addSeparator(menu, lstReturn, PRIO_SEP);

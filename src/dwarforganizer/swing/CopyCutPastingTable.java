@@ -126,10 +126,17 @@ public class CopyCutPastingTable extends JTable {
             return super.processKeyBinding(ks, e, condition, pressed);
         }
         // Stop Alt, Ctrl, and Meta from starting an edit
-        else if (e.isAltDown() || e.isControlDown() || e.isMetaDown())
+        if (e.isAltDown() || e.isControlDown() || e.isMetaDown())
             return false;
-        else
-            return super.processKeyBinding(ks, e, condition, pressed);
+
+        // Function keys except F2 which is meant to start edits:
+        if (e.getKeyCode() == KeyEvent.VK_F1)
+            return false;
+        if (e.getKeyCode() >= KeyEvent.VK_F3
+                && e.getKeyCode() <= KeyEvent.VK_F12) {
+            return false;
+        }
+        return super.processKeyBinding(ks, e, condition, pressed);
     }
 
     private void setCutCopyPasteMappings(final JTable table) {

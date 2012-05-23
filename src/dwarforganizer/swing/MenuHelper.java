@@ -59,4 +59,11 @@ public class MenuHelper {
 
         return menuItem;
     }
+    public static JMenuItem createMenuItem(final String text
+            , final int mnemonic, final KeyStroke accelerator) {
+
+        final JMenuItem menuItem = createMenuItem(text, mnemonic);
+        menuItem.setAccelerator(accelerator);
+        return menuItem;
+    }
 }

@@ -207,7 +207,7 @@ public class JobListPanel extends JPanel {
         moTable.setDefaultRenderer(Object.class, new MyTCRStripedHighlight(
                 lstBackgroundColors, lstGroups, 0));
 
-        // This didn't work: see solution in MyJTable
+        // This didn't work: see solution in CopyCutPastingTable
         // JTable must ignore all menu accelerators associated with the job list
         // Otherwise it will start an editing session when Control+S or whatever is pressed
         //for (KeyStroke keyStroke : keysToIgnore) {
