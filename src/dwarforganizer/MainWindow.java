@@ -200,7 +200,54 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             else {
                 frame.create();
             }
+
+            final JInternalFrame jif = frame.getInternalFrame();
+            jif.addInternalFrameListener(createNextFrameListener(jif));
         }
+    }
+    // Focuses the next frame in the layer when this frame is closing or
+    // iconified.
+    private InternalFrameListener createNextFrameListener(
+            final JInternalFrame frame) {
+
+        return new InternalFrameAdapter() {
+            // Frame is not yet removed from layer when closing; next frame
+            // is at index 1.
+            @Override
+            public void internalFrameClosing(final InternalFrameEvent e) {
+                activateNextFrame(frame, 1);
+            }
+            // Frame is already removed from layer when iconified; next
+            // frame is at index 0.
+            @Override
+            public void internalFrameIconified(final InternalFrameEvent e) {
+                activateNextFrame(frame, 0);
+            }
+        };
+    }
+    // Activates the next frame, with the given index in the same layer
+    private void activateNextFrame(final JInternalFrame currentFrame
+            , final int nextFrameIndex) {
+
+        final JInternalFrame[] frames = moDesktop.getAllFramesInLayer(
+                currentFrame.getLayer());
+
+        if (frames.length > nextFrameIndex) {
+            try {
+                final JInternalFrame nextFrame = frames[nextFrameIndex];
+                if (nextFrame.isVisible()) {
+                    logger.log(Level.FINE, "Activating frame {0}"
+                            , nextFrame.getTitle());
+                    nextFrame.setSelected(true); // Activate top frame
+                }
+                else
+                    logger.fine("(Next frame is not visible)");
+            } catch (final PropertyVetoException ex) {
+                logger.log(Level.SEVERE, "Failed to activate top frame", ex);
+            }
+        }
+        else
+            logger.fine("(No other frames in layer)");
     }
     private void setUpMainWindow(final JDesktopPane desktop
             , final MenuCombiner.MenuInfo menuInfo) {
@@ -1826,7 +1873,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     desktop, title, true, true, true, true
                     , WindowConstants.HIDE_ON_CLOSE, ui);
             frame.setSize(700, 250);
-            frame.setVisible(true);
+            //frame.setVisible(true); Hidden by default
             return frame;
         }
     }
