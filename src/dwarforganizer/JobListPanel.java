@@ -11,15 +11,10 @@ import dwarforganizer.swing.MyTableTransferHandler;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -38,9 +33,6 @@ import myutils.MyTCRStripedHighlight;
  * See MIT license in license.txt
  */
 public class JobListPanel extends JPanel {
-
-    private static final Logger logger = Logger.getLogger(
-            JobListPanel.class.getName());
 
     private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
     private static final int MAX_DWARF_TIME = 100;
@@ -89,7 +81,7 @@ public class JobListPanel extends JPanel {
 
     public JobListPanel(final List<Labor> vLabors
             , final List<LaborGroup> vLaborGroups
-            , final JobBlacklist blacklist, final DwarfOrganizerIO io)   // , Vector<KeyStroke> keysToIgnore
+            , final JobBlacklist blacklist, final DwarfOrganizerIO io)
             throws CouldntProcessFileException {
 
         mbLoading = true;
@@ -113,7 +105,6 @@ public class JobListPanel extends JPanel {
                 mlstLaborGroups.size());
         final List lstGroups = new ArrayList(mlstLaborGroups.size());
         for (final LaborGroup laborGroup : mlstLaborGroups) {
-            //vBackgroundColors.add(getColor(laborGroup.color));
             lstBackgroundColors.add(getColor(laborGroup.getRed()
                     , laborGroup.getGreen(), laborGroup.getBlue()));
             lstGroups.add(laborGroup.getName());
@@ -136,59 +127,7 @@ public class JobListPanel extends JPanel {
                 , mlstLaborSettings.size(), columnClass);
 
         // Add the edit listener
-        oModel.addTableModelListener(new TableModelListener() {
-
-            @Override
-            public void tableChanged(final TableModelEvent e) {
-                //System.out.println("Table changed.");
-                if (! mbLoading) updateLaborSetting(e.getFirstRow());
-            }
-
-            private void updateLaborSetting(final int firstRow) {
-                //TODO: In catch blocks, also set the table value to reflect the
-                // default value (Will this be circular?)
-
-                //double dblNewTime = Double.parseDouble(oModel.getValueAt(firstRow, 3).toString());
-                int intNewTime;
-                int intNewQty;
-                try {
-                    intNewTime = Integer.parseInt(oModel.getValueAt(firstRow, 3).toString());
-                } catch (final NumberFormatException ignore) {
-                    intNewTime = DEFAULT_TIME;
-                }
-                try {
-                    intNewQty = Integer.parseInt(oModel.getValueAt(
-                            firstRow, 2).toString());
-                } catch (final NumberFormatException ignore) {
-                    intNewQty = DEFAULT_QTY;
-                }
-
-                final Job job = mlstLaborSettings.get(firstRow);
-                final boolean bTimeChanged = (job.getQtyDesired() != intNewQty
-                        || job.getTime() != intNewTime);
-
-                job.setQtyDesired(intNewQty);
-                job.setTime(intNewTime);
-                try {
-                    job.setCandidateWeight(Double.parseDouble(oModel.getValueAt(
-                            firstRow, 4).toString()));
-                } catch (final NumberFormatException ignore) {
-                    job.setCandidateWeight(DEFAULT_WT);
-                }
-                try {
-                    job.setCurrentSkillWeight(Integer.parseInt(
-                            oModel.getValueAt(firstRow, 5).toString()));
-                } catch (final NumberFormatException ignore) {
-                    job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
-                }
-                job.setReminder(oModel.getValueAt(firstRow, 6).toString());
-
-                if (bTimeChanged) {
-                    //updateHours();
-                    new HoursDisplayUpdater().execute();
-                }
-            }
-        });
+        oModel.addTableModelListener(createTableModelListener(oModel));
 
         // Quantity, time, weights, and reminder editable
         oModel.addEditableException(QTY_COL_IDENTIFIER); // 2
@@ -228,14 +167,64 @@ public class JobListPanel extends JPanel {
         this.add(oSP);
         this.add(panHours, BorderLayout.PAGE_END);
 
-        // Load any saved settings
-        //load(DEFAULT_FILE_TEXT);    //txtName.getText()
         mbLoading = false;
-        //load(new File(MY_DEFAULT_SETTINGS_FILE)); // Takes care of mbLoading itself
+    }
+    private TableModelListener createTableModelListener(
+            final MySimpleTableModel model) {
 
-        //this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        //this.pack();
-        //this.setVisible(true);
+        return new TableModelListener() {
+
+            @Override
+            public void tableChanged(final TableModelEvent e) {
+                //System.out.println("Table changed.");
+                if (! mbLoading) updateLaborSetting(e.getFirstRow());
+            }
+
+            private void updateLaborSetting(final int firstRow) {
+                //TODO: In catch blocks, also set the table value to reflect the
+                // default value (Will this be circular?)
+
+                //double dblNewTime = Double.parseDouble(oModel.getValueAt(firstRow, 3).toString());
+                int intNewTime;
+                int intNewQty;
+                try {
+                    intNewTime = Integer.parseInt(model.getValueAt(firstRow, 3).toString());
+                } catch (final NumberFormatException ignore) {
+                    intNewTime = DEFAULT_TIME;
+                }
+                try {
+                    intNewQty = Integer.parseInt(model.getValueAt(
+                            firstRow, 2).toString());
+                } catch (final NumberFormatException ignore) {
+                    intNewQty = DEFAULT_QTY;
+                }
+
+                final Job job = mlstLaborSettings.get(firstRow);
+                final boolean bTimeChanged = (job.getQtyDesired() != intNewQty
+                        || job.getTime() != intNewTime);
+
+                job.setQtyDesired(intNewQty);
+                job.setTime(intNewTime);
+                try {
+                    job.setCandidateWeight(Double.parseDouble(model.getValueAt(
+                            firstRow, 4).toString()));
+                } catch (final NumberFormatException ignore) {
+                    job.setCandidateWeight(DEFAULT_WT);
+                }
+                try {
+                    job.setCurrentSkillWeight(Integer.parseInt(
+                            model.getValueAt(firstRow, 5).toString()));
+                } catch (final NumberFormatException ignore) {
+                    job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
+                }
+                job.setReminder(model.getValueAt(firstRow, 6).toString());
+
+                if (bTimeChanged) {
+                    //updateHours();
+                    new HoursDisplayUpdater().execute();
+                }
+            }
+        };
     }
     public void initialize() {
         // Takes care of mbLoading itself:
@@ -327,11 +316,6 @@ public class JobListPanel extends JPanel {
         return menu;
     }
 
-/*    protected JobBlacklist getBlacklist() { return moBlacklist; }
-    protected void setBlacklist(JobBlacklist newBlacklist) {
-        moBlacklist = newBlacklist;
-    } */
-
     // Doesn't really work. Left it here so I will remember that.
     // Causes the JComponent to always ignore the given keystroke.
 /*    private void alwaysIgnoreKeyStroke(JComponent component, KeyStroke keyStroke) {
@@ -418,53 +402,10 @@ public class JobListPanel extends JPanel {
         mbLoading = false;
     }
 
-    public File getDirectory() {
-        // TODO: My Documents is nice but multiplatform makes me nervous.
-        // Samples is not the right place either but using it for now...
-
-        //String strDir = System.getProperty("user.home") + "/My Documents/";
-        //return new File(strDir, "/DwarfOrganizer/");
-        return new File("samples/jobs/");
-    }
-    private File getFile(final File directory, final String fileName) {
-        return new File(directory, fileName + ".txt");
-    }
-
     // Saves job settings to file
     public void save(final File file) {
-        MyHandyTable.stopEditing(moTable); // Accept partial edits
-
-        final File dir = getDirectory();
-
-        try {
-            // Open the output file.
-
-            logger.log(Level.INFO, "Writing to file {0}"
-                    , file.getAbsolutePath());
-            dir.mkdirs();           // Create the directory if it does not exist.
-            file.createNewFile();   // Create the file if it does not exist.
-
-            final FileWriter fstream = new FileWriter(file.getAbsolutePath());
-            final BufferedWriter out = new BufferedWriter(fstream);
-
-            out.write(CURRENT_JOB_SETTINGS_VERSION);
-            out.newLine();
-            for (final Job job : mlstLaborSettings) {
-                out.write(job.getName()
-                        + "\t" + job.getQtyDesired()
-                        + "\t" + job.getTime()
-                        + "\t" + job.getCandidateWeight()
-                        + "\t" + job.getCurrentSkillWeight()
-                        + "\t" + job.getReminder());
-                out.newLine();
-                out.flush();
-            }
-            out.close();
-
-        } catch (final IOException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
-
+        MyHandyTable.stopEditing(moTable);              // Accept partial edits
+        moIO.writeJobSettings(mlstLaborSettings, file);
     }
 
     // Loads job settings from file
@@ -481,29 +422,6 @@ public class JobListPanel extends JPanel {
 
         mbLoading = false;
     }
-
-/*    // Loads the file with the given name
-    private void load(String fileName) {
-
-        // Defaults
-        if (fileName.equals(DEFAULT_FILE_TEXT)) {
-
-            // Update the current labor settings with the defaults.
-            for (final Job job : mlstLaborSettings) {
-                job.setQtyDesired(DEFAULT_QTY);
-                job.setCandidateWeight(DEFAULT_WT);
-                job.setCurrentSkillWeight(DEFAULT_SKILL_WT);
-                job.setTime(DEFAULT_TIME);
-                job.setReminder(DEFAULT_REMINDER);
-            }
-        }
-
-        // Read from file
-        else {
-            File file = getFile(getDirectory(), fileName);
-            load(file);
-        }
-    } */
 
     // Print labor settings, for debugging
     private void printLaborSettings() {
@@ -538,7 +456,7 @@ public class JobListPanel extends JPanel {
             return Color.WHITE;
     }
     // Lightens and returns the given color
-    // Crappy unused code remains so I don't decide to try it again
+    // Crappy unused code remains to deter me from trying it again
     private Color getColor(int R, int G, int B) {
         //Color clrReturn = new Color(R, G, B);
         /*

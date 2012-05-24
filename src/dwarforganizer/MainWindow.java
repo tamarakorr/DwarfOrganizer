@@ -633,6 +633,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private Map<String, MyFileChooser> createChoosers(
             final MyProgress progress, int startValue) {
 
+        final File defaultJobDir = new File(DwarfOrganizerIO.DEFAULT_JOB_DIR);
         final HashMap<String, MyFileChooser> map
                 = new HashMap<String, MyFileChooser>(3);
 
@@ -654,7 +655,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         };
         chooser.setAcceptAllFileFilterUsed(true);
         chooser.setFileFilter(ffText);
-        chooser.setCurrentDirectory(moJobListPanel.getDirectory());
+        chooser.setCurrentDirectory(defaultJobDir); // moJobListPanel.getDirectory());
         map.put(FILE_CHOOSER_SAVE, chooser);
 
         // File chooser for Job Settings->Open...
@@ -662,7 +663,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Load Job Settings");
         chooser.setDialogType(MyFileChooser.OPEN_DIALOG);
-        chooser.setCurrentDirectory(moJobListPanel.getDirectory());
+        chooser.setCurrentDirectory(defaultJobDir); //moJobListPanel.getDirectory());
         map.put(FILE_CHOOSER_OPEN, chooser);
 
         // File chooser for Dwarves.xml

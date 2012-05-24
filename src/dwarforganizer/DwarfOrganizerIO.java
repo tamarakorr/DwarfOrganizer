@@ -39,6 +39,9 @@ public class DwarfOrganizerIO {
     public static final boolean DEFAULT_EXCLUSION_ACTIVE = true;
     private static final String USER_FILES_DIR = "config/";
     private static final String DEFAULT_FILES_DIR = "config/default/";
+
+    public static final String DEFAULT_JOB_DIR = "samples/jobs/";
+
     private static final String GROUP_LIST_FILE_NAME = "group-list.txt";
     private static final String LABOR_LIST_FILE_NAME = "labor-list.txt";
     private static final String RULE_FILE_NAME = "rules.txt";
@@ -48,6 +51,7 @@ public class DwarfOrganizerIO {
     private static final String VIEW_FILE_NAME = "views.xml";
 
     private static final String CURRENT_EXCLUSIONS_VERSION = "B";
+    private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
 
     private static final String RULES_NOTE = "This file lists jobs that aren't allowed"
             + " together (BLACKLIST), or aren't allowed with other jobs"
@@ -1504,5 +1508,34 @@ public class DwarfOrganizerIO {
             }
         }
         return vReturn;
+    }
+    public void writeJobSettings(final List<Job> jobList, final File toFile) {
+
+        try {
+            // Open the output file.
+            logger.log(Level.INFO, "Writing to file {0}"
+                    , toFile.getAbsolutePath());
+            toFile.createNewFile();   // Create the file if it does not exist.
+
+            final FileWriter fstream = new FileWriter(toFile.getAbsolutePath());
+            final BufferedWriter out = new BufferedWriter(fstream);
+
+            out.write(CURRENT_JOB_SETTINGS_VERSION);
+            out.newLine();
+            for (final Job job : jobList) {
+                out.write(job.getName()
+                        + "\t" + job.getQtyDesired()
+                        + "\t" + job.getTime()
+                        + "\t" + job.getCandidateWeight()
+                        + "\t" + job.getCurrentSkillWeight()
+                        + "\t" + job.getReminder());
+                out.newLine();
+                out.flush();
+            }
+            out.close();
+
+        } catch (final IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }
     }
 }
