@@ -118,39 +118,69 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     public MainWindow() {
         super();
-
-        FileData fileData = new FileData(new HashMap<String, Stat>()
-                    , new HashMap<String, Skill>()
-                    , new HashMap<String, MetaSkill>()); // dummy value
-
+        final MyProgress progress = new MyProgress(10);
+        progress.increment("Initializing", 1);
         initVariables();    // Initialize variables that must be created
         loadPreferences();  // Load user prefs
 
         // Read files, and don't necessarily crash if we fail
-        try {
-            fileData = readFiles();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE
-                    , "Failed to read at least one critical file.", e);
-        }
+        progress.increment("Reading data files", 2);
+        final FileData fileData = readFiles();
         setExclusionsActive();      // Combine exclusions from user prefs with data from file
-        prepareFrameUIs(fileData);  // Prepare data objects
+        progress.increment("Creating UI", 3);
+        prepareFrameUIs(fileData);  // Create frame contents from file data
 
-        mmFileChoosers = createChoosers(); // (Must be done after initializing JobListPanel)
+        progress.increment("Pre-loading file choosers");
+        mmFileChoosers = createChoosers(progress, 4); // (Must be done after initializing JobListPanel)
 
         // Use JobListPanel to create main menu
+        progress.increment("Building menus", 7);
         final MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel);
         final MenuCombiner combiner = new MenuCombiner(menuInfo); // Must be done after createMenu
 
         // Create frame maps and internal frames; must be done after
         // MenuCombiner is created
+        progress.increment("Creating internal frames", 8);
         mhmInternalFrames = createFrameMap();
         createFrames(mhmInternalFrames, combiner);
 
+        progress.increment("Creating desktop", 9);
         setUpMainWindow(moDesktop, menuInfo);   // Set frame properties and show
 
         // Dwarf List on top (must be done after setting main window visible)
         frameToTop(INTERNAL_DWARF_LIST);
+
+        progress.increment("Done!", 10);
+        progress.done();
+    }
+    private class MyProgress {
+        private JProgressBar progBar;
+        private JFrame fProg;
+        public MyProgress(final int numSteps) {
+            progBar = new JProgressBar(0, numSteps);
+            progBar.setStringPainted(true);
+
+            fProg = MyHandyWindow.createSimpleWindow(
+                    "Dwarf Organizer is loading", progBar);
+            fProg.setLocationRelativeTo(null); // Center in screen
+            fProg.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+            fProg.setResizable(false);
+            fProg.setSize(300, 65);
+            fProg.setVisible(true);
+        }
+        public void increment(final String desc) {
+            progBar.setString(desc);
+        }
+        public void increment(final int newValue) {
+            progBar.setValue(newValue);
+        }
+        public void increment(final String desc, final int newValue) {
+            increment(desc);
+            increment(newValue);
+        }
+        public void done() {
+            fProg.dispose();
+        }
     }
     private class FileData {
         private Map<String, Stat> mapStat;
@@ -600,11 +630,14 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     // Creates file choosers for save and load operations. This is a time-consuming
     // operation and only needs to be done once.
-    private Map<String, MyFileChooser> createChoosers() {
+    private Map<String, MyFileChooser> createChoosers(
+            final MyProgress progress, int startValue) {
+
         final HashMap<String, MyFileChooser> map
                 = new HashMap<String, MyFileChooser>(3);
 
         // File chooser for Job Settings->Save
+        progress.increment(startValue++);
         MyFileChooser chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Save Job Settings");
         chooser.setDialogType(MyFileChooser.SAVE_DIALOG);
@@ -625,6 +658,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         map.put(FILE_CHOOSER_SAVE, chooser);
 
         // File chooser for Job Settings->Open...
+        progress.increment(startValue++);
         chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Load Job Settings");
         chooser.setDialogType(MyFileChooser.OPEN_DIALOG);
@@ -632,6 +666,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         map.put(FILE_CHOOSER_OPEN, chooser);
 
         // File chooser for Dwarves.xml
+        progress.increment(startValue++);
         final File file = new File(mstrDwarvesXML);
         chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Select location of Dwarves.xml");
@@ -645,20 +680,26 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private FileData readFiles() {
         // Try to read group-list.txt, labor-list.txt, rules.txt, Dwarves.xml,
         // and exclusions
-        final FileData fileData;
+        FileData fileData  = new FileData(new HashMap<String, Stat>()
+                    , new HashMap<String, Skill>()
+                    , new HashMap<String, MetaSkill>());    // dummy value
 
-        mlstLaborGroups = moIO.readLaborGroups();
-        mlstLabors = moIO.readLabors();           // Read labor-list.txt
+        try {
+            mlstLaborGroups = moIO.readLaborGroups();
+            mlstLabors = moIO.readLabors();           // Read labor-list.txt
 
-        moIO.readRuleFile();
-        setBlacklistStructures();
+            moIO.readRuleFile();
+            setBlacklistStructures();
 
-        fileData = readDwarves();
+            fileData = readDwarves();
 
-        mlstExclusions = moIO.readExclusions(mlstDwarves); // mhtActiveExclusions
+            mlstExclusions = moIO.readExclusions(mlstDwarves);
 
-        mlstViews = moIO.readViews();
-
+            mlstViews = moIO.readViews();
+        } catch (final Exception e) {
+            logger.log(Level.SEVERE
+                    , "Failed to read at least one critical file.", e);
+        }
         return fileData;
     }
     private void setBlacklistStructures() {
