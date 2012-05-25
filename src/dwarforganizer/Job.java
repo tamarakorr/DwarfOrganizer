@@ -5,12 +5,14 @@
 
 package dwarforganizer;
 
+import dwarforganizer.deepclone.DeepCloneable;
+
 /**
  * Represents a quantity of job openings. Quantity may be zero.
  * @author Tamara Orr
  * See MIT license in license.txt
  */
-public class Job extends JobOpening {
+public class Job extends JobOpening implements DeepCloneable<Job> {
     private int qtyDesired;
 
     public Job(final String name, final String skillName, final int qtyDesired
@@ -28,5 +30,13 @@ public class Job extends JobOpening {
     }
     public void setQtyDesired(final int qtyDesired) {
         this.qtyDesired = qtyDesired;
+    }
+
+    @Override
+    public Job deepClone() {
+        return new Job(super.getName(), super.getSkillName()
+                , qtyDesired, super.getTime()
+                , super.getCandidateWeight(), super.getCurrentSkillWeight()
+                , super.getReminder());
     }
 }

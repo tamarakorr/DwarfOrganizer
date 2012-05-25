@@ -5,16 +5,19 @@
 
 package dwarforganizer;
 
+import dwarforganizer.StateIncrementHandler.DefaultState;
+import dwarforganizer.StateIncrementHandler.ThresholdFunctions;
 import dwarforganizer.bins.BinPack;
 import dwarforganizer.swing.CopyCutPastingTable;
 import dwarforganizer.swing.MyTableTransferHandler;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -34,14 +37,14 @@ import myutils.MyTCRStripedHighlight;
  */
 public class JobListPanel extends JPanel {
 
-    private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
+    //private static final String CURRENT_JOB_SETTINGS_VERSION = "A";
     private static final int MAX_DWARF_TIME = 100;
     private static final int DEFAULT_QTY = 0;
     private static final int DEFAULT_TIME = MAX_DWARF_TIME;      // 1.0d
     private static final double DEFAULT_WT = 1.0d;
     private static final int DEFAULT_SKILL_WT = 50;
-    private static final String DEFAULT_REMINDER = "";
-    private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
+    protected static final String DEFAULT_REMINDER = "";
+    //private static final String DEFAULT_FILE_TEXT = "[Enter a file name]";
 
     // DEFAULT SETTINGS shouldn't be used - it just exists as a read-only file
     // with the stock defaults
@@ -61,17 +64,13 @@ public class JobListPanel extends JPanel {
     private List<Labor> mlstLabors; // Set in constructor
     private List<LaborGroup> mlstLaborGroups; //Set in constructor    = new Vector<LaborGroup>();
     private List<Job> mlstLaborSettings;
-    //private Vector<String> mvstrGroups = new Vector<String>();
+    private JobBlacklist moBlacklist = new JobBlacklist();
 
-    //private JTextField txtName;
     private SelectingTable moTable;
     private JLabel lblHours;
 
     private boolean mbLoading;
-
-    private JobBlacklist moBlacklist = new JobBlacklist();
-
-    private DwarfOrganizerIO moIO;
+    private StateIncrementHandler moLoadingHandler;
 
     // keysToIgnore: A vector of keystrokes to be ignored by the JTable editor
     //               (i.e. keystrokes bound to menu items such as control S)
@@ -81,15 +80,14 @@ public class JobListPanel extends JPanel {
 
     public JobListPanel(final List<Labor> vLabors
             , final List<LaborGroup> vLaborGroups
-            , final JobBlacklist blacklist, final DwarfOrganizerIO io)
-            throws CouldntProcessFileException {
+            , final JobBlacklist blacklist) throws CouldntProcessFileException {
 
-        mbLoading = true;
+        moLoadingHandler = createLoadingHandler();
+        moLoadingHandler.increment();
 
         mlstLaborGroups = vLaborGroups;
         mlstLabors = vLabors;
         moBlacklist = blacklist;
-        moIO = io;
 
         // Create labor settings
         mlstLaborSettings = new ArrayList<Job>(vLabors.size());
@@ -98,7 +96,7 @@ public class JobListPanel extends JPanel {
                     , DEFAULT_QTY //, 0
                     , DEFAULT_TIME, DEFAULT_WT, DEFAULT_SKILL_WT
                     , DEFAULT_REMINDER));
-        }  //  getSkillNameForJob(labor.name)
+        }
 
         // Create job settings table
         final List<Color> lstBackgroundColors = new ArrayList<Color>(
@@ -167,7 +165,24 @@ public class JobListPanel extends JPanel {
         this.add(oSP);
         this.add(panHours, BorderLayout.PAGE_END);
 
-        mbLoading = false;
+        moLoadingHandler.decrement();
+    }
+    // Handles incremental changes to mbLoading
+    private StateIncrementHandler createLoadingHandler() {
+        final StateIncrementHandler handler = new StateIncrementHandler(
+                DefaultState.NEGATIVE_STATE);
+        handler.initialize(new ThresholdFunctions() {
+            @Override
+            public void doAtNegativeThreshold() {
+                mbLoading = false;
+            }
+            @Override
+            public void doAtPositiveThreshold() {
+                mbLoading = true;
+            }
+        });
+
+        return handler;
     }
     private TableModelListener createTableModelListener(
             final MySimpleTableModel model) {
@@ -176,8 +191,15 @@ public class JobListPanel extends JPanel {
 
             @Override
             public void tableChanged(final TableModelEvent e) {
-                //System.out.println("Table changed.");
-                if (! mbLoading) updateLaborSetting(e.getFirstRow());
+                //Logger.getLogger(JobListPanel.class.getName()).fine(
+                //    "Table changed."); major spam
+                if (! mbLoading) {
+                    Logger.getLogger(JobListPanel.class.getName()).log(
+                            Level.FINE
+                            , "Updating labor setting (col={0}, row={1})"
+                            , new Object[]{e.getColumn(), e.getFirstRow()});
+                    updateLaborSetting(e.getFirstRow());
+                }
             }
 
             private void updateLaborSetting(final int firstRow) {
@@ -225,10 +247,6 @@ public class JobListPanel extends JPanel {
                 }
             }
         };
-    }
-    public void initialize() {
-        // Takes care of mbLoading itself:
-        load(new File(MY_DEFAULT_SETTINGS_FILE));
     }
     // A table cell editor that selects all text when we start to edit a cell:
     class SelectingEditor extends DefaultCellEditor {
@@ -382,9 +400,12 @@ public class JobListPanel extends JPanel {
     protected List<Job> getJobs() {
         return mlstLaborSettings;
     }
+    protected void setJobs(final List<Job> jobList) {
+        mlstLaborSettings = jobList;
+    }
 
     private void loadLaborSettings() {
-        mbLoading = true;
+        moLoadingHandler.increment();
 
         final TableModel oModel = moTable.getModel();
         int row = 0;
@@ -399,28 +420,27 @@ public class JobListPanel extends JPanel {
             oModel.setValueAt(job.getReminder(), row, 6);
             row++;
         }
-        mbLoading = false;
+        moLoadingHandler.decrement();
     }
 
-    // Saves job settings to file
-    public void save(final File file) {
-        MyHandyTable.stopEditing(moTable);              // Accept partial edits
-        moIO.writeJobSettings(mlstLaborSettings, file);
+    // Do when job settings are saved to file
+    public void doOnSave() {
+        MyHandyTable.stopEditing(moTable);      // Accept partial edits
     }
 
-    // Loads job settings from file
-    public void load(final File file) {
+    // Do when job settings are loaded from file
+    public void doOnLoad() {
         MyHandyTable.cancelEditing(moTable);    // Cancel partial edits
 
-        mbLoading = true;
-
-        moIO.readJobSettings(file, mlstLaborSettings, DEFAULT_REMINDER);
+        //mbLoading = true;
+        moLoadingHandler.increment();
 
         // Display the values in the table.
         loadLaborSettings();
         new HoursDisplayUpdater().execute();
 
-        mbLoading = false;
+        //mbLoading = false;
+        moLoadingHandler.decrement();
     }
 
     // Print labor settings, for debugging

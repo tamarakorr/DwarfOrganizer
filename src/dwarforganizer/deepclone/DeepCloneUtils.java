@@ -7,6 +7,7 @@ package dwarforganizer.deepclone;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.PriorityQueue;
 
 /**
@@ -48,4 +49,14 @@ public class DeepCloneUtils {
         }
         return vReturn;
     } */
+    // Deep clone a list, returning it as an ArrayList
+    public static <T extends DeepCloneable> ArrayList<T> deepClone(
+            final List<T> listToClone) {
+
+        final ArrayList<T> lstReturn = new ArrayList<T>(listToClone.size());
+        for (final DeepCloneable<T> e : listToClone) {
+            lstReturn.add(e.deepClone());
+        }
+        return lstReturn;
+    }
 }

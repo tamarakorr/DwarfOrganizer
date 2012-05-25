@@ -69,6 +69,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private JDesktopPane moDesktop;
 
     private static final String DIRTY_TITLE = " (Unsaved Changes)";
+    private static final String DEFAULT_JOB_LIST_TITLE = "Job Settings";
 
     private static final int EXIT_MENU_PRIORITY = 100;
     private static final int FILE_MENU_MNEMONIC = KeyEvent.VK_F;
@@ -83,7 +84,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private static final Level LOG_LEVEL = Level.INFO;
 
     private String mstrDwarvesXML = DEFAULT_DWARVES_XML;
-    private File mfilLastFile;
+    private File mfilLastFile;          // Should be set along with mstrLastJobFile, but is used for choosers. May contain default directory
+    private String mstrLastJobFile;     // Also see mfilLastFile
     private static final String FILE_CHOOSER_SAVE = "Save"; // Keys for file choosers
     private static final String FILE_CHOOSER_OPEN = "Open";
     private static final String FILE_CHOOSER_DWARVES = "Dwarves";
@@ -330,8 +332,12 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         // Display a grid of the jobs to assign
         try {
             moJobListPanel = new JobListPanel(mlstLabors
-                , mlstLaborGroups, moJobBlacklist, moIO);
-            moJobListPanel.initialize();
+                , mlstLaborGroups, moJobBlacklist);
+            logger.log(Level.INFO, "Loading last file: {0}", mstrLastJobFile);
+            if (mstrLastJobFile == null)
+                loadDefaultJobSettings(moJobListPanel);
+            else
+                loadJobSettings(moJobListPanel, mstrLastJobFile);
         } catch (final JobListPanel.CouldntProcessFileException e) {
             logger.log(Level.SEVERE, "JobListPanel.CouldntProcessFileException"
                     , e);
@@ -368,7 +374,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         map.put(INTERNAL_DWARF_LIST, new DwarfListFrame(this, moDesktop
                 , moDwarfListWindow, "Dwarf List"));
         map.put(INTERNAL_JOB_LIST, new JobListFrame(this, moDesktop
-                , moJobListPanel, "Job Settings"));
+                , moJobListPanel, createJobListTitle(mstrLastJobFile)));
         map.put(INTERNAL_LOG, new LogFrame(this, moDesktop, moLog.createUI()
                 , "Log"));
         return map;
@@ -420,13 +426,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             MyHandyWindow.clickClose(getInternalFrame(key));
         }
         moAboutScreen.dispose();    // Destroy "about" screen
-        mhmInternalFrames.get(INTERNAL_LOG).getInternalFrame().dispose(); // Dispose of log
+        getInternalFrame(INTERNAL_LOG).dispose(); // Dispose of log
 
         savePreferences();          // Save preferences
         this.dispose();
     }
+    private MyAbstractInternalFrame getAbstractFrame(final String key) {
+        return mhmInternalFrames.get(key);
+    }
     private JInternalFrame getInternalFrame(final String key) {
-        return mhmInternalFrames.get(key).getInternalFrame();
+        return getAbstractFrame(key).getInternalFrame();
     }
 
     // Returns a JMenuBar made of the menus in the first menu bar, followed
@@ -633,7 +642,6 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
     private Map<String, MyFileChooser> createChoosers(
             final MyProgress progress, int startValue) {
 
-        final File defaultJobDir = new File(DwarfOrganizerIO.DEFAULT_JOB_DIR);
         final HashMap<String, MyFileChooser> map
                 = new HashMap<String, MyFileChooser>(3);
 
@@ -655,7 +663,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         };
         chooser.setAcceptAllFileFilterUsed(true);
         chooser.setFileFilter(ffText);
-        chooser.setCurrentDirectory(defaultJobDir); // moJobListPanel.getDirectory());
+        chooser.setCurrentDirectory(mfilLastFile);
         map.put(FILE_CHOOSER_SAVE, chooser);
 
         // File chooser for Job Settings->Open...
@@ -663,7 +671,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Load Job Settings");
         chooser.setDialogType(MyFileChooser.OPEN_DIALOG);
-        chooser.setCurrentDirectory(defaultJobDir); //moJobListPanel.getDirectory());
+        chooser.setCurrentDirectory(mfilLastFile);
         map.put(FILE_CHOOSER_OPEN, chooser);
 
         // File chooser for Dwarves.xml
@@ -973,36 +981,95 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
     }
 
-    // Reset job settings to user defaults
-    private void resetJobSettings(final JobListPanel jobPanel) {
-        jobPanel.load(new File(JobListPanel.MY_DEFAULT_SETTINGS_FILE));
-    }
-
     private void loadJobSettings(final JobListPanel jobListPanel) {
-        final int input = getFileChooser(FILE_CHOOSER_OPEN).showOpenDialog(
-                this);
+        final JFileChooser chooser = getFileChooser(FILE_CHOOSER_OPEN);
+        final int input = chooser.showOpenDialog(this);
 
         if (input == MyFileChooser.APPROVE_OPTION) {
-            final File file = getFileChooser(
-                    FILE_CHOOSER_OPEN).getSelectedFile();
-            jobListPanel.load(file);
+            final File file = chooser.getSelectedFile();
+
+            loadJobSettings(jobListPanel, file, true);
             updateCurrentJobSettings(file);
         }
+    }
+    private void loadDefaultJobSettings(final JobListPanel jobListPanel) {
+        loadJobSettings(jobListPanel
+                , new File(JobListPanel.MY_DEFAULT_SETTINGS_FILE), false);
+    }
+    private void loadJobSettings(final JobListPanel jobListPanel
+            , final String fileName) {
+        loadJobSettings(jobListPanel, new File(fileName), true);
+    }
+    private void loadJobSettings(final JobListPanel jobListPanel
+            , final File file, final boolean setLastJobFile) {
+
+        readJobSettings(jobListPanel, file, setLastJobFile);
+        jobListPanel.doOnLoad();
+    }
+    private void readJobSettings(final JobListPanel jobListPanel
+            , final File file, final boolean setLastJobFile) {
+
+        final ArrayList<Job> clone = DeepCloneUtils.deepClone(
+                jobListPanel.getJobs());
+        jobListPanel.setJobs(moIO.readJobSettings(file, clone));
+        if (setLastJobFile) {
+            setLastJobFile(file);
+        }
+    }
+    private void setLastJobFile(final String fileName) {
+        // File name null: just set the default directory for file choosers
+        if (fileName == null) {
+            mfilLastFile = new File(DwarfOrganizerIO.DEFAULT_JOB_DIR);
+            return;
+        }
+        // File name set but does not exist: just set the directory for
+        // file choosers
+        final File file = new File(fileName);
+        if (! file.exists()) {
+            logger.log(Level.INFO
+                    , "Last job file was set but does not exist: {0}"
+                    , fileName);
+            mfilLastFile = new File(DwarfOrganizerIO.DEFAULT_JOB_DIR);
+            return;
+        }
+
+        // File name is set and exists: set directory and last file name
+        setLastJobFile(file);
+    }
+    private void setLastJobFile(final File file) {
+        mfilLastFile = file;
+
+        final String fileName = file.getPath();
+        mstrLastJobFile = fileName;
     }
 
     // TODO Are comments below true? Cleanup needed if so
     // If saving as "DEFAULT SETTINGS", change name to "MY DEFAULT SETTINGS"
-    // (That logic is now unused since .txt is added to file names, and we don't load from
-    // default settings in this way anymore)
+    // (That logic is now unused since .txt is added to file names, and we don't
+    // load from default settings in this way anymore)
     private void updateCurrentJobSettings(File file) {
         String fileName = file.getName();
         if (fileName.equals("DEFAULT SETTINGS")) {
             fileName = "MY DEFAULT SETTINGS";
             file = new File(file.getParentFile(), fileName);
         }
-        mfilLastFile = file;
-        getInternalFrame(INTERNAL_JOB_LIST).setTitle(
-                fileName.replace(".txt", "") + " Job Settings");
+        setLastJobFile(file);
+
+        updateJobListTitle(fileName);
+    }
+    private String createJobListTitle(final String fileName) {
+        if (fileName == null)
+            return DEFAULT_JOB_LIST_TITLE;
+        else {
+            // Just use the last "word"
+            final File file = new File(fileName);
+            return file.getName().replace(".txt", "") + " "
+                    + DEFAULT_JOB_LIST_TITLE;
+        }
+    }
+    private void updateJobListTitle(final String fileName) {
+        final String title = createJobListTitle(fileName);
+        getInternalFrame(INTERNAL_JOB_LIST).setTitle(title);
     }
 
     // Returns the text after (not including) the dot if the given file name
@@ -1031,8 +1098,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             if (input == MyFileChooser.APPROVE_OPTION) {
                 file = getFileChooser(FILE_CHOOSER_SAVE).getSelectedFile();
                 // If the user enters no extension, append ".txt"
-                if (! fileHasExtension(file))
+                if (! fileHasExtension(file)) {
                     file = addExtension(file, ".txt");
+                }
 
                 bConfirm = true;
                 if (file.exists()) {
@@ -1047,7 +1115,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
 
         if (bConfirm) {
-            jobListPanel.save(file);
+            jobListPanel.doOnSave(); //file);
+            final boolean success = moIO.writeJobSettings(jobListPanel.getJobs()
+                    , file);
             updateCurrentJobSettings(file);
         }
     }
@@ -1084,6 +1154,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         final Preferences prefs = Preferences.userNodeForPackage(
                 this.getClass());
         mstrDwarvesXML = prefs.get("DwarvesXML", DEFAULT_DWARVES_XML);
+        setLastJobFile(prefs.get("LastJobFile", null));
 
         // Exclusions active
         final int maxID = prefs.getInt("MaxExclusionID", 0);
@@ -1102,6 +1173,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         final Preferences prefs = Preferences.userNodeForPackage(
                 this.getClass());
         prefs.put("DwarvesXML", mstrDwarvesXML);
+        if (mstrLastJobFile != null) {
+            prefs.put("LastJobFile", mstrLastJobFile);
+        }
 
         // Exclusions active
         prefs.putInt("MaxExclusionID", moIO.getMaxUsedExclusionID());
@@ -1828,7 +1902,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             return new ActionListener() {
                 @Override
                 public void actionPerformed(final ActionEvent e) {
-                    resetJobSettings(jobListPanel);
+                    loadDefaultJobSettings(jobListPanel);
                 }
             };
         }

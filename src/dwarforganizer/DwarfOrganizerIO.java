@@ -982,9 +982,9 @@ public class DwarfOrganizerIO {
         return strReturn;
     }
 
-    // Loads job settings from file
-    public void readJobSettings(final File file, final List<Job> vLaborSettings
-            , final String defaultReminder) {
+    // Loads job settings from file using vJobs, into vJobs
+    // Beware: vJobs will be modified
+    public List<Job> readJobSettings(final File file, final List<Job> vJobs) {
 
         final String ERROR_MESSAGE = "Failed to load job file.";
 
@@ -995,10 +995,10 @@ public class DwarfOrganizerIO {
 
             final Map<String, Job> htJobs = hashJobs(
                     MyFileUtils.readDelimitedLineByLine(in, "\t", 0)
-                    , defaultReminder);
+                    , JobListPanel.DEFAULT_REMINDER);
 
             // Update the current labor settings with the file data.
-            for (final Job job : vLaborSettings) {
+            for (final Job job : vJobs) {
                 final Job jobFromFile = htJobs.get(job.getName());
                 if (jobFromFile != null) {
                     job.setQtyDesired(jobFromFile.getQtyDesired());
@@ -1008,18 +1008,19 @@ public class DwarfOrganizerIO {
                     job.setTime(jobFromFile.getTime());
                     job.setReminder(jobFromFile.getReminder());
                 }
-
-                else
+                else {
                     logger.log(Level.SEVERE, "WARNING: Job ''{0}"
                             + "'' was not found"
                             + " in the file. Its settings will be the"
                             + " defaults.", job.getName());
+                }
             }
         } catch (final FileNotFoundException e) {
             logger.log(Level.SEVERE, ERROR_MESSAGE, e);
         } catch (final Exception e) {
             logger.log(Level.SEVERE, ERROR_MESSAGE, e);
         }
+        return vJobs;
     }
 
     // Loads the job data into a hash map
@@ -1509,7 +1510,8 @@ public class DwarfOrganizerIO {
         }
         return vReturn;
     }
-    public void writeJobSettings(final List<Job> jobList, final File toFile) {
+    public boolean writeJobSettings(final List<Job> jobList
+            , final File toFile) {
 
         try {
             // Open the output file.
@@ -1536,6 +1538,8 @@ public class DwarfOrganizerIO {
 
         } catch (final IOException ex) {
             logger.log(Level.SEVERE, null, ex);
+            return false;
         }
+        return true;
     }
 }
