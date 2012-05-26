@@ -120,45 +120,55 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
     public MainWindow() {
         super();
-        final MyProgress progress = new MyProgress(10);
+        final MyProgress progress = new MyProgress(22);
         progress.increment("Initializing", 1);
         initVariables();    // Initialize variables that must be created
         loadPreferences();  // Load user prefs
 
         // Read files, and don't necessarily crash if we fail
         progress.increment("Reading data files", 2);
-        final FileData fileData = readFiles();
+        final FileData fileData = readFiles(progress, 3);
         setExclusionsActive();      // Combine exclusions from user prefs with data from file
-        progress.increment("Creating UI", 3);
-        prepareFrameUIs(fileData);  // Create frame contents from file data
+        progress.increment("Creating UI", 9);
+        prepareFrameUIs(fileData, progress, 10);  // Create frame contents from file data
 
-        progress.increment("Pre-loading file choosers");
-        mmFileChoosers = createChoosers(progress, 4); // (Must be done after initializing JobListPanel)
+        progress.setText("Pre-loading file choosers");
+        mmFileChoosers = createChoosers(progress, 16); // (Must be done after initializing JobListPanel)
 
         // Use JobListPanel to create main menu
-        progress.increment("Building menus", 7);
+        progress.increment("Building menus", 19);
         final MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel);
         final MenuCombiner combiner = new MenuCombiner(menuInfo); // Must be done after createMenu
 
         // Create frame maps and internal frames; must be done after
         // MenuCombiner is created
-        progress.increment("Creating internal frames", 8);
+        progress.increment("Building internal frames", 20);
         mhmInternalFrames = createFrameMap();
         createFrames(mhmInternalFrames, combiner);
 
-        progress.increment("Creating desktop", 9);
+        progress.increment("Building desktop", 21);
         setUpMainWindow(moDesktop, menuInfo);   // Set frame properties and show
 
         // Dwarf List on top (must be done after setting main window visible)
         frameToTop(INTERNAL_DWARF_LIST);
 
-        progress.increment("Done!", 10);
+        progress.increment("Done!", 22);
         progress.done();
     }
     private class MyProgress {
-        private JProgressBar progBar;
-        private JFrame fProg;
+        //private int maxSteps;
+        private String text;
+        private int value;
+
+        private final JProgressBar progBar;
+        private final JFrame fProg;
+
         public MyProgress(final int numSteps) {
+            //this.maxSteps = numSteps;
+
+            text = "";
+            value = 0;
+
             progBar = new JProgressBar(0, numSteps);
             progBar.setStringPainted(true);
 
@@ -170,15 +180,28 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             fProg.setSize(300, 65);
             fProg.setVisible(true);
         }
-        public void increment(final String desc) {
-            progBar.setString(desc);
+        private String formatDesc() {
+//            final int percent = Math.round(((float) value)
+//                    / ((float) maxSteps) * 100f);
+//            return String.format("%1$s (%2$s%%)", text, percent);
+            return text;
         }
-        public void increment(final int newValue) {
-            progBar.setValue(newValue);
+        public void setText(final String newText) {
+            text = newText;
+            showProgress();
         }
-        public void increment(final String desc, final int newValue) {
-            increment(desc);
-            increment(newValue);
+        public void setValue(final int newValue) {
+            value = newValue;
+            showProgress();
+        }
+        public void increment(final String newText, final int newValue) {
+            setText(newText);
+            setValue(newValue);
+            showProgress();
+        }
+        private void showProgress() {
+            progBar.setValue(value);
+            progBar.setString(formatDesc());
         }
         public void done() {
             fProg.dispose();
@@ -311,15 +334,24 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             }
         };
     }
-    private void prepareFrameUIs(final FileData fileData) {
+    private void prepareFrameUIs(final FileData fileData
+            , final MyProgress progress, int progressValue) {
+
+        progress.setValue(progressValue++);
         moLog = new MySimpleLogDisplay(LOG_LEVEL, LOG_MAX_LINES);
         logger.addHandler(moLog);
 
+        progress.setValue(progressValue++);
         moRulesEditor = new RulesEditorUI(mlstLabors);    // Create rules editor
+
+        progress.setValue(progressValue++);
         moExclusionManager = new ExclusionPanel(moIO);  // Create exclusions manager
+
+        progress.setValue(progressValue++);
         moViewManager = new ViewManagerUI(); // Create view manager
 
         // Create dwarf list window
+        progress.setValue(progressValue++);
         try {
             moDwarfListWindow = createDwarfListWindow(mlstLabors, fileData
                     , mlstLaborGroups, mlstViews, mlstDwarves, mlstExclusions
@@ -330,6 +362,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         }
 
         // Display a grid of the jobs to assign
+        progress.setValue(progressValue++);
         try {
             moJobListPanel = new JobListPanel(mlstLabors
                 , mlstLaborGroups, moJobBlacklist);
@@ -646,7 +679,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 = new HashMap<String, MyFileChooser>(3);
 
         // File chooser for Job Settings->Save
-        progress.increment(startValue++);
+        progress.setValue(startValue++);
         MyFileChooser chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Save Job Settings");
         chooser.setDialogType(MyFileChooser.SAVE_DIALOG);
@@ -667,7 +700,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         map.put(FILE_CHOOSER_SAVE, chooser);
 
         // File chooser for Job Settings->Open...
-        progress.increment(startValue++);
+        progress.setValue(startValue++);
         chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Load Job Settings");
         chooser.setDialogType(MyFileChooser.OPEN_DIALOG);
@@ -675,7 +708,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         map.put(FILE_CHOOSER_OPEN, chooser);
 
         // File chooser for Dwarves.xml
-        progress.increment(startValue++);
+        progress.setValue(startValue++);
         final File file = new File(mstrDwarvesXML);
         chooser = new MyFileChooser(this);
         chooser.setDialogTitle("Select location of Dwarves.xml");
@@ -686,7 +719,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         return map;
     }
 
-    private FileData readFiles() {
+    private FileData readFiles(final MyProgress progress, int progressValue) {
         // Try to read group-list.txt, labor-list.txt, rules.txt, Dwarves.xml,
         // and exclusions
         FileData fileData  = new FileData(new HashMap<String, Stat>()
@@ -694,16 +727,23 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                     , new HashMap<String, MetaSkill>());    // dummy value
 
         try {
+            progress.setValue(progressValue++);
             mlstLaborGroups = moIO.readLaborGroups();
+
+            progress.setValue(progressValue++);
             mlstLabors = moIO.readLabors();           // Read labor-list.txt
 
+            progress.setValue(progressValue++);
             moIO.readRuleFile();
             setBlacklistStructures();
 
+            progress.setValue(progressValue++);
             fileData = readDwarves();
 
+            progress.setValue(progressValue++);
             mlstExclusions = moIO.readExclusions(mlstDwarves);
 
+            progress.setValue(progressValue++);
             mlstViews = moIO.readViews();
         } catch (final Exception e) {
             logger.log(Level.SEVERE
