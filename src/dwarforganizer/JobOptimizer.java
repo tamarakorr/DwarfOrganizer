@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDesktopPane;
 import myutils.MyString;
 
 /**
@@ -22,30 +23,40 @@ public class JobOptimizer { // implements ActionListener
     private static final Logger logger = Logger.getLogger(
             JobOptimizer.class.getName());
 
-    private static final int LOG_DIVIDER_LENGTH = 80;
+    private static final int LOG_DIVIDER_LENGTH = 80;   // Number of characters
     public static final int MAX_TIME = 100;  // Maximum time units allowed to be spent scheduled for work
 
-    private int NUM_JOBS;
-    private int NUM_DWARVES;
+    private final int NUM_JOBS;
+    private final int NUM_DWARVES;
 
     private boolean[][] mbSolution;
     private double [] mdblScores; // Individual scores are just tracked for reporting
 
-    private Map<String, Integer> mmapJobNameToIndex
-            = new HashMap<String, Integer>();
-
+    private Map<String, Integer> mmapJobNameToIndex;
     private List<Job> mlstJobs;
     private List<Dwarf> mlstDwarves;
     private JobBlacklist mhtJobBlacklist;
+    private JDesktopPane desktopPane;
 
     public JobOptimizer(final List<Job> vJobs, final List<Dwarf> vDwarves
-            , final JobBlacklist htBlacklist, final Handler handler) {
+            , final JobBlacklist htBlacklist, final Handler handler
+            , final JDesktopPane desktopPane) {
 
         mlstJobs = vJobs;
         mlstDwarves = vDwarves;
         mhtJobBlacklist = htBlacklist;
+        this.desktopPane = desktopPane;
 
         addHandlerIfNew(handler);
+
+        NUM_JOBS = mlstJobs.size();
+        logger.log(Level.INFO, "Found {0} jobs for assignment...", NUM_JOBS);
+        NUM_DWARVES = mlstDwarves.size();
+        logger.log(Level.INFO, "Found {0} dwarves available for assignment..."
+                , NUM_DWARVES);
+
+        // Create job name->index lookup table
+        mmapJobNameToIndex = createJobIndex(vJobs);
     }
     private void addHandlerIfNew(final Handler newHandler) {
         for (final Handler handler : logger.getHandlers()) {
@@ -75,65 +86,74 @@ public class JobOptimizer { // implements ActionListener
         public List<Job> getJobs() {
             return jobs;
         }
+
+        public boolean[][] getSolution() {
+            return dwarfjobmap;
+        }
+
+        public double[] getDwarfScores() {
+            return dwarfscores;
+        }
     }
 
     private class SolutionImpossibleException extends Exception {
-        public SolutionImpossibleException() { super(); }
-    } ;
-
+        public SolutionImpossibleException() {
+            super();
+        }
+    }
+    private long sumJobHours(final List<Job> jobList) {
+        long hours = 0L;
+        for (final Job job : jobList)
+            hours += job.getTime() * job.getQtyDesired();
+        return hours;
+    }
+    private long sumDwarfHours(final List<Dwarf> dwarfList) {
+        long hours = 0L;
+        for (final Dwarf dwarf : dwarfList)
+            hours += dwarf.getTime();
+        return hours;
+    }
     public int optimize() {
 
-        NUM_JOBS = mlstJobs.size();
-        logger.log(Level.INFO, "Found {0} jobs for assignment...", NUM_JOBS);
-        NUM_DWARVES = mlstDwarves.size();
-        logger.log(Level.INFO, "Found {0} dwarves available for assignment..."
-                , NUM_DWARVES);
-
-        // Create job name->index lookup table
-        createJobIndex();
-
         // Summarize
-        long jobHours = 0L;
-        for (final Job job : mlstJobs)
-            jobHours += job.getTime() * job.getQtyDesired();
-        long dwarfHours = 0L;
-        for (final Dwarf dwarf : mlstDwarves)
-            dwarfHours += dwarf.getTime();
+        final long jobHours = sumJobHours(mlstJobs);
+        final long dwarfHours = sumDwarfHours(mlstDwarves);
         logger.log(Level.INFO
                 , "{0} job hours to be matched with {1} dwarf hours."
                 , new Object[]{jobHours, dwarfHours});
 
         if (jobHours > dwarfHours) {
-            final String message = "A solution is impossible: there are not"
-                    + " enough dwarves. Aborting.";
-            logger.severe(message);
+            logger.severe("A solution is impossible: there are not"
+                    + " enough dwarves. Aborting.");
+            return 0; //TODO: Look into identical return values for this function?
         }
-        else {
-            // Process jobs
-            try {
-                processJobs();
 
-                // Display results
-                displayResults();
+        // Process jobs
+        try {
+            processJobs();
+            displayResults();
 
-            } catch (final SolutionImpossibleException ignore) {
-                final String message = "(A solution is impossible. Aborting.)";
-                logger.severe(message);
-            } catch (final Exception e) {
-                final String message = "An error was encountered.";
-                logger.log(Level.SEVERE, message, e);
-            }
+        } catch (final SolutionImpossibleException e) {
+            final String message = "(A solution is impossible. Aborting.)";
+            logger.log(Level.SEVERE, message, e);
+        } catch (final Exception e) {
+            final String message = "An error was encountered.";
+            logger.log(Level.SEVERE, message, e);
         }
         return 0;
     }
 
     // Hashes job names to vector indices
-    private void createJobIndex() {
-        for (int iCount = 0; iCount < NUM_JOBS; iCount++) {
+    private HashMap<String, Integer> createJobIndex(final List<Job> jobList) {
+        HashMap<String, Integer> map = new HashMap<String, Integer>(NUM_JOBS);
+
+        for (int iCount = 0; iCount < jobList.size(); iCount++) {
+            final String name = jobList.get(iCount).getName();
             logger.log(Level.FINE, "{0} {1}"
-                    , new Object[]{iCount, mlstJobs.get(iCount).getName()});
-            mmapJobNameToIndex.put(mlstJobs.get(iCount).getName(), iCount);    // Index it for matching
+                    , new Object[]{iCount, name});
+            map.put(name, iCount); // Index it for matching
         }
+        return map;
     }
 
     // maxTime = The maximum time the jobs are allowed to take per dwarf.
@@ -158,13 +178,17 @@ public class JobOptimizer { // implements ActionListener
 
             // If time total is ok, add these jobs for now.
             if (intTotalTime1 <= intMaxTime && intTotalTime2 <= intMaxTime) {
-
                 lstCombos.add(mCount);
-                /*System.out.println("Combo #" + mCount + ") "
-                        + " Time: " + dblTotalTime1
-                        + " Inverse combo time: " + dblTotalTime2
-                        + " Jobs: " + jobComboToString(mCount, vJobs)
-                        + " (Inverse: " + jobComboToString(~ mCount, vJobs) + ")"); */
+                logger.log(Level.FINER, "Combo #{0}" + ") Time: {1}"
+                        + " Jobs: {3} (Inverse time: {2} Jobs: {4})"
+                        , new Object[]{mCount, intTotalTime1, intTotalTime2
+                                , jobComboToString(mCount, lstJobs)
+                                , jobComboToString(~ mCount, lstJobs)});
+//                System.out.println(String.format("Combo %1$s) Time: %2$s"
+//                        + " Jobs: %4$s (INVERSE: Time: %3$s Jobs: %5$s)"
+//                        , mCount, intTotalTime1, intTotalTime2
+//                                , jobComboToString(mCount, lstJobs)
+//                                , jobComboToString(~ mCount, lstJobs)));
             }
         }
         logger.log(Level.FINE, "  ({0} valid combos by time)"
@@ -176,7 +200,22 @@ public class JobOptimizer { // implements ActionListener
 
         return lstReturn;
     }
+    // Added this function back 5/27/12 for improved logging
+    private String jobComboToString(final long combo
+            , final List<Integer> jobList) {
 
+        String strReturn = "";
+        final int size = jobList.size();
+
+        for (int iCount = 0; iCount < size; iCount++) {
+            if (isJobIncludedInCombo(iCount, combo, size)) {
+                if (strReturn.length() > 0)
+                    strReturn += "+";
+                strReturn += mlstJobs.get(jobList.get(iCount)).getName();
+            }
+        }
+        return strReturn;
+    }
     // Returns true if the given combo indexed by the given list of relevant
     // jobs is blacklisted; false otherwise.
     private boolean isComboBlacklisted(final long combo
@@ -215,6 +254,7 @@ public class JobOptimizer { // implements ActionListener
     }
 
     private int getIndexOfItemInList(final int item, final List<Integer> list) {
+        //TODO: return list.indexOf(item); ???
         for (int iCount = 0; iCount < list.size(); iCount++)
             if (list.get(iCount) == item)
                 return iCount;
@@ -244,7 +284,7 @@ public class JobOptimizer { // implements ActionListener
     private ArrayList<Long> getNonBlacklistedJobs(final ArrayList<Long> combos
             , final List<Integer> relevantJobs) {
 
-        ArrayList<Long> lstNonBlacklist;     // Subset of combos, that aren't blacklisted
+        ArrayList<Long> lstNonBlacklist; // Subset of combos, that aren't blacklisted
 
         // Prune out blacklisted jobs first-------------------------------------
         if (containsAnyBlacklisted(relevantJobs)) {
@@ -366,55 +406,9 @@ public class JobOptimizer { // implements ActionListener
             // Reset scores each iteration
             Arrays.fill(mdblScores, 0);
 
+            // Scan each dwarf's jobs and make good swaps
             for (int dwarf = 0; dwarf < mbSolution[0].length; dwarf++) {
-                logger.log(Level.FINE, "Examining {0}''s jobs..."
-                        , mlstDwarves.get(dwarf).getName());
-                for (int job = 0; job < mbSolution.length; job++) {
-
-                    boolean bReassigned = false;
-
-                    // If this dwarf+job is included in the solution
-                    if (mbSolution[job][dwarf]) {
-
-                        // Is another dwarf that is not assigned this job,
-                        // better at this job?
-                        for (int otherDwarf = 0; otherDwarf < NUM_DWARVES; otherDwarf++) {
-                            final String jobName = mlstJobs.get(job).getName();
-                            final double otherDwarfSkill = mlstDwarves.get(
-                                    otherDwarf).getBalancedPotentials().get(
-                                    jobName);
-                            final double dwarfSkill = mlstDwarves.get(
-                                    dwarf).getBalancedPotentials().get(jobName);
-
-                            if (! mbSolution[job][otherDwarf]
-                                && otherDwarfSkill > dwarfSkill) {
-
-                                Logger.getLogger(
-                                        JobOptimizer.class.getName()).log(
-                                        Level.FINE, " ({0} is better at {1})"
-                                        , new Object[]{mlstDwarves.get(
-                                        otherDwarf).getName()
-                                                , mlstJobs.get(job).getName()});
-
-                                // Now swap them if necessary
-                                bReassigned = checkForJobSwap(dwarf
-                                        , otherDwarf);
-                                if (! bReassigned) {
-                                    Logger.getLogger(
-                                            JobOptimizer.class.getName()).fine(
-                                            "  (Jobs are fine as they are.)");
-                                }
-                                else {
-                                    Logger.getLogger(
-                                            JobOptimizer.class.getName()).fine(
-                                            "  Jobs were swapped.");
-                                    break;
-                                }
-                            }
-                        }
-                        if (bReassigned) break;
-                    }
-                }
+                scanJobs(dwarf);
             }
             skillSum = getSkillSum();
             if (skillSum != oldSkillSum) {
@@ -428,6 +422,51 @@ public class JobOptimizer { // implements ActionListener
         updateNewDwarfTime();
 
         addFinishedLogEntry();
+    }
+    private void scanJobs(final int dwarf) throws SolutionImpossibleException {
+
+        fine("Examining {0}''s jobs...", mlstDwarves.get(dwarf).getName());
+        for (int job = 0; job < mbSolution.length; job++) {
+
+            boolean bReassigned = false;
+
+            // If this dwarf+job is included in the solution
+            if (mbSolution[job][dwarf]) {
+
+                // Is another dwarf that is not assigned this job,
+                // better at this job?
+                for (int iOtherDwarf = 0; iOtherDwarf < NUM_DWARVES; iOtherDwarf++) {
+                    final String jobName = mlstJobs.get(job).getName();
+                    final Dwarf otherDwarf = mlstDwarves.get(iOtherDwarf);
+                    final double otherDwarfSkill
+                            = otherDwarf.getBalancedPotentials().get(jobName);
+                    final double dwarfSkill = mlstDwarves.get(
+                            dwarf).getBalancedPotentials().get(jobName);
+
+                    if (! mbSolution[job][iOtherDwarf]
+                            && otherDwarfSkill > dwarfSkill) {
+
+                        fine(" ({0} is better at {1})", new Object[]{
+                            otherDwarf.getName(), jobName});
+
+                        // Now swap them if necessary
+                        bReassigned = checkForJobSwap(dwarf, iOtherDwarf);
+                        if (! bReassigned) {
+                            fine("  (Jobs are fine as they are.)");
+                        }
+                        else {
+                            fine("  Jobs were swapped.");
+                            break;
+                        }
+                    }
+                }
+                if (bReassigned) break;
+            }
+        }
+    }
+    private void fine(final String message, Object... objects) {
+        Logger.getLogger(JobOptimizer.class.getName()).log(Level.FINE, message
+                , objects);
     }
     private void addFinishedLogEntry() {
         final String done = "(Done)";
@@ -446,59 +485,39 @@ public class JobOptimizer { // implements ActionListener
             mlstDwarves.get(dwarf).setTime(intTime);
         }
     }
+    private class RatedCombo {
+        private long combo;
+        private double score;
 
-    private boolean checkForJobSwap(final int dwarf1, final int dwarf2)
-            throws SolutionImpossibleException {
-
-        //double dblFreeTime1 = mvdDwarfTimeNew.get(dwarf1);
-        //double dblFreeTime2 = mvdDwarfTimeNew.get(dwarf2);
-
-        int intMaxFreeTime = MAX_TIME;
-        final ArrayList<Integer> lstRelevantJobs = new ArrayList<Integer>();
-
-        // Find all relevant jobs (those held by exactly one of the two dwarves).
-        for (int jCount = 0; jCount < NUM_JOBS; jCount++)
-            // (Exclusive or -> don't check for swaps if neither or both
-            // dwarves have the job.)
-            if (mbSolution[jCount][dwarf1] ^ mbSolution[jCount][dwarf2])
-                lstRelevantJobs.add(jCount);
-            // If both dwarves have the job, remove the time taken by the
-            // job from the available time.
-            else if (mbSolution[jCount][dwarf1] && mbSolution[jCount][dwarf2])
-                intMaxFreeTime -= mlstJobs.get(jCount).getTime();
-
-        // Find and rate every possible combination of these dwarves' jobs.
-        final ArrayList<Long> lstCombos = getValidJobCombos(lstRelevantJobs
-                , intMaxFreeTime);
-
-        if (lstCombos.isEmpty()) {
-            logger.severe("...ERROR: *NO* valid combinations were found,"
-                    + " including the currently selected jobs."
-                    + " All results beyond this line are invalid.");
-            throw new SolutionImpossibleException();
-        }
-        else {
-            logger.log(Level.FINE, "  ... {0} valid combinations were found."
-                    , (lstCombos.size() * 2));
+        public RatedCombo(final long combo, final double score) {
+            this.combo = combo;
+            this.score = score;
         }
 
-        // Rate combos
-        final int numJobs = lstRelevantJobs.size();
+        public long getCombo() {
+            return combo;
+        }
+
+        public double getScore() {
+            return score;
+        }
+    }
+    private RatedCombo findBestCombo(final double currentScore
+            , final List<Long> lstCombos, final int numJobs
+            , final List<Integer> lstRelevantJobs, final int dwarf1
+            , final int dwarf2) throws SolutionImpossibleException {
+
         long bestCombo = -1;
-        mdblScores[dwarf1] = getSkillSum(dwarf1);   // Record scores for reporting
-        mdblScores[dwarf2] = getSkillSum(dwarf2);
-        final double currentScore = mdblScores[dwarf1] + mdblScores[dwarf2]; // getSkillSum(dwarf1) + getSkillSum(dwarf2);
-        double bestScore = currentScore; //0;
+        double bestScore = currentScore;
         boolean invertBest = false;
 
         for (int iCount = 0; iCount < lstCombos.size(); iCount++) {
-
             double score1 = 0; // First dwarf with 1's, second with 0's
             double score2 = 0; // First dwarf with 0's, second with 1's
 
             final long combo = lstCombos.get(iCount);
 
-            for (int jCount = 0; jCount < lstRelevantJobs.size(); jCount++) {
+            for (int jCount = 0; jCount < numJobs; jCount++) {
 
                 final int jobIndex = lstRelevantJobs.get(jCount);
                 if (isJobIncludedInCombo(jCount, combo, numJobs)) {
@@ -535,19 +554,57 @@ public class JobOptimizer { // implements ActionListener
         if (invertBest)
             bestCombo = ~ bestCombo;
 
-        // Set the new job allocation if necessary (only if score improves).
-        final boolean bDifferent = bestScore > currentScore; //false;
-        //if (bDifferent) {
-            //bDifferent = isJobAllocationDifferent(vRelevantJobs, bestCombo, dwarf1);
-            if (bDifferent) {
-                setDwarfJobs(dwarf1, bestCombo, lstRelevantJobs);
-                setDwarfJobs(dwarf2, ~ bestCombo, lstRelevantJobs);
-            }
-        //}
-        return bDifferent;
-
+        return new RatedCombo(bestCombo, bestScore);
     }
+    private boolean checkForJobSwap(final int dwarf1, final int dwarf2)
+            throws SolutionImpossibleException {
 
+        int intMaxFreeTime = MAX_TIME;
+        final ArrayList<Integer> lstRelevantJobs = new ArrayList<Integer>();
+
+        // Find all relevant jobs (those held by exactly one of the two dwarves).
+        for (int jCount = 0; jCount < NUM_JOBS; jCount++) {
+            // (Exclusive or -> don't check for swaps if neither or both
+            // dwarves have the job.)
+            if (mbSolution[jCount][dwarf1] ^ mbSolution[jCount][dwarf2])
+                lstRelevantJobs.add(jCount);
+            // If both dwarves have the job, remove the time taken by the
+            // job from the available time.
+            else if (mbSolution[jCount][dwarf1] && mbSolution[jCount][dwarf2])
+                intMaxFreeTime -= mlstJobs.get(jCount).getTime();
+        }
+
+        // Find and rate every possible combination of these dwarves' jobs.
+        final ArrayList<Long> lstCombos = getValidJobCombos(lstRelevantJobs
+                , intMaxFreeTime);
+
+        if (lstCombos.isEmpty()) {
+            logger.severe("...ERROR: *NO* valid combinations were found,"
+                    + " including the currently selected jobs."
+                    + " All results beyond this line are invalid.");
+            throw new SolutionImpossibleException();
+        }
+        else {
+            fine("  ... {0} valid combinations were found."
+                    , (lstCombos.size() * 2));
+        }
+
+        // Rate combos
+        final int numJobs = lstRelevantJobs.size();
+        mdblScores[dwarf1] = getSkillSum(dwarf1); // Record scores for reporting
+        mdblScores[dwarf2] = getSkillSum(dwarf2);
+        final double currentScore = mdblScores[dwarf1] + mdblScores[dwarf2];
+        final RatedCombo rc = findBestCombo(currentScore, lstCombos, numJobs
+                , lstRelevantJobs, dwarf1, dwarf2);
+
+        // Set the new job allocation if necessary (only if score improves).
+        final boolean bImproved = rc.getScore() > currentScore; // bestScore > currentScore;
+        if (bImproved) {
+            setDwarfJobs(dwarf1, rc.getCombo(), lstRelevantJobs); //bestCombo, lstRelevantJobs);
+            setDwarfJobs(dwarf2, ~ rc.getCombo(), lstRelevantJobs); //~ bestCombo, lstRelevantJobs);
+        }
+        return bImproved;
+    }
     private long getWeightedScore(final int dwarfIndex, final int jobIndex)
             throws SolutionImpossibleException {
 
@@ -604,34 +661,21 @@ public class JobOptimizer { // implements ActionListener
     }
 
     private double getSkillSum() throws SolutionImpossibleException {
-
         double sum = 0;
-
         for (int dCount = 0; dCount < mlstDwarves.size(); dCount++)
             sum += getSkillSum(dCount);
 
         return sum;
-
-        /*for (int jCount = 0; jCount < NUM_JOBS; jCount++)
-            for (int dCount = 0; dCount < mvstrDwarfNames.size(); dCount++) {
-                if (mbSolution[jCount][dCount])
-                    sum += mvJobSkill.get(dCount).get(jCount);
-            }
-
-        return sum; */
-
     }
 
     private double getSkillSum(final int dwarf)
             throws SolutionImpossibleException {
 
         double sum = 0;
-        //Vector<Integer> dwarfSkill = mvJobSkill.get(dwarf);
-
-        for (int jCount = 0; jCount < NUM_JOBS; jCount++)
+        for (int jCount = 0; jCount < NUM_JOBS; jCount++) {
             if (mbSolution[jCount][dwarf])
-                sum += getWeightedScore(dwarf, jCount); //dwarfSkill.get(jCount);
-
+                sum += getWeightedScore(dwarf, jCount);
+        }
         return sum;
     }
 
@@ -668,8 +712,9 @@ public class JobOptimizer { // implements ActionListener
         return true;
     }
 
-    private void displayResults() { // throws SolutionImpossibleException
+    private void displayResults() {
         final ResultsView ignore = new ResultsView(
-                new Solution(mlstJobs, mlstDwarves, mbSolution, mdblScores));
+                new Solution(mlstJobs, mlstDwarves, mbSolution, mdblScores)
+                , desktopPane);
     }
 }

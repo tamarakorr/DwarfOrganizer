@@ -26,7 +26,7 @@ import myutils.*;
  * See MIT license in license.txt
  *
  */
-public class ResultsView { //  implements ActionListener {
+public class ResultsView {
 
     private static final int LABOR_COLUMN = 3;      // Labors column index in the table
     private static final int REMINDER_COLUMN = 4;   // Reminder column index in the table
@@ -74,14 +74,146 @@ public class ResultsView { //  implements ActionListener {
 
     private static final boolean DEFAULT_NICKNAME_VIS = false;
 
-    public ResultsView(final JobOptimizer.Solution solution) {
+    public ResultsView(final JobOptimizer.Solution solution
+            , final Component progRelativeTo) {
 
         mlstDwarves = solution.getDwarves();
         mbSolution = solution.dwarfjobmap;
         mlstJobs = solution.getJobs();
         mdblScores = solution.dwarfscores;
 
-        // Create the table filters
+        createUI(progRelativeTo);
+    }
+    private void createUI(final Component relativeTo) {
+        final MyProgress progress = new MyProgress(10, "Loading results"
+                , relativeTo);
+        progress.increment("Creating filters", 1);
+        createFilters(); // Create the table filters
+        progress.setText("Creating table");
+        final JScrollPane oSP = createTableUI(progress, 2); // Create table, scroll pane, and sorter.
+
+        // Create view filter buttons
+        progress.increment("Creating buttons", 7);
+        final ButtonGroup optView = new ButtonGroup();
+        final JRadioButton btnViewAll = createRadioButton("View All"
+                , ACTION_CMD_ALL, true, optView);
+        final JRadioButton btnViewNobles = createRadioButton("Nobles Only"
+                , ACTION_CMD_NOBLE, false, optView);
+        final JRadioButton btnViewReminders = createRadioButton("Has Reminder"
+                , ACTION_CMD_REMINDER, false, optView);
+
+        final JPanel panFilter = createFlowPanel(btnViewAll, btnViewNobles
+                , btnViewReminders);
+
+        // Put the UI together
+        progress.increment("Creating layout", 8);
+        final JPanel panAll = new JPanel(new BorderLayout());
+        panAll.add(oSP);
+        panAll.add(panFilter, BorderLayout.PAGE_END);
+
+        // Create and show the window containing the UI.
+        progress.increment("Creating window", 9);
+        final JFrame frList = createFrame(panAll);
+
+        // Create the ActionListener for the buttons
+        // Must be done after creating frList
+        progress.increment("Creating actions", 10);
+        final ActionListener filterActionListener
+                = createActionListener(frList);
+        applyActionListener(filterActionListener, btnViewAll, btnViewNobles
+                , btnViewReminders);
+        progress.done();
+    }
+    private void applyActionListener(final ActionListener actionListener
+            , final AbstractButton... buttons) {
+
+        for (final AbstractButton button : buttons)
+            button.addActionListener(actionListener);
+    }
+    private JPanel createFlowPanel(final Component... comps) {
+        final JPanel panel = new JPanel(new FlowLayout());
+        for (final Component comp : comps)
+            panel.add(comp);
+        return panel;
+    }
+    private JFrame createFrame(final JPanel panAll) {
+        final JFrame frList = MyHandyWindow.createSimpleWindow("Optimized Jobs"
+                , panAll, new BorderLayout());
+        frList.setJMenuBar(createMenu());
+        frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        frList.setVisible(true);
+        return frList;
+    }
+    private JRadioButton createRadioButton(final String text
+            , final String actionCommand, final boolean selected
+            , final ButtonGroup buttonGroup) {
+
+        final JRadioButton radioButton = new JRadioButton(text);
+        radioButton.setActionCommand(actionCommand);
+        radioButton.setSelected(selected);
+
+        buttonGroup.add(radioButton);
+
+        return radioButton;
+    }
+    private JScrollPane createTableUI(final MyProgress progress
+            , int progressIndex) {
+
+        final MySimpleTableModel oModel = createResultsModel();
+        moTable = new JTable(oModel, new HideableTableColumnModel());
+        moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
+
+        // Renderers
+        progress.setValue(progressIndex++);
+        createRenderers(moTable);
+
+        // Hide nickname if necessary
+        progress.setValue(progressIndex++);
+        setNicknameVisible(DEFAULT_NICKNAME_VIS);
+
+        progress.setValue(progressIndex++);
+        final JScrollPane oSP = new JScrollPane(moTable);
+        MyHandyTable.handyTable(moTable, oModel, true, true);
+
+        progress.setValue(progressIndex++);
+        MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
+
+        progress.setValue(progressIndex++);
+        MyHandyTable.setPrefWidthToColWidth(moTable);
+
+        return oSP;
+    }
+    // Creates the cell renderers
+    private void createRenderers(final JTable table) {
+        final MyTCRStripedHighlight normalRenderer
+                = new MyTCRStripedHighlight(1);
+        table.setDefaultRenderer(Object.class, normalRenderer);
+
+        final MyTopAlignedRenderer topAlignedRenderer
+                = new MyTopAlignedRenderer(1);
+        table.getColumn("Job").setCellRenderer(topAlignedRenderer);
+        table.getColumn("Reminder").setCellRenderer(topAlignedRenderer);
+    }
+    // Top-align the multi-line columns
+    private class MyTopAlignedRenderer extends MyTCRStripedHighlight {
+        MyTopAlignedRenderer(final int i) {
+            super(i);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(final JTable table
+                , final Object value, final boolean isSelected
+                , final boolean hasFocus, final int row, final int column) {
+
+            final JLabel renderedLabel
+                    = (JLabel) super.getTableCellRendererComponent(
+                    table, value, isSelected, hasFocus, row, column);
+            renderedLabel.setVerticalAlignment(SwingConstants.TOP);
+            return renderedLabel;
+        }
+    }
+    // Creates mrfNoble, mrfHasReminder, and mrfAll
+    private void createFilters() {
         ArrayList<RowFilter<Object, Object>> filters
                 = new ArrayList<RowFilter<Object, Object>>();
         filters.add(RowFilter.regexFilter(".*Manager.*", LABOR_COLUMN));
@@ -95,109 +227,6 @@ public class ResultsView { //  implements ActionListener {
         filters.add(RowFilter.regexFilter(".*\\+.*", REMINDER_COLUMN)); // Reminder cell contains a "+"
         mrfHasReminder = RowFilter.orFilter(filters);
         mrfAll = null;
-
-        // Create table, scroll pane, and sorter.
-        final MySimpleTableModel oModel = createResultsModel();
-/*        for (int iCount = 0; iCount < oModel.getColumnCount(); iCount++)
-            System.out.println("Column " + iCount + " is of class "
-                + oModel.getColumnClass(iCount).getName()); */
-        moTable = new JTable(oModel, new HideableTableColumnModel());   // oModel
-        moTable.createDefaultColumnsFromModel(); // Necessary when using HideableTableColumnModel
-
-        // Renderers
-        final MyTCRStripedHighlight normalRenderer
-                = new MyTCRStripedHighlight(1);
-        moTable.setDefaultRenderer(Object.class, normalRenderer);
-
-        // Top-align the multi-line columns
-        class MyTopAlignedRenderer extends MyTCRStripedHighlight {
-            MyTopAlignedRenderer(int i) {
-                super(i);
-            }
-
-            @Override
-            public Component getTableCellRendererComponent(final JTable table
-                    , final Object value, final boolean isSelected
-                    , final boolean hasFocus, final int row, final int column) {
-
-                final JLabel renderedLabel
-                        = (JLabel) super.getTableCellRendererComponent(
-                        table, value, isSelected, hasFocus, row, column);
-                renderedLabel.setVerticalAlignment(SwingConstants.TOP);
-                return renderedLabel;
-            }
-        }
-
-        final MyTopAlignedRenderer topAlignedRenderer
-                = new MyTopAlignedRenderer(1);
-        moTable.getColumn("Job").setCellRenderer(topAlignedRenderer);
-        moTable.getColumn("Reminder").setCellRenderer(topAlignedRenderer);
-
-        // Hide nickname if necessary
-        setNicknameVisible(DEFAULT_NICKNAME_VIS);
-
-        final JScrollPane oSP = new JScrollPane(moTable);
-        MyHandyTable.handyTable(moTable, oModel, true, true);
-        MyHandyTable.adjustMultiLineRowHeight(moTable, MULTILINE_GAP);
-        MyHandyTable.setPrefWidthToColWidth(moTable);
-
-        //oSP.setPreferredSize(oTable.getPreferredScrollableViewportSize());
-
-        // Create view filter buttons
-        final JRadioButton btnViewAll = new JRadioButton("View All");
-        btnViewAll.setSelected(true);
-        btnViewAll.setActionCommand(ACTION_CMD_ALL);
-
-        final JRadioButton btnViewNobles = new JRadioButton("Nobles Only");
-        btnViewNobles.setActionCommand(ACTION_CMD_NOBLE);
-
-        final JRadioButton btnViewReminders = new JRadioButton("Has Reminder");
-        btnViewReminders.setActionCommand(ACTION_CMD_REMINDER);
-
-        final ButtonGroup optView = new ButtonGroup();
-        optView.add(btnViewAll);
-        optView.add(btnViewNobles);
-        optView.add(btnViewReminders);
-
-        // Create "show jobs to remove" filter checkbox
-/*        JCheckBox chkJobsToRemove = new JCheckBox("Show jobs to remove"
-                , mbShowJobs[ChangeType.REMOVE.getIndex()]);  //  mbShowRemoveJobs
-        chkJobsToRemove.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mbShowRemoveJobs = ! mbShowRemoveJobs;
-                updateShowRemoveJobs();
-            }
-        }); */
-
-        final JPanel panFilter = new JPanel();
-        panFilter.setLayout(new FlowLayout());
-        //panFilter.add(chkJobsToRemove);
-        panFilter.add(btnViewAll);
-        panFilter.add(btnViewNobles);
-        panFilter.add(btnViewReminders);
-
-        // Put the UI together
-        final JPanel panAll = new JPanel();
-        panAll.setLayout(new BorderLayout());
-        panAll.add(oSP);
-        panAll.add(panFilter, BorderLayout.PAGE_END);
-
-        // Create and show a window containing the table.
-        final JFrame frList = MyHandyWindow.createSimpleWindow("Optimized Jobs"
-                , panAll, new BorderLayout());
-        frList.setJMenuBar(createMenu());
-        frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frList.setVisible(true);
-
-        // Create the actionlistener for the buttons
-        // Must be done after creating frList
-        final ActionListener filterActionListener
-                = createActionListener(frList);
-        btnViewAll.addActionListener(filterActionListener);
-        btnViewNobles.addActionListener(filterActionListener);
-        btnViewReminders.addActionListener(filterActionListener);
-
     }
     private class DisplayableChange {
 
