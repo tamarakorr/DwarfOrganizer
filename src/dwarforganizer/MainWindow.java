@@ -34,8 +34,8 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.filechooser.FileFilter;
 import myutils.MyHandyOptionPane;
-import myutils.MyHandyWindow;
 import myutils.MySimpleLogDisplay;
+import myutils.MyWindowUtils;
 import myutils.com.centerkey.utils.BareBonesBrowserLaunch;
 
 /**
@@ -152,6 +152,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         // Dwarf List on top (must be done after setting main window visible)
         frameToTop(INTERNAL_DWARF_LIST);
+        MyWindowUtils.cascade(moDesktop);
 
         progress.increment("Done!", 22);
         progress.done();
@@ -314,7 +315,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         progress.setValue(progressValue++);
         try {
             moJobListPanel = new JobListPanel(mlstLabors
-                , mlstLaborGroups, moJobBlacklist);
+                    , mlstLaborGroups, moJobBlacklist
+                    , DESKTOP_HEIGHT - MyWindowUtils.CASCADE_MARGIN * 5);
             logger.log(Level.INFO, "Loading last file: {0}", mstrLastJobFile);
             if (mstrLastJobFile == null)
                 loadDefaultJobSettings(moJobListPanel);
@@ -335,7 +337,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         final DwarfListWindow win = new DwarfListWindow(vLabors
                 , fileData.getStatMap()
                 , fileData.getSkillMap(), fileData.getMetaSkillMap()
-                , vLaborGroup, vViews);
+                , vLaborGroup, vViews
+                , DESKTOP_WIDTH - MyWindowUtils.CASCADE_MARGIN * 4
+                , DESKTOP_HEIGHT * 3 / 5);
         win.loadData(vDwarves, vExclusions);
         ePanel.getAppliedBroadcaster().addListener(win); // Listen for exclusions applied
         win.getBroadcaster().addListener(this);
@@ -405,7 +409,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
         final String[] windowList = new String[] { INTERNAL_VIEW_MANAGER
                 , INTERNAL_RULES_EDITOR, INTERNAL_EXCLUSIONS };
         for (final String key : windowList) {
-            MyHandyWindow.clickClose(getInternalFrame(key));
+            MyWindowUtils.clickClose(getInternalFrame(key));
         }
         moAboutScreen.dispose();    // Destroy "about" screen
         getInternalFrame(INTERNAL_LOG).dispose(); // Dispose of log
@@ -453,7 +457,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
             final Container uiObject = createUIObject();
             addListeners();
 
-            return MyHandyWindow.createInternalFrame(desktop, title, resizable
+            return MyWindowUtils.createInternalFrame(desktop, title, resizable
                     , closable, maximizable, iconifiable, closeBehavior
                     , uiObject);
         }
@@ -1974,7 +1978,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         @Override
         public JInternalFrame createFrame() {
-            final JInternalFrame frame = MyHandyWindow.createInternalFrame(
+            final JInternalFrame frame = MyWindowUtils.createInternalFrame(
                     desktop, title, true, true, true, true
                     , WindowConstants.HIDE_ON_CLOSE, ui);
             frame.setSize(700, 250);

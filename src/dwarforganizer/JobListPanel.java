@@ -13,6 +13,7 @@ import dwarforganizer.swing.MyTableTransferHandler;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +81,8 @@ public class JobListPanel extends JPanel {
 
     public JobListPanel(final List<Labor> vLabors
             , final List<LaborGroup> vLaborGroups
-            , final JobBlacklist blacklist) throws CouldntProcessFileException {
+            , final JobBlacklist blacklist, final int heightToWorkWith)
+            throws CouldntProcessFileException {
 
         moLoadingHandler = createLoadingHandler();
         moLoadingHandler.increment();
@@ -158,6 +160,8 @@ public class JobListPanel extends JPanel {
         final JScrollPane oSP = new JScrollPane(moTable);
         MyHandyTable.handyTable(moTable, oModel, false, true);
         MyHandyTable.setPrefWidthToColWidth(moTable);
+        oSP.setPreferredSize(new Dimension(oSP.getPreferredSize().width
+                , heightToWorkWith));
 
         // Create panel
         this.setLayout(new BorderLayout());

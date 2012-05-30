@@ -137,7 +137,7 @@ public class ResultsView {
         return panel;
     }
     private JFrame createFrame(final JPanel panAll) {
-        final JFrame frList = MyHandyWindow.createSimpleWindow("Optimized Jobs"
+        final JFrame frList = MyWindowUtils.createSimpleWindow("Optimized Jobs"
                 , panAll, new BorderLayout());
         frList.setJMenuBar(createMenu());
         frList.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

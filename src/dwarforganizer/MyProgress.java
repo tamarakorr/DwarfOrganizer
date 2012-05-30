@@ -8,7 +8,7 @@ import java.awt.Component;
 import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
-import myutils.MyHandyWindow;
+import myutils.MyWindowUtils;
 
 /**
  *
@@ -32,7 +32,7 @@ public class MyProgress {
         progBar = new JProgressBar(0, numSteps);
         progBar.setStringPainted(true);
 
-        fProg = MyHandyWindow.createSimpleWindow(windowTitle, progBar);
+        fProg = MyWindowUtils.createSimpleWindow(windowTitle, progBar);
         fProg.setLocationRelativeTo(relativeTo); // Center in screen if null
         fProg.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         fProg.setResizable(false);

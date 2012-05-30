@@ -167,11 +167,11 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private PrefsRecaller moPrefs;
 
     public DwarfListWindow(final List<Labor> vLabors
-            , final Map<String, Stat> htStat
-            , final Map<String, Skill> htSkill
+            , final Map<String, Stat> htStat, final Map<String, Skill> htSkill
             , final Map<String, MetaSkill> htMeta
             , final List<LaborGroup> lstLaborGroups
-            , final List<GridView> lstViews) {
+            , final List<GridView> lstViews, final int widthToWorkWith
+            , final int heightToWorkWith) {
 
         // Parent constructor---------------------------------------------------
         super();
@@ -186,8 +186,6 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mhtSkills = htSkill;
         mhtMetaSkills = htMeta;
         moViews = new Views(lstViews);
-        //mlstOrderedViews = lstViews;
-        //moViews = viewsToHashMap(lstViews); // Convert view list to hashmap
 
         // Create objects-------------------------------------------------------
         final Map[] skillMaps = { mhtSkills, mhtMetaSkills };
@@ -207,13 +205,13 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         mspScrollPane = new JScrollPane(mainTable);       // moTable
         mspScrollPane.setHorizontalScrollBarPolicy(
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);  // For freeze
+        mspScrollPane.setPreferredSize(new Dimension(widthToWorkWith
+                , heightToWorkWith));
 
         // Sort by name
         MyHandyTable.handyTable(mainTable, moModel, true, 1, true);   // this
         moTableVis = new VisibilityHandler(mainTable);
         moTableVis.initialize();
-
-        //moViewHandler.createDwarfListViews();
 
         // Create the column freeze pane----------------------------------------
         // Should be done after setting up renderers and table
@@ -286,8 +284,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         }
         // ---------------------------------------------------------------------
 
-        //setView(DEFAULT_VIEW_NAME);    // // "Military View"
-        setView(moPrefs.getViewName());
+        setView(moPrefs.getViewName()); // DEFAULT_VIEW_NAME // "Military View"
 
         // Show some statistics-------------------------------------------------
         mlblPop = new JLabel("X total dwarves from XML"); // total adult
@@ -299,7 +296,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         final JPanel tablePanel = new JPanel();
         tablePanel.setLayout(new BorderLayout());
         tablePanel.add(moFreezer.getSplitPane()); // mspScrollPane
-        tablePanel.setPreferredSize(new Dimension(750, 250));
+        //tablePanel.setPreferredSize(new Dimension(750, 250));
 
         final JPanel panInfo = new JPanel();
         panInfo.setLayout(new BorderLayout());
