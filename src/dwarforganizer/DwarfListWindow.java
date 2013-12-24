@@ -1559,7 +1559,9 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             logger.log(Level.SEVERE, null, ex);
         } finally {
             try {
-                fstream.close();
+                if (fstream != null) {
+                    fstream.close();
+                }
             } catch (final IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -1871,7 +1873,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
     @Override
     public void broadcast(final BroadcastMessage message) {
-        if (message.getSource().equals("ExclusionsApplied")) {
+        if (message.getSource().equals("ExclusionPanelApply")) { // "ExclusionsApplied"
             try {
                 //System.out.println("Exclusions applied");
                 final Collection<Exclusion> lstExclusion
