@@ -393,7 +393,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             //    + (excl.isActive() ? "" : "in") + "active");
 
         // Clear input----------------------------------------------------------
-        setMessage("(Message)");
+        setMessage(""); // "(Message)"
         moRuleTable.clearInput();
         moListTable.clearInput();
         moRuleCitizen.setList(new ArrayList<String>());
