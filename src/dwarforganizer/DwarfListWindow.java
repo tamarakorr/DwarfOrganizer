@@ -868,7 +868,22 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
     private void createPopup() {
         final JPopupMenu popUp = new JPopupMenu();
         JMenuItem menuItem;
-        final JMenuItem[] selectionNeededItems = new JMenuItem[2];
+        final JMenuItem[] selectionNeededItems = new JMenuItem[3];
+        int menuCount = 0;
+
+        // View skill potentials
+        menuItem = new JMenuItem("View Skill Potentials");
+        menuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                showSelPotentials();
+            }
+        });
+        selectionNeededItems[menuCount++] = menuItem;
+        popUp.add(menuItem);
+
+        // ---------------------------------------------------------------------
+        popUp.add(new JSeparator());
 
         // Include selected
         menuItem = new JMenuItem("Include Selected");
@@ -880,7 +895,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 setIncluded(true);
             }
         });
-        selectionNeededItems[0] = menuItem;
+        selectionNeededItems[menuCount++] = menuItem;
         popUp.add(menuItem);
 
         menuItem = new JMenuItem("Exclude Selected");
@@ -892,7 +907,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
                 setIncluded(false);
             }
         });
-        selectionNeededItems[1] = menuItem;
+        selectionNeededItems[menuCount++] = menuItem;
         popUp.add(menuItem);
 
         // ---------------------------------------------------------------------
@@ -910,9 +925,12 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
         popUp.add(menuItem);
 
         // ---------------------------------------------------------------------
-        for (final JTable table : moTable.getTables())
-            table.setComponentPopupMenu(popUp); // moTable
-            moTable.getMainTable().getSelectionModel().addListSelectionListener(
+        for (final JTable table : moTable.getTables()) {
+            // Smart right-clicking for context menu:
+            MyHandyTable.makePopupFriendly(table, popUp);
+        }
+
+        moTable.getMainTable().getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
 
             @Override
@@ -922,6 +940,18 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
             }
         });
         setMenusEnabledBySelection(selectionNeededItems); // Initialize
+    }
+    private void showSelPotentials() {
+        final JTable tbl = moTable.getMainTable();
+        List<Dwarf> list = new ArrayList<Dwarf>(
+                tbl.getSelectedRowCount());
+        int iRows[] = tbl.getSelectedRows();
+        for (int iRow : iRows) {
+            final Dwarf dwarf = moModel.getRowData().get(
+                    tbl.convertRowIndexToModel(iRow)).getDwarf();
+            list.add(dwarf);
+        }
+        new PotentialView(list, mhtSkills).createFrame();
     }
     private void setMenusEnabledBySelection(final JMenuItem[] menuItems) {
         final boolean bAnySelected

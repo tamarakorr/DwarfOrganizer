@@ -10,6 +10,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -84,12 +85,20 @@ public class ColumnFreezingTable {
         }
         // .setAutoCreateColumnsFromModel(false); May be important
 
+        // The given column model must contain no columns.
+        if (cmAllColumns.getColumnCount() != 0) {
+            logger.severe("[ColumnFreezingTable] Invalid number of columns"
+                   + " in the given column model: Must be zero.");
+        }
+
         // Set column model and create it from rightTable's columns
+        logger.info("Creating column model");
         mcmAllColumns = cmAllColumns;
         setAllColumns();
         mcmAllColumns.addColumnModelListener(createTableColumnModelListener());
 
         // Create split controls
+        logger.info("Creating split controls");
         leftTable = new JTable();
         leftTable.setAutoCreateColumnsFromModel(false);
         leftTable.setUpdateSelectionOnSort(false);  // We need to do this manually since we're sharing a sorter
@@ -106,6 +115,7 @@ public class ColumnFreezingTable {
         // Copy object cell renderers
         // There seems to be no easy way to enumerate installed renderers.
         // So we just copy the defined default renderers here:
+        logger.info("Copying object cell renderers");
         final Class[] rendererClasses = { Object.class, Boolean.class, Number.class };
         for (final Class cls : rendererClasses) {
             leftTable.setDefaultRenderer(cls
@@ -114,6 +124,7 @@ public class ColumnFreezingTable {
 
         // Don't show a vertical scrollbar for the left pane; copy horizontal
         // policy
+        logger.info("Hiding left vertical scrollbar");
         leftPane = new JScrollPane(leftTable);
 
         // Instead of setting the policy to NEVER (which breaks the mouse
@@ -127,24 +138,30 @@ public class ColumnFreezingTable {
         MyHandyTable.autoResizeTableColumns(leftTable);
 
         // leftTable and rightTable
+        logger.info("Creating model synchronizer");
         rightTable.addPropertyChangeListener(createModelSynchronizer(rightTable
                 , leftTable));
 
         // Synchronize scrolling
+        logger.info("Synchronizing scrolling");
         this.rightPane.getViewport().addChangeListener(createScrollSynchronizer(
                 leftPane));
         leftPane.getViewport().addChangeListener(createScrollSynchronizer(
                 this.rightPane));
 
+        logger.info("Creating divider");
         split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, false, leftPane
                 , rightPane);
         split.setDividerSize(DIVIDER_SIZE);
+
+        //logger.log(Level.INFO, "safeSnap {0}", DEFAULT_SNAP);
         safeSnap(DEFAULT_SNAP);
         split.addPropertyChangeListener("dividerLocation"
                 , new PropertyChangeListener() {
             @Override
             public void propertyChange(final PropertyChangeEvent evt) {
                 if (!snapping) {
+                    logger.log(Level.INFO, "PropertyChangeEvent: {0}", evt.getPropertyName());
                     updateDividerLocation((Integer) evt.getOldValue()
                             , (Integer) evt.getNewValue());
                 }
@@ -327,11 +344,31 @@ public class ColumnFreezingTable {
         }
     }
 
+    // Attempt to move the divider after the given column index.
+    // NOTE: Only works when the ColumnFreezingTable is already visible.
+    public void setDividerAfterCol(final int iCol) {
+        if (iCol < 0)
+            return;
+        if (iCol > mcmAllColumns.getColumnCount() - 1)
+            return;
+
+        logger.log(Level.INFO, "leftTable columns = {0}", leftTable.getColumnCount());
+        logger.log(Level.INFO, "rightTable columns = {0}", rightTable.getColumnCount());
+
+        int width = 0;
+        for (int iCount = 0; iCount <= iCol; iCount++) {
+            width += mcmAllColumns.getColumn(iCount).getWidth();
+        }
+        logger.log(Level.INFO, "Attempting to set divider location to {0}", width + DIVIDER_SIZE + 1);
+        //safeSnap(width);
+        updateDividerLocation(split.getDividerLocation(), width + DIVIDER_SIZE + 1);
+    }
+
     // Call this if columns may need to be moved to the other side of the divider
     // due to resizing.
     private void updateDividerLocation() {
         final int location = split.getDividerLocation();
-        updateDividerLocation(location, location);
+        updateDividerLocation(0, location);
     }
     // Moves columns between tables if needed, and snaps divider line
     // to a column boundary.
@@ -378,6 +415,7 @@ public class ColumnFreezingTable {
         // (Allow all but the last column to be moved.)
         if (newValue > oldValue) {
             position = leftTable.getColumnCount();
+            logger.log(Level.INFO, "Right table has {0} columns.", rightTable.getColumnCount());
             for (int iCount = 0; iCount < rightTable.getColumnCount() - 1; iCount++) {
                 final TableColumn col = rightTable.getColumn(
                         rightTable.getColumnName(iCount));
@@ -385,7 +423,7 @@ public class ColumnFreezingTable {
                 totalColWidth += thisColWidth;
                 halfThisColWidth = thisColWidth / 2;
                 if (totalColWidth - halfThisColWidth <= newValue) {
-                    //System.out.println("Moving " + col.getIdentifier() + " to fixed table, position " + position);
+                    logger.log(Level.INFO, "Moving {0} to fixed table, position {1}", new Object[]{col.getIdentifier(), position});
                     list.add(new ColToMove(col, rightTable, leftTable
                             , position));
                     position++;
@@ -397,9 +435,10 @@ public class ColumnFreezingTable {
             }
         }
 
+        logger.log(Level.INFO, "Moving {0} column(s).", list.size());
         moveColumns(list);
 
-        //System.out.println(newValue + " " + snap);
+        //logger.log(Level.INFO, "Safesnap {0}", snap);
         safeSnap(snap);
     }
     // Snaps the divider without calling updateDividerLocation (does not check
@@ -408,6 +447,8 @@ public class ColumnFreezingTable {
         // Add DIVIDER_SIZE + 1 pixels to avoid cutting off any columns on the
         // left of the divider
         snapping = true;
+        logger.log(Level.INFO, "safeSnap: Setting divider location to {0}"
+                , (location + DIVIDER_SIZE + 1));
         split.setDividerLocation(location + DIVIDER_SIZE + 1);
         snapping = false;
     }
@@ -514,10 +555,12 @@ public class ColumnFreezingTable {
         System.out.println("-----");
     }
     private void setAllColumns() {
-        for (int iCount = 0; iCount < rightTable.getColumnCount(); iCount++) {
+        final int iCols = rightTable.getColumnCount();
+        for (int iCount = 0; iCount < iCols; iCount++) {
             final TableColumn tableColumn
                     = rightTable.getColumnModel().getColumn(iCount);
-            //System.out.println("Adding " + tableColumn.getIdentifier());
+            logger.log(Level.INFO, "  Adding column: {0}"
+                    , tableColumn.getIdentifier());
             mcmAllColumns.addColumn(tableColumn);
         }
     }

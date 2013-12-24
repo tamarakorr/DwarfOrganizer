@@ -21,10 +21,7 @@ import java.awt.Point;
 import java.awt.event.*;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -138,7 +135,8 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         // Use JobListPanel to create main menu
         progress.increment("Building menus", 19);
-        final MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel);
+        final MenuCombiner.MenuInfo menuInfo = createMenu(moJobListPanel
+                , fileData);
         final MenuCombiner combiner = new MenuCombiner(menuInfo); // Must be done after createMenu
 
         // Create frame maps and internal frames; must be done after
@@ -869,13 +867,16 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         return lstReturn;
     }
-    private ArrayList<Integer> createWindowMenu(final JMenuBar menuBar) {
+    private ArrayList<Integer> createWindowMenu(final JMenuBar menuBar
+            , final FileData fileData) {
+
         final ArrayList<Integer> lstReturn = new ArrayList<Integer>();
         final int PRIO_DWARF = 20;
         final int PRIO_JOB = 30;
         final int PRIO_RULES = 40;
         final int PRIO_EXCL = 50;
         final int PRIO_LOG = 10;
+        final int PRIO_POTENTIAL = 60;
 
         final JMenu menu = MenuHelper.createMenu("Window", KeyEvent.VK_W);
         menuBar.add(menu);
@@ -903,6 +904,22 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 , new ExclLoader()), KeyEvent.VK_E
                 , KeyStroke.getKeyStroke("F9"));
         addMenuItem(menu, menuItem, lstReturn, PRIO_EXCL);
+
+        final ActionListener al = new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                final Dwarf[] aDwarves = new Dwarf[mlstDwarves.size()];
+                mlstDwarves.toArray(aDwarves);
+                Arrays.sort(aDwarves);
+                new PotentialView(Arrays.asList(aDwarves)
+                        , fileData.getSkillMap()).createFrame();
+            }
+        };
+        menuItem = MenuHelper.createMenuItem("Test Potential View", al
+                , KeyStroke.getKeyStroke("F11"));
+        addMenuItem(menu, menuItem, lstReturn, PRIO_POTENTIAL);
+
         return lstReturn;
     }
     private ArrayList<Integer> createHelpMenu(final JMenuBar menuBar) {
@@ -927,7 +944,9 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
 
         return lstReturn;
     }
-    private MenuCombiner.MenuInfo createMenu(final JobListPanel jobListPanel) {
+    private MenuCombiner.MenuInfo createMenu(final JobListPanel jobListPanel
+            , final FileData fileData) {
+
         final JMenuBar menuBar = new JMenuBar();
 
         final int[] menuPriority = { 10, 80, 90 };
@@ -935,7 +954,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                 = new ArrayList[menuPriority.length];
 
         menuItemPriority[0] = createProcessMenu(menuBar, jobListPanel);
-        menuItemPriority[1] = createWindowMenu(menuBar);
+        menuItemPriority[1] = createWindowMenu(menuBar, fileData);
         menuItemPriority[2] = createHelpMenu(menuBar);
 
         return new MenuCombiner.MenuInfo(menuBar, menuPriority
