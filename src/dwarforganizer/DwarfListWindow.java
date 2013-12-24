@@ -202,6 +202,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Create the dwarf data table------------------------------------------
         final JTable mainTable = createDwarfDataTable(moModel); // moTable
+        MyHandyTable.hideGridLines(mainTable);
         mspScrollPane = new JScrollPane(mainTable);       // moTable
         mspScrollPane.setHorizontalScrollBarPolicy(
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);  // For freeze
