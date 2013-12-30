@@ -23,7 +23,7 @@ import myutils.Adapters.MouseClickedAdapter;
 import myutils.MyHandyTable;
 
 /**
- * Makes programming typical table add/edit/delete functions more convenient
+ * Makes programming typical table add/edit/delete functions more convenient.
  *
  * How to use:
  * Extend AbstractEditor
@@ -47,7 +47,11 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
 
     private enum EditingState { NEW, EDIT }
     private EditingState meEditState;
-    private int mintCurrentEditedRow = -1;  // Model index. The currently edited row, if any. Only valid while EditingState is EDIT
+
+    // Model index. The currently edited row, if any.
+    // Only valid while EditingState is EDIT
+    private int mintCurrentEditedRow = -1;
+
     private boolean mbClearAfterAdd = true;
     private boolean mbClearAfterEdit = true;
 
@@ -70,7 +74,6 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
             , final boolean ctrlEnterToEdit, final boolean deleteKeyToDelete
             , final boolean createPopUpEdit, final boolean createPopUpDelete
             , final JComponent focusOnEdit) {
-            //, final int[] editKeys, final int[] deleteKeys) { // DefaultTableModel
 
         moTable = table;
         moModel = model;
