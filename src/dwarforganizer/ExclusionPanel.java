@@ -17,6 +17,7 @@ import dwarforganizer.swing.SortKeySwapper;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.Collator;
+import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
@@ -450,9 +451,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
     public Broadcaster getDefaultButtonBroadcaster() {
         return defaultButtonBroadcaster;
     }
-/*    public Broadcaster getExclusionActiveBroadcaster() {
-        return exclusionActiveBroadcaster;
-    } */
     public Broadcaster getAppliedBroadcaster() {
         return appliedBroadcaster;
     }
@@ -718,7 +716,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             exclModel = new MyEditableTableModel<TableItem>(getTableCols(), getColClasses()
                     , getColProperties()
                     , toTableItems(lstExclusion), swapper);
-            //exclModel.addEditableException(0);
             exclModel.addEditableException(ACTIVE_COL_IDENTIFIER); // "Active" checkbox editable
 
             // When the table is edited, update saved exclusions.
@@ -742,7 +739,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
                 }
             });
 
-            //exclTable = new JTable(exclModel);
             exclTable = MyHandyTable.createSmarterFocusTable(new JTable(
                     exclModel)); // createRowBorderTable
             swapper.setTable(exclTable);
@@ -867,6 +863,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
                         this.getDirtyHandler().setDirty(true);
                         this.setCitizenList(tableItem);
                         refreshNumCitizens(tableItem);
+                        setMessage("Added exclusion for " + citizen);
                     }
                     else
                         setMessage("That citizen is already in this list.");
@@ -882,12 +879,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             tableItem.setNumCitizens(this.getNumCitizens(
                     tableItem.getExclusion()));
             this.getModel().fireUpdateForKey(tableItem.getKey());
-
-/*            TableItem newTableItem = new TableItem(
-                    tableItem.getID(), tableItem.getExclusion()
-                    , this.getNumCitizens(tableItem.getExclusion())); // tableItem.isActive(),
-            //setMessage("New number of citizens: " + newTableItem.getNumCitizens());
-            this.getModel().updateRowByKey(tableItem.getID(), newTableItem); */
         }
 
         protected boolean removeCitizen() {
@@ -917,16 +908,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
                 setMessage("Error: TableItem null");
             return true;
         }
-/*        private int indexOfCitizen(Vector<String> vCitizens, String citizenName) {
-            for (int iCount = 0; iCount < vCitizens.size(); iCount++) {
-                if (vCitizens.get(iCount).equals(citizenName)) {
-                    return iCount;
-                }
-                //else
-                    //System.out.println("Checking " + vCitizens.get(iCount) + " for " + citizenName);
-            }
-            return -1;
-        } */
 
         // Enable/disable the add button as a currently-selected exclusion is set
         @Override
@@ -1203,10 +1184,9 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
 
     protected class CitizenList {
 
-        //private MyTableModel<Dwarf> model;
         private MySimpleTableModel model;
         private JTable table;
-        private Object[] columns = { "Citizen" }; // List<Object> new ArrayList<Object>(Arrays.asList( new Object[]
+        private Object[] columns = { "Citizen" };
 
         public CitizenList() {
             super();
@@ -1230,7 +1210,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             return spReturn;
         }
         public void setList(final List<String> list) {
-            //model.setRowData(list);
             model.setDataVector(toDataArray(list), columns);  // Seems to eat sorting; toVVO
             MyHandyTable.sortByCol(table, 0, SortOrder.ASCENDING);   // setDataVector ate our sortkeys
         }
@@ -1252,8 +1231,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             return aReturn;
         }
         public void addCitizen(final String citizen) {
-            //model.addRow(citizen);
-            model.addRow(new Object[] { citizen }); // new ArrayList<Object>(Arrays.asList(
+            model.addRow(new Object[] { citizen });
         }
         // Removes the current selected citizen from the list
         public void removeCitizen() {
@@ -1278,29 +1256,8 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
     }
 
     private void updateExclusions() {
-        // Never mind - done differently now
-        /*FunctionToDoOnEDT fte = new FunctionToDoOnEDT() {
-            @Override
-            public void runOnEDT() {
-                Hashtable<Integer, Boolean> htActive = new Hashtable<Integer, Boolean>();
-
-                AbstractExclusionEditor[] editors = new AbstractExclusionEditor[] {
-                    moListTable, moRuleTable };
-                for (AbstractExclusionEditor editor : editors) {
-                    Vector<TableItem> vItem = editor.getModel().getRowData();
-                    for (TableItem item : vItem) {
-                        Exclusion exclusion = item.getExclusion();
-                        htActive.put(exclusion.getID(), exclusion.isActive());
-                    }
-                }
-                exclusionActiveBroadcaster.notifyListeners(new BroadcastMessage(
-                        "ExclusionPanelActiveExclusions", htActive
-                        , "Active exclusions changed"));
-            }
-        }; */
-        //EventDispatchUtils.runFireOnEDT(fte, true);
-
-        moMasterDirtyHandler.setDirty(true);        // For now, make the form dirty when "Active" is changed
+        // For now, make the form dirty when "Active" is changed
+        moMasterDirtyHandler.setDirty(true);
     }
 
     private ArrayList<String> getCitizenNames(final List<Dwarf> list) {
@@ -1405,11 +1362,6 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
         return btnReturn;
     }
 
-/*    @Override
-    public DirtyHandler getDirtyHandler() {
-        return moMasterDirtyHandler;
-    } */
-
     // If children are dirty, consider the whole form to be dirty
     private DirtyListener createDirtyListener() {
         return new DirtyListener() {
@@ -1432,7 +1384,14 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
     }
 
     private void setMessage(final String newMessage) {
-        mlblMessage.setText(newMessage);
+        final String strTime = DateFormat.getTimeInstance(DateFormat.MEDIUM
+                , Locale.getDefault()).format(new Date());
+
+        String message = "";
+        if (newMessage.length() > 0)
+            message = "[" + strTime + "] "  + newMessage;
+
+        mlblMessage.setText(message);
     }
 
     @Override
