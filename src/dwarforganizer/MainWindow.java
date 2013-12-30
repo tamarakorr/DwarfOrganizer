@@ -916,7 +916,7 @@ public class MainWindow extends JFrame implements BroadcastListener { // impleme
                         , fileData.getSkillMap()).createFrame();
             }
         };
-        menuItem = MenuHelper.createMenuItem("Test Potential View", al
+        menuItem = MenuHelper.createMenuItem("View Skill Potentials", al
                 , KeyStroke.getKeyStroke("F11"));
         addMenuItem(menu, menuItem, lstReturn, PRIO_POTENTIAL);
 
