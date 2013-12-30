@@ -1949,7 +1949,7 @@ public class DwarfListWindow extends JPanel implements BroadcastListener {
 
         // Manage views
         item = new JMenuItem("Manage Views...");
-        //item.setAccelerator(KeyStroke.getKeyStroke("F10")); // TODO: Why doesn't this work?
+        //item.setAccelerator(KeyStroke.getKeyStroke("F10")); // [F10] seems to be default key to open menu (like [Alt])
         item.addActionListener(new ActionListener() {
 
             @Override

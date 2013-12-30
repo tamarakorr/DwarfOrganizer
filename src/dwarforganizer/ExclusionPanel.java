@@ -33,7 +33,8 @@ import myutils.Adapters.KeyTypedAdapter;
 import myutils.*;
 
 /**
- * For creating rules that exclude dwarves, and lists of excluded dwarves
+ * UI element for creating rules that exclude dwarves,
+ * and lists of excluded dwarves.
  *
  * @author Tamara Orr
  * See MIT license in license.txt
