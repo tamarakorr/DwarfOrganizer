@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="labor-skills.xsl"?>
 <root>
 <Skills>
 <Skill>
     <Name>Wool Spinning</Name>
     <!-- The associated stats are not known. Copied stats from engraver etc. -->
+    <Note>The associated stats are not known. Copied stats from engraver etc.</Note>
     <Stats>
         <Stat>Agility</Stat>
         <Stat>Creativity</Stat>
@@ -136,6 +138,7 @@
 <Skill>
     <Name>Press Operation</Name>
     <!-- The associated stats are not known. Copied stats from butcher etc. -->
+    <Note>The associated stats are not known. Copied stats from butcher etc.</Note>
     <Stats>
         <Stat>Strength</Stat>
         <Stat>Agility</Stat>
@@ -146,6 +149,7 @@
 <Skill>
     <Name>Wax Working</Name>
     <!-- The associated stats are not known. Copied stats from engraver etc. -->
+    <Note>The associated stats are not known. Copied stats from engraver etc.</Note>
     <Stats>
         <Stat>Agility</Stat>
         <Stat>Creativity</Stat>
@@ -219,6 +223,7 @@
 <Skill>
     <Name>Bee Keeping</Name>
     <!-- The associated stats are not known. Copied stats from trainer etc. -->
+    <Note>The associated stats are not known. Copied stats from trainer etc.</Note>
     <Stats>
         <Stat>Agility</Stat>
         <Stat>Toughness</Stat>
@@ -296,6 +301,7 @@
 <Skill>
     <Name>Glazing</Name>
     <!-- The associated stats are not known. Copied stats from furnace etc. -->
+    <Note>The associated stats are not known. Copied stats from furnace etc.</Note>
     <Stats>
         <Stat>Strength</Stat>
         <Stat>Toughness</Stat>
@@ -526,6 +532,7 @@
 <Skill>
     <Name>Pottery</Name>
     <!-- The associated stats are not known. Copied stats from mason etc. -->
+    <Note>The associated stats are not known. Copied stats from mason etc.</Note>
     <Stats>
         <Stat>Strength</Stat>
         <Stat>Agility</Stat>
@@ -558,6 +565,7 @@
 <Skill>
     <Name>Shearing</Name>
     <!-- The associated stats are not known. Copied stats from tanner etc. -->
+    <Note>The associated stats are not known. Copied stats from tanner etc.</Note>
     <Stats>
         <Stat>Agility</Stat>
         <Stat>Kinesthetic Sense</Stat>

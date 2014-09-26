@@ -37,13 +37,17 @@ public class SortKeySwapper {
     public SortKeySwapper() {
         super();
     }
+    public SortKeySwapper(final JTable table) {
+        super();
+        moTable = table;
+    }
 
     public void setTable(final JTable oTable) {
         moTable = oTable;
     }
 
     // Swap the current table sort keys for null sort keys, or vice versa
-    protected void swapSortKeys() {
+    public void swapSortKeys() {
         // Don't mess with unsorted tables
         if (null != moTable.getRowSorter()) {
             if (null != moTable.getRowSorter().getSortKeys()) {

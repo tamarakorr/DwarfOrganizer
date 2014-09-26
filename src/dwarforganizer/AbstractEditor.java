@@ -305,9 +305,10 @@ public abstract class AbstractEditor<T extends MyPropertyGetter>
 
         if (allowEdit) {
             menuItem = new JMenuItem("Edit", KeyEvent.VK_E);
-            if (ctrlEnterToEdit)
+            if (ctrlEnterToEdit) {
                 menuItem.setAccelerator(
                         KeyStroke.getKeyStroke("control ENTER"));
+            }
             menuItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(final ActionEvent e) {

@@ -73,14 +73,14 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
     private PlaceholderTextField mtxtValue;
     private PlaceholderTextField mtxtRuleName;
     private RuleExclusionTable moRuleTable;
-    private CitizenList moRuleCitizen;
+    private SimpleCitizenList moRuleCitizen;
     private JLabel mlblMessage;
     private JScrollPane mspRule;
 
     // Exclusions by list controls
     private PlaceholderTextField mtxtListName;
     private ListExclusionTable moListTable;
-    private DeletableCitizenList moListCitizen;
+    private TickedCitizenList moListCitizen; //DeletableCitizenList
     private JButton mbtnListCitizenAdd;
     private CitizenNameCombo moCitizenNameCombo;
     private JScrollPane mspList;
@@ -148,15 +148,16 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
         mbtnListCitizenAdd = createListCitizenAddButton(); // Must be created before moListTable   // moCitizenNameCombo
         final JButton btnListCitizenRemove = createListCitizenRemoveButton();
 
-        moRuleCitizen = new CitizenList();  // Must be created before tables
-        moListCitizen = new DeletableCitizenList();
+        // SimpleCitizenList must be created before tables:
+        moRuleCitizen = new SimpleCitizenList();
+        moListCitizen = new TickedCitizenList(); // DeletableCitizenList();
 
         final DirtyListener dirtyListener = createDirtyListener();
         moRuleTable = new RuleExclusionTable(moRuleCitizen);
         moRuleTable.addDirtyListener(dirtyListener);
         moListTable = new ListExclusionTable(moListCitizen);
         moListTable.addDirtyListener(dirtyListener);
-        moListCitizen.setEditor(moListTable);
+        //moListCitizen.setEditor(moListTable);
 
         final ExclusionActionButton cmdAddRule = new ExclusionActionButton("Add New"
                 , ExclusionAction.ADD, moRuleTable);
@@ -337,7 +338,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
 
         final JPanel panCitizenList = new JPanel();
         panCitizenList.setLayout(new BorderLayout());
-        panCitizenList.add(moListCitizen.create(), BorderLayout.CENTER); // createCitizenList()
+        panCitizenList.add(moListCitizen.create(), BorderLayout.CENTER);
 
         final JPanel panCitizenSelect = new JPanel();
         panCitizenSelect.setLayout(new BorderLayout());
@@ -396,18 +397,19 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
     public void loadData(final Collection<Exclusion> colExclusion
             , final List<Dwarf> lstCitizen) {
 
+        // Set citizen list-----------------------------------------------------
+        // Must be done before loading rule/list tables, or citizen counts will
+        // be inaccurate
+        moCitizenNameCombo.setCitizenList(lstCitizen);
+        mlstCitizen = lstCitizen;
+        //System.out.println("Set " + mlstCitizen.size() + " citizens.");
+
         // Clear input----------------------------------------------------------
         setMessage(""); // "(Message)"
         moRuleTable.clearInput();
         moListTable.clearInput();
         moRuleCitizen.setList(new ArrayList<String>());
         moListCitizen.setList(new ArrayList<String>());
-
-        // Set citizen list-----------------------------------------------------
-        // Must be done before loading rule/list tables, or citizen counts will
-        // be inaccurate
-        moCitizenNameCombo.setCitizenList(lstCitizen);
-        mlstCitizen = lstCitizen;
 
         // Set exclusion rules/lists--------------------------------------------
         moRuleTable.loadData(colExclusion);
@@ -1031,7 +1033,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
     private class RuleExclusionTable
         extends AbstractExclusionEditor<ExclusionRule> { // AbstractEditor<TableItem> {
 
-        public RuleExclusionTable(final CitizenList citizenList) {
+        public RuleExclusionTable(final SimpleCitizenList citizenList) {
             super(citizenList);
         }
 
@@ -1184,7 +1186,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
 
     // A CitizenList with the [delete] key enabled, to call ListExclusionTable.removeCitizen()
     // setEditor() must be set before calling create()
-    private class DeletableCitizenList extends CitizenList {
+    private class DeletableCitizenList extends SimpleCitizenList {
 
         private ListExclusionTable listExclTable;
 
@@ -1209,11 +1211,14 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
         }
     }
 
-    protected class CitizenList {
+    protected abstract class CitizenList {
+
+        private static final int STRIPE_ROWS = 2;
+        protected static final int COL_CITIZEN = 0;
 
         private MySimpleTableModel model;
         private JTable table;
-        private Object[] columns = { "Citizen" };
+        private Object[] columns;
 
         public CitizenList() {
             super();
@@ -1221,25 +1226,66 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
         protected JTable getTable() {
             return table;
         }
+        protected MySimpleTableModel getModel() {
+            return model;
+        }
+        protected Object[] getColumns() {
+            return columns;
+        }
+        /**
+         * Create the table model with initial data (empty other than columns).
+         *
+         * @return The table model
+         */
+        protected abstract MySimpleTableModel createEmptyModel();
+
+        /**
+         * Create the column array for the table.
+         *
+         * @return The column array to use
+         */
+        protected abstract Object[] createColumns();
+
+        /**
+         * Does any necessary post-setup for the table.
+         *
+         */
+        protected abstract void doPostCreateTable();
+
+        // Called while citizen list is still empty
         public JScrollPane create() {
-            //SortKeySwapper swapper = new SortKeySwapper();
-            //model = new MyTableModel(new Object[] { "Citizen" }
-            //    , new Class[] { String.class }, new String[] { "name" }
-            //    , new Vector<Dwarf>(), swapper);
-            model = new MySimpleTableModel(columns, 0);
+
+            columns = createColumns();
+            model = createEmptyModel();
             table = MyHandyTable.createSmarterFocusTable(new JTable(model));
-            table.setDefaultRenderer(Object.class, new MyTCRStripedHighlight(2));
-            MyHandyTable.sortByCol(table, 0, SortOrder.ASCENDING);   // Works for empty tables
-            //swapper.setTable(table);
+            table.setDefaultRenderer(Object.class
+                    , new MyTCRStripedHighlight(STRIPE_ROWS));
+
+            // Works for empty tables:
+            MyHandyTable.sortByCol(table, COL_CITIZEN, SortOrder.ASCENDING);
+
+            // Do any post-creation table setup now:
+            doPostCreateTable();
 
             final JScrollPane spReturn = new JScrollPane(table);
             spReturn.setPreferredSize(new Dimension(220, 100)); // w, h
             return spReturn;
         }
-        public void setList(final List<String> list) {
-            model.setDataVector(toDataArray(list), columns);  // Seems to eat sorting; toVVO
-            MyHandyTable.sortByCol(table, 0, SortOrder.ASCENDING);   // setDataVector ate our sortkeys
-        }
+        /**
+         * Sets the current list of exclusions.
+         *
+         * @param list List of excluded citizen names
+         */
+        public abstract void setList(final List<String> list);
+
+        /**
+         * Do whatever is needed to indicate the given citizen is excluded
+         * in the table.
+         *
+         * @param citizen The citizen's name
+         */
+        public abstract void excludeCitizen(final String citizen);
+
 /*        private Vector<Vector<Object>> toVVO(final List<String> list) {
             Vector<Vector<Object>> vReturn = new Vector<Vector<Object>>(
                     list.size());
@@ -1249,7 +1295,7 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             }
             return vReturn;
         } */
-        private Object[][] toDataArray(final List<String> list) {
+        protected Object[][] toDataArray(final List<String> list) {
             final Object[][] aReturn = new Object[list.size()][1];
             for (int iCount = 0; iCount < list.size(); iCount++) {
                 final String item = list.get(iCount);
@@ -1257,29 +1303,165 @@ public class ExclusionPanel extends JPanel implements DirtyForm { // , DirtyList
             }
             return aReturn;
         }
-        public void addCitizen(final String citizen) {
-            model.addRow(new Object[] { citizen });
+        /**
+         * Returns the currently selected citizen for deletion purposes. Should
+         * return null if deletion doesn't make sense.
+         *
+         * @return The name of the currently selected citizen (can be null).
+         */
+        public abstract String getSelectedCitizen();
+
+    }
+
+    /**
+     * A table that displays a simple list of citizen names
+     */
+    protected class SimpleCitizenList extends CitizenList {
+
+        // Populate the list with the given names
+        @Override
+        public void setList(final List<String> list) {
+            // Seems to eat sorting:
+            getModel().setDataVector(toDataArray(list), getColumns());
+
+            // setDataVector ate our sortkeys:
+            MyHandyTable.sortByCol(getTable(), COL_CITIZEN
+                    , SortOrder.ASCENDING);
+        }
+
+        @Override
+        protected MySimpleTableModel createEmptyModel() {
+            return new MySimpleTableModel(getColumns(), 0);
+        }
+
+        @Override
+        protected Object[] createColumns() {
+            return new Object[] { "Citizen" };
+        }
+
+        @Override
+        public void excludeCitizen(final String citizen) {
+            getModel().addRow(new Object[] { citizen });
         }
         // Removes the current selected citizen from the list
         public void removeCitizen() {
-            final int tableRow = table.getSelectedRow();
+            final int tableRow = getTable().getSelectedRow();
             if (tableRow >= 0) {
-                model.removeRow(table.convertRowIndexToModel(tableRow));
+                getModel().removeRow(
+                        getTable().convertRowIndexToModel(tableRow));
             }
         }
+
+        @Override
         public String getSelectedCitizen() {
             String oReturn = null;
-            final int tableRow = table.getSelectedRow();
+            final int tableRow = getTable().getSelectedRow();
             if (tableRow >=0) {
                 //oReturn = model.getRowData().get(table.convertRowIndexToModel(tableRow));
                 final List<Object> lstRow
-                        = (List<Object>) model.getDataVector().get(
-                        table.convertRowIndexToModel(tableRow));
-                oReturn = lstRow.get(0).toString();   // "Citizen" column
+                        = (List<Object>) getModel().getDataVector().get(
+                        getTable().convertRowIndexToModel(tableRow));
+                oReturn = lstRow.get(COL_CITIZEN).toString();
             }
-
             return oReturn;
         }
+
+        @Override
+        protected void doPostCreateTable() {
+            // No post-setup is needed.
+        }
+    }
+
+    /**
+     * A table that displays a list of all citizens and ticks the excluded ones.
+     *
+     */
+    protected class TickedCitizenList extends CitizenList {
+
+        private static final int COL_EXCLUDED = 0;
+        private boolean mbPopulated = false;
+
+        @Override
+        public void setList(final List<String> list) {
+
+            // Populate the list if it isn't already
+            if (! mbPopulated) {
+                System.out.println("Populating");
+                rePopulateModel();
+            }
+
+            // Un-exclude all citizens.
+            for (int iCount = 0; iCount < getModel().getRowCount(); iCount++) {
+                boolean bExclude = list.contains(getModel().getValueAt(iCount, COL_CITIZEN).toString());
+                //if ((Boolean) getModel().getValueAt(iCount, COL_EXCLUDED)) {
+                getModel().setValueAt(bExclude, iCount, COL_EXCLUDED);
+            }
+
+            // Exclude only the desired citizens
+            for (final String citizen : list) {
+                excludeCitizen(citizen);
+            }
+        }
+
+        @Override
+        protected MySimpleTableModel createEmptyModel() {
+            return new MySimpleTableModel(getColumns(), 0);
+        }
+
+        private void rePopulateModel() {
+            //System.out.println("There are " + mlstCitizen.size() + " citizen(s).");
+
+            for (final Dwarf dwarf : mlstCitizen) {
+                //System.out.println("Adding citizen " + dwarf.getName());
+                getModel().addRowSafely(getTable(), createRow(dwarf.getName()));
+            }
+            mbPopulated = true;
+        }
+
+        private Object[] createRow(final String citizenName) {
+            return new Object[] { false, citizenName };
+        }
+
+        @Override
+        protected Object[] createColumns() {
+            return new Object[] { "Exclude", "Citizen" };
+        }
+
+        @Override
+        public void excludeCitizen(final String citizen) {
+
+            final MySimpleTableModel model = getModel();
+
+            boolean bFound = false;
+            for (int iRow = 0; iRow < model.getRowCount(); iRow++) {
+                bFound = citizen.equals(
+                        model.getValueAt(iRow, COL_CITIZEN));
+                if (bFound) {
+                    model.setValueAt(true, iRow, COL_EXCLUDED);
+                    break;
+                }
+            }
+            if (! bFound) {
+                // A citizen in the exclusion list was not found in the list
+                // of all citizens.
+                // Add the citizen to the list.
+
+                //TODO Fix adding multiple times
+                model.addRowSafely(getTable(), new Object[] { true, citizen });
+                setMessage("Warning: " + citizen + " is in the exclusion list, but not the fortress roster.");
+            }
+        }
+
+        @Override
+        public String getSelectedCitizen() {
+            return null;
+        }
+
+        @Override
+        protected void doPostCreateTable() {
+            MyHandyTable.autoResizeTableColumn(getTable(), COL_EXCLUDED);
+        }
+
     }
 
     private void updateExclusions() {
